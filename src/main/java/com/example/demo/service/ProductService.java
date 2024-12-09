@@ -29,9 +29,22 @@ public class ProductService {
     return productRepository.findById(id);
   }
 
+  public Product saveProductPicture(Long id, byte[] productPictureData) {
+
+    Optional<Product> productOptional = productRepository.findById(id);
+    if (productOptional.isPresent()) {
+      Product product = productOptional.get();
+      product.setProductPictureFile(productPictureData);
+      return productRepository.save(product);
+    } else {
+      throw new RuntimeException("Product not found");
+    }
+
+  }
+
   public Product updateProduct(Long id, Product updatedProduct) {
     Optional<Product> existingProduct = productRepository.findById(id);
-    if(existingProduct.isPresent()) {
+    if (existingProduct.isPresent()) {
       Product product = existingProduct.get();
       product.setName(updatedProduct.getName());
       product.setPrice(updatedProduct.getPrice());
@@ -48,6 +61,6 @@ public class ProductService {
     } else {
       throw new IllegalArgumentException("Product with id " + id + " does not exist");
     }
-    
+
   }
 }

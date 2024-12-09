@@ -1,11 +1,15 @@
 package com.example.demo.controller;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.model.Product;
 import com.example.demo.service.ProductService;
@@ -18,7 +22,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@CrossOrigin(origins = "http://localhost:3000") 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/api")
 public class ProductController {
@@ -33,6 +37,17 @@ public class ProductController {
   public ResponseEntity<Product> saveProduct(@RequestBody Product product) {
     Product newProduct = productService.saveProduct(product);
     return ResponseEntity.ok(newProduct);
+  }
+
+  @PostMapping("/product/{productId}/{productPIcture}")
+  public ResponseEntity<String> uploadProductPicture(@PathVariable Long productId, @RequestParam("file") MultipartFile file) {
+    try {
+      byte[] pictureData = file.getBytes();
+      productService.saveProductPicture(productId, pictureData);
+      return ResponseEntity.ok("Product picture uploaded successfully!");
+    } catch (IOException e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload profile picture");
+    }
   }
 
   @CrossOrigin(origins = "http://localhost:3000")

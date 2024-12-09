@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/HomePage.css";
+import ProductPicture from "../components/ProductPicture";
 
 const HomePage = () => {
   const [products, setProducts] = useState([]);
@@ -7,6 +8,8 @@ const HomePage = () => {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null); 
+  const [productPicture, setProductPicture] = useState(null);
 
   const fetchProducts = async () => {
     try {
@@ -39,7 +42,6 @@ const HomePage = () => {
         headers: {
           "Content-Type": "application/json",
         },
-
         body: JSON.stringify({
           name: name,
           description: description,
@@ -57,7 +59,58 @@ const HomePage = () => {
       setQuantity("");
 
       fetchProducts();
-    } catch (error) {}
+    } catch (error) {
+      console.error("Error submitting product", error);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setSelectedFile(e.target.files[0]); 
+      console.log("File selected:", e.target.files[0]);
+    } else {
+      console.error("No file selected");
+    }
+  };
+
+  const handleUploadProductPicture = async (productId) => {
+    if (!productId) {
+      console.error("Product ID is required to upload a picture");
+      return;
+    }
+  
+    if (!selectedFile) {
+      console.error("No file selected for upload");
+      return;
+    }
+  
+    console.log("Selected file for upload:", selectedFile); 
+  
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+  
+      const response = await fetch(
+        `http://localhost:8080/api/product/${productId}/uploadPicture`,
+        {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        }
+      );
+  
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      console.log("Picture uploaded successfully:", data);
+  
+      setProductPicture(data.productPicture);
+      fetchProducts(); 
+    } catch (error) {
+      console.error("Error uploading product picture:", error);
+    }
   };
 
   return (
@@ -101,12 +154,20 @@ const HomePage = () => {
           onChange={(e) => setQuantity(e.target.value)}
           required
         />
-        <button type="submit" onChange={handleSubmit}>
-          Submit
-        </button>
-        <button type="button" className="upload-product-picture-button">
-          Upload Pictures
-        </button>
+
+<input
+    type="file"
+    className="product-input-field"
+    onChange={handleFileChange} 
+  />
+  <button
+    type="button"
+    onClick={() => handleUploadProductPicture(products.id)}
+  >
+    Upload Picture
+  </button>
+
+        <button type="submit">Submit</button>
       </form>
 
       <div className="product-grid-container">
@@ -117,6 +178,20 @@ const HomePage = () => {
               <p>{product.description}</p>
               <p>Price: ${product.price}</p>
               <p>Quantity on hand: {product.quantity}</p>
+              <button
+  type="button"
+  className="upload-product-picture-button"
+  onClick={() => {
+    if (selectedFile) {
+      handleUploadProductPicture(product.id); 
+    } else {
+      console.error("No file selected for upload");
+    }
+  }}
+>
+  Upload Picture
+</button>
+              <ProductPicture productId={product.id} onUpload={fetchProducts} />
             </div>
           ))
         ) : (

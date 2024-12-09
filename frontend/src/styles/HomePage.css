@@ -38,3 +38,75 @@
   width: 100%;
   padding: 20px;
 }
+
+.update-pic-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.update-pic-button,
+.upload-pic-button {
+  padding: 10px 20px;
+  border-radius: 5px;
+  color: #ffffff;
+  background-color: #965afd;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  margin-bottom: 10px;
+  justify-content: center;
+}
+
+.crop-button-container {
+  width: 350px;
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.crop-button {
+  padding: 10px 20px;
+  border-radius: 5px;
+  color: #ffffff;
+  background-color: #965afd;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.crop-button:hover {
+  padding: 10px 20px;
+  border-radius: 5px;
+  color: #ffffff;
+  background-color: #5621b2;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.upload-button {
+  padding: 10px 20px;
+  border-radius: 5px;
+  color: #ffffff;
+  background-color: #965afd;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  margin-bottom: 10px;
+  justify-content: center;
+}
+
+.update-pic-button:hover,
+.upload-button:hover {
+  background-color: #5621b2;
+}

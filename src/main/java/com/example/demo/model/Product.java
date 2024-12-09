@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,4 +35,7 @@ public class Product {
 
   @Column(nullable = false)
   private int quantity;
+
+  @Lob
+  private byte[] productPictureFile;
 }
