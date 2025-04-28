@@ -172,7 +172,7 @@ const ProductPicture = ({
 
           <input
             type="file"
-            accept="image/*"
+            accept="image/*, .png, .jpeg, .jpg"
             onChange={handleFileChange}
             ref={fileInputRef}
             style={{ display: "none" }}

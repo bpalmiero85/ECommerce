@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "../styles/HomePage.css";
 import ProductPicture from "../components/ProductPicture";
 
@@ -10,6 +10,7 @@ const HomePage = () => {
   const [quantity, setQuantity] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [productPicture, setProductPicture] = useState(null);
+  const formRef = useRef(null);
 
   const fetchProducts = async () => {
     try {
@@ -56,7 +57,12 @@ const HomePage = () => {
 
       setName("");
       setDescription("");
+      setPrice("");
       setQuantity("");
+      setSelectedFile(null);
+
+      formRef.current.reset();
+      
 
       if (selectedFile) {
         await handleUploadProductPicture(newProduct.id);
@@ -140,6 +146,7 @@ const HomePage = () => {
       console.error("Error deleting product: ", error);
     }
   };
+
     
 
   return (
@@ -147,8 +154,9 @@ const HomePage = () => {
     <div className="product-form">
       <h1>Home</h1>
       <h1>List an item:</h1>
+          {/** Script block below is to clear form input fields after submission */}
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} id="productForm" ref={formRef}>
         <input
           type="text"
           placeholder="Name"
@@ -188,6 +196,7 @@ const HomePage = () => {
           Upload picture
           <input
             type="file"
+            accept="image/*, .jpg, .jpeg, .png"
             className="product-input-field"
             onChange={handleFileChange}
           />
@@ -197,6 +206,7 @@ const HomePage = () => {
           Post
         </button>
       </form>
+
       {products.length > 0 && (
         <h1 className="items-for-sale-header">Items for sale: </h1>
       )}
