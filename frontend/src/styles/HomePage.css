@@ -10,7 +10,16 @@
 .no-products-available{
   display: flex;
   position: relative;
-  margin-left: 15px;
+  width: 180px;
+  max-width: 180px;
+  margin: 0 auto;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(253, 253, 72);
+  border-radius: 10px;
+  padding: 0 5px;
+
 }
 
 .custom-file-upload{
@@ -32,6 +41,7 @@
 .product-edit-button{
   display: flex;
   position: relative;
+  width: 100%;
   flex-direction: column;
   padding: 5px;
   
@@ -82,14 +92,18 @@
 }
 .items-for-sale-header {
   display: flex;
-  position: relative;
-  margin: 35px auto;
+  position: absolute;
+  left: 25px;
+  top: 385px;
+
+
   
 }
 
 .product-item {
   background-color: rgba(0, 0, 255, 0.171);
   display: flex;
+  position: relative;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -102,9 +116,13 @@
  text-align: center;
 }
 .product-form{
+  width: 100%;
+  max-width: 400px;
   justify-content: center;
   align-items: center;
-  margin: 0 auto;
+  text-align: center;
+  margin: 35px auto;
+
 }
 
 .product-input-field {
@@ -112,6 +130,8 @@
   position: relative;
   flex-direction: column;
   justify-content: center;
+  width: 250px;
+  max-width: 250px;
   margin: 0 auto;
   align-items: center;
   margin-bottom: 10px;
@@ -120,87 +140,22 @@
 }
 
 .upload-product-picture-button {
+  background-color: lightblue;
+  border-radius: 5px;
   margin-left: 5px;
 }
-
+.upload-product-picture-button:hover{
+  background-color: rgb(66, 143, 169);
+  cursor: pointer;
+}
 .product-grid-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 20px;
-  width: 100%;
+  max-width: 100%;
   padding: 25px;
-  margin-left: 65px !important;
   margin: 0 auto;
-}
-
-.update-pic-container {
-  display: flex;
   justify-content: center;
-  margin-top: 10px;
+  align-items: center;
 }
 
-.update-pic-button,
-.upload-pic-button {
-  padding: 10px 20px;
-  border-radius: 5px;
-  color: #ffffff;
-  background-color: #965afd;
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
-  display: flex;
-  margin-bottom: 10px;
-  justify-content: center;
-}
-
-.crop-button-container {
-  width: 350px;
-  display: flex;
-  justify-content: center;
-  margin-top: 15px;
-}
-
-.crop-button {
-  padding: 10px 20px;
-  border-radius: 5px;
-  color: #ffffff;
-  background-color: #965afd;
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: center;
-}
-
-.crop-button:hover {
-  padding: 10px 20px;
-  border-radius: 5px;
-  color: #ffffff;
-  background-color: #5621b2;
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
-  display: flex;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: center;
-}
-
-.upload-button {
-  padding: 10px 20px;
-  border-radius: 5px;
-  color: #ffffff;
-  background-color: #965afd;
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
-  display: flex;
-  margin-bottom: 10px;
-  justify-content: center;
-}
-
-.update-pic-button:hover,
-.upload-button:hover {
-  background-color: #5621b2;
-}

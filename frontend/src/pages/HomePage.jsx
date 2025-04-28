@@ -247,7 +247,9 @@ const HomePage = () => {
             </div>
           ))
         ) : (
-          <p className="no-products-available">No products available.</p>
+          <div className="no-products-available">
+          <p>No products listed.</p>
+          </div>
         )}
       </div>
     </div>
