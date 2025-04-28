@@ -24,6 +24,8 @@ public class Product {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  private String pictureType;
+
   @Column(nullable = false)
   private String name;
 

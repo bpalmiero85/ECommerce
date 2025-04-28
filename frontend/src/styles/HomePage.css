@@ -1,8 +1,40 @@
+input[type="file"]{
+  display: none;
+} 
+.submit{
+  display: flex;
+  position: relative;
+  margin: 0 auto;
+  
+}
+
+.custom-file-upload{
+  border: 1px solid black;
+  display: inline-block;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
 .home-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+.product-image img{ 
+  display: flex;
+  position: relative;
+  margin: 0 auto;
+  max-width: 150px;
+  width: 100%;
+  height: auto;
+  border-radius: 15px;
+}
+.items-for-sale-header {
+  display: flex;
+  position: relative;
+  margin: 35px auto;
+  
 }
 
 .product-item {
@@ -11,9 +43,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin-top: 30px;
   padding: 20px;
-  border-radius: 25px;
+  border-radius: 15px;
   box-shadow: 2px 2px 4px rgb(0, 0, 0, 0.3);
 }
 
@@ -36,7 +67,8 @@
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 20px;
   width: 100%;
-  padding: 20px;
+  padding: 25px;
+  margin: 0 auto;
 }
 
 .update-pic-container {

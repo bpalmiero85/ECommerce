@@ -8,7 +8,7 @@ const HomePage = () => {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null); 
+  const [selectedFile, setSelectedFile] = useState(null);
   const [productPicture, setProductPicture] = useState(null);
 
   const fetchProducts = async () => {
@@ -66,7 +66,7 @@ const HomePage = () => {
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      setSelectedFile(e.target.files[0]); 
+      setSelectedFile(e.target.files[0]);
       console.log("File selected:", e.target.files[0]);
     } else {
       console.error("No file selected");
@@ -78,18 +78,18 @@ const HomePage = () => {
       console.error("Product ID is required to upload a picture");
       return;
     }
-  
+
     if (!selectedFile) {
       console.error("No file selected for upload");
       return;
     }
-  
-    console.log("Selected file for upload:", selectedFile); 
-  
+
+    console.log("Selected file for upload:", selectedFile);
+
     try {
       const formData = new FormData();
       formData.append("file", selectedFile);
-  
+
       const response = await fetch(
         `http://localhost:8080/api/product/${productId}/uploadPicture`,
         {
@@ -98,16 +98,16 @@ const HomePage = () => {
           credentials: "include",
         }
       );
-  
+
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }
-  
+
       const data = await response.json();
       console.log("Picture uploaded successfully:", data);
-  
+
       setProductPicture(data.productPicture);
-      fetchProducts(); 
+      fetchProducts();
     } catch (error) {
       console.error("Error uploading product picture:", error);
     }
@@ -116,7 +116,7 @@ const HomePage = () => {
   return (
     <div className="home-container">
       <h1>Home</h1>
-      <p>This is the Home Page</p>
+      <h1>List an item:</h1>
 
       <form onSubmit={handleSubmit}>
         <input
@@ -154,44 +154,49 @@ const HomePage = () => {
           onChange={(e) => setQuantity(e.target.value)}
           required
         />
+      <label className="custom-file-upload">Upload picture
+        <input
+          type="file"
+          className="product-input-field"
+          onChange={handleFileChange}
+        />
+        </label>
 
-<input
-    type="file"
-    className="product-input-field"
-    onChange={handleFileChange} 
-  />
-  <button
-    type="button"
-    onClick={() => handleUploadProductPicture(products.id)}
-  >
-    Upload Picture
-  </button>
-
-        <button type="submit">Submit</button>
+        <button className="submit" type="submit">Post</button>
       </form>
-
+    <h1 className="items-for-sale-header">Items for sale: </h1>
       <div className="product-grid-container">
         {products.length > 0 ? (
           products.map((product) => (
             <div key={product.id} className="product-item">
+              {product.pictureType ? (
+                <div className="product-image">
+                  <img
+                    src={`http://localhost:8080/api/product/${product.id}/picture`}
+                    alt={product.name}
+                  ></img>
+                </div>
+              ) : (
+                <div className="no-picture">No image yet</div>
+              )}
+
               <h2>{product.name}</h2>
               <p>{product.description}</p>
               <p>Price: ${product.price}</p>
               <p>Quantity on hand: {product.quantity}</p>
               <button
-  type="button"
-  className="upload-product-picture-button"
-  onClick={() => {
-    if (selectedFile) {
-      handleUploadProductPicture(product.id); 
-    } else {
-      console.error("No file selected for upload");
-    }
-  }}
->
-  Upload Picture
-</button>
-              <ProductPicture productId={product.id} onUpload={fetchProducts} />
+                type="button"
+                className="upload-product-picture-button"
+                onClick={() => {
+                  if (selectedFile) {
+                    handleUploadProductPicture(product.id);
+                  } else {
+                    console.error("No file selected for upload");
+                  }
+                }}
+              >
+                Upload Picture
+              </button>
             </div>
           ))
         ) : (

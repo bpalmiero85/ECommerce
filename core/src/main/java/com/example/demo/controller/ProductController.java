@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,9 +23,10 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@CrossOrigin(origins = "http://localhost:3000")
+
 @RestController
 @RequestMapping("/api")
+@CrossOrigin(origins = "http://localhost:3000")
 public class ProductController {
 
   private final ProductService productService;
@@ -39,16 +41,18 @@ public class ProductController {
     return ResponseEntity.ok(newProduct);
   }
 
-  @PostMapping("/product/{productId}/{productPIcture}")
-  public ResponseEntity<String> uploadProductPicture(@PathVariable Long productId, @RequestParam("file") MultipartFile file) {
-    try {
-      byte[] pictureData = file.getBytes();
-      productService.saveProductPicture(productId, pictureData);
-      return ResponseEntity.ok("Product picture uploaded successfully!");
-    } catch (IOException e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload profile picture");
-    }
-  }
+  @PostMapping(
+    value = "/product/{productId}/uploadPicture",
+    consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+  public ResponseEntity<Product> uploadProductPicture(@PathVariable Long productId, @RequestParam("file") MultipartFile file) throws IOException {
+    Product product = productService.getProductById(productId).orElseThrow();
+      product.setProductPictureFile(file.getBytes());
+      product.setPictureType(file.getContentType());
+      Product updated = productService.saveProduct(product);
+   return ResponseEntity.ok(updated);
+  
+}
 
   @CrossOrigin(origins = "http://localhost:3000")
   @GetMapping("/products")
@@ -61,6 +65,25 @@ public class ProductController {
     Optional<Product> product = productService.getProductById(id);
     return product.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
   }
+
+  @GetMapping("/product/{id}/picture")
+  public ResponseEntity<byte[]> getProductPicture(@PathVariable Long id) {
+    Optional<Product> product = productService.getProductById(id);
+
+    if(product.isEmpty()) {
+      return ResponseEntity.notFound().build();
+    }
+
+    Product prod = product.get();
+    byte[] data = prod.getProductPictureFile();
+    if(data == null || data.length == 0) {
+      return ResponseEntity.notFound().build();
+    }
+    MediaType mediaType = MediaType.parseMediaType(prod.getPictureType());
+    return ResponseEntity.ok().contentType(mediaType).body(data);
+
+  }
+
 
   @PutMapping("/products/{id}")
   public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product) {
