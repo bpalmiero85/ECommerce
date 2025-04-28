@@ -50,15 +50,20 @@ const HomePage = () => {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
+
+      const newProduct = await response.json();
 
       setName("");
       setDescription("");
       setQuantity("");
 
-      fetchProducts();
+      if (selectedFile) {
+        await handleUploadProductPicture(newProduct.id);
+        setSelectedFile(null);
+      } else {
+        fetchProducts();
+      }
     } catch (error) {
       console.error("Error submitting product", error);
     }
@@ -113,8 +118,33 @@ const HomePage = () => {
     }
   };
 
+  const handleDeleteProduct = async (id) => {
+    const ok = window.confirm(
+      "Are you sure you want to delete this item? This action cannot be undone:"
+    );
+    if(!ok) return;
+
+    try{
+      const response = await fetch(`http://localhost:8080/api/products/${id}`, {
+        method: "DELETE",
+    
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to delete (status ${response.status})`);
+      }
+
+      fetchProducts();
+
+    } catch(error){
+      console.error("Error deleting product: ", error);
+    }
+  };
+    
+
   return (
     <div className="home-container">
+    <div className="product-form">
       <h1>Home</h1>
       <h1>List an item:</h1>
 
@@ -154,21 +184,36 @@ const HomePage = () => {
           onChange={(e) => setQuantity(e.target.value)}
           required
         />
-      <label className="custom-file-upload">Upload picture
-        <input
-          type="file"
-          className="product-input-field"
-          onChange={handleFileChange}
-        />
+        <label className="custom-file-upload">
+          Upload picture
+          <input
+            type="file"
+            className="product-input-field"
+            onChange={handleFileChange}
+          />
         </label>
 
-        <button className="submit" type="submit">Post</button>
+        <button className="submit" type="submit">
+          Post
+        </button>
       </form>
-    <h1 className="items-for-sale-header">Items for sale: </h1>
+      {products.length > 0 && (
+        <h1 className="items-for-sale-header">Items for sale: </h1>
+      )}
+      </div>
+     
       <div className="product-grid-container">
         {products.length > 0 ? (
           products.map((product) => (
             <div key={product.id} className="product-item">
+              <div className="product-buttons">
+                <div className="product-edit-button">
+                  <button>edit</button>
+                </div>
+                <div className="product-delete-button">
+                  <button onClick={() => handleDeleteProduct(product.id)}>delete</button>
+                </div>
+              </div>
               {product.pictureType ? (
                 <div className="product-image">
                   <img
@@ -184,27 +229,30 @@ const HomePage = () => {
               <p>{product.description}</p>
               <p>Price: ${product.price}</p>
               <p>Quantity on hand: {product.quantity}</p>
-              <button
-                type="button"
-                className="upload-product-picture-button"
-                onClick={() => {
-                  if (selectedFile) {
-                    handleUploadProductPicture(product.id);
-                  } else {
-                    console.error("No file selected for upload");
-                  }
-                }}
-              >
-                Upload Picture
-              </button>
+              {product.pictureType == null && (
+                <button
+                  type="button"
+                  className="upload-product-picture-button"
+                  onClick={() => {
+                    if (selectedFile) {
+                      handleUploadProductPicture(product.id);
+                    } else {
+                      console.error("No file selected for upload");
+                    }
+                  }}
+                >
+                  Upload Picture
+                </button>
+              )}
             </div>
           ))
         ) : (
-          <p>No products available.</p>
+          <p className="no-products-available">No products available.</p>
         )}
       </div>
     </div>
   );
 };
+
 
 export default HomePage;
