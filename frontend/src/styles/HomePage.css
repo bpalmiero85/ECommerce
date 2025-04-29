@@ -107,6 +107,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  min-height: 450px;
   padding: 20px;
   border-radius: 15px;
   box-shadow: 2px 2px 4px rgb(0, 0, 0, 0.3);
