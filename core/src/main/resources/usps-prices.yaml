@@ -1,0 +1,102 @@
+openapi: 3.0.3
+info:
+  title: USPS Base-Rates Only
+  version: 3.4.17
+servers:
+  - url: https://api.usps.com/prices/v3
+paths:
+  /base-rates/search:
+    post:
+      operationId: post-base-rates-search
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaseRatesQuery'
+      responses:
+        "200":
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseRateOption'
+components:
+  schemas:
+    BaseRatesQuery:
+      type: object
+      required:
+        - originZIPCode
+        - destinationZIPCode
+        - weight
+        - length
+        - width
+        - height
+        - mailClass
+        - processingCategory
+        - rateIndicator
+        - destinationEntryFacilityType
+        - priceType
+        - mailingDate
+      properties:
+        originZIPCode:
+          type: string
+          description: The originating ZIP Code™ for the package.
+        destinationZIPCode:
+          type: string
+          description: The destination ZIP Code™ for the package.
+        weight:
+          type: number
+          description: Weight of the package in pounds.
+        length:
+          type: number
+          description: Package length in inches.
+        width:
+          type: number
+          description: Package width in inches.
+        height:
+          type: number
+          description: Package height in inches.
+        mailClass:
+          type: string
+          description: Mail service requested (e.g. PRIORITY_MAIL).
+        processingCategory:
+          type: string
+          description: MACHINABLE or NONSTANDARD.
+        rateIndicator:
+          type: string
+          description: Rate ingredient code (e.g. SP for Single Piece).
+        destinationEntryFacilityType:
+          type: string
+          description: Facility type (e.g. NONE, DESTINATION_NETWORK_DISTRIBUTION_CENTER).
+        priceType:
+          type: string
+          description: RETAIL, COMMERCIAL, CONTRACT, or NSA.
+        mailingDate:
+          type: string
+          format: date
+          description: The date the package will be mailed (YYYY-MM-DD).
+    BaseRateOption:
+      type: object
+      properties:
+        totalBasePrice:
+          type: number
+          description: The total postage price.
+        rates:
+          type: array
+          description: Line-item rate details.
+          items:
+            type: object
+            properties:
+              SKU:
+                type: string
+                description: Stock Keeping Unit for this rate.
+              description:
+                type: string
+                description: Human-readable description of the rate.
+              priceType:
+                type: string
+                description: Type of price (RETAIL, COMMERCIAL, etc.).
+              price:
+                type: number
+                description: Postage amount for this line item.
