@@ -20,7 +20,8 @@ export default function CreditCard() {
   }
 
   return (
-    <div>
+    <div style={{marginBottom: "1rem"}}>
+    <div className="card-image">
       <Cards
         number={card.number}
         name={card.name}
@@ -28,9 +29,11 @@ export default function CreditCard() {
         cvc={card.cvc}
         focused={card.focused}
       />
+      </div>
 
       <form>
         <input
+         className="credit-card-input"
           name="number"
           placeholder="Card Number"
           value={card.number}
@@ -38,6 +41,7 @@ export default function CreditCard() {
           onFocus={handleFocus}
         />
         <input
+          className="credit-card-input"
           name="name"
           placeholder="Name"
           value={card.name}
@@ -45,6 +49,7 @@ export default function CreditCard() {
           onFocus={handleFocus}
         />
         <input
+          className="credit-card-input"
           name="expiry"
           placeholder="MM/YY"
           value={card.expiry}
@@ -52,6 +57,7 @@ export default function CreditCard() {
           onFocus={handleFocus}
         />
         <input
+          className="credit-card-input"
           name="cvc"
           placeholder="CVC"
           value={card.cvc}

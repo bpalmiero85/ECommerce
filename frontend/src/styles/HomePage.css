@@ -7,6 +7,17 @@
   margin: 10px auto;
   
 }
+
+.cancel-button {
+display: flex;
+position: relative;
+}
+
+.credit-card-window{
+  display: flex;
+  position: relative;
+
+}
 .no-products-available{
   display: flex;
   position: relative;
@@ -20,6 +31,15 @@
   border-radius: 10px;
   padding: 0 5px;
 
+}
+
+.card-image{
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+.credit-card-input{
+  margin: 3px auto;
 }
 
 .custom-file-upload{

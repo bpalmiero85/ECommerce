@@ -1,5 +1,7 @@
 package com.example.demo.model;
 
+import java.math.BigDecimal;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -33,11 +35,13 @@ public class Product {
   private String description;
 
   @Column(nullable = false)
-  private double price;
+  private BigDecimal price;
 
   @Column(nullable = false)
-  private int quantity;
+  private Integer quantity;
 
   @Lob
+  @Column(name = "product_picture_file")
   private byte[] productPictureFile;
+
 }

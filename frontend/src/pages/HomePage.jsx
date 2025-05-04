@@ -159,12 +159,12 @@ const HomePage = () => {
   };
 
   useEffect(() => {
-    if(isOpen){
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
   }, [isOpen]);
 
   return (
@@ -261,19 +261,31 @@ const HomePage = () => {
               <p>Quantity on hand: {product.quantity}</p>
 
               <div className="purchase-button">
-                <button
-                  onClick={() => {
-                    handlePurchase(product.id);
-                  }}
-                >
-                  Purchase
-                </button>
+                {!isOpen && (
+                  <button
+                    onClick={() => {
+                      handlePurchase(product.id);
+                    }}
+                  >
+                    Purchase
+                  </button>
+                )}
+
+              
+
                 {isOpen && purchaseProductId == product.id && (
+                  
                   <div className="credit-card-window" ref={cardRef}>
                     {purchaseProductId == product.id && <CreditCard />}
                   </div>
                 )}
+
               </div>
+              {isOpen && (
+                  <div className="cancel-button">
+                  <button>Cancel</button>
+                  </div>
+                )}
 
               {product.pictureType == null && (
                 <button
