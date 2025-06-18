@@ -11,6 +11,7 @@ const HomePage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [productPicture, setProductPicture] = useState(null);
   const [purchaseProductId, setPurchaseProductId] = useState(null);
+  const [isEditingId, setIsEditingId] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
   const cardRef = useRef(null);
   const formRef = useRef(null);
@@ -147,6 +148,35 @@ const HomePage = () => {
     }
   };
 
+  const handleUpdateProduct = async (e) => {
+  e.preventDefault();
+  const id = isEditingId;
+    const updated = {
+      name,
+      description,
+      price: +price,
+      quantity: +quantity,
+    };
+
+      const response = await fetch(`http://localhost:8080/api/products/${id}`, {
+         method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updated),
+      });
+        if(!response.ok) throw new Error(response.statusText);
+    setIsEditingId(null);
+    setName("");
+    setDescription("");
+    setPrice("");
+    setQuantity("");
+    formRef.current.reset();
+    if(selectedFile){
+      await handleUploadProductPicture(id);
+    }
+    fetchProducts();
+  }
+  
+
   const handlePurchase = (productId) => {
     setIsOpen(true);
     setPurchaseProductId(productId);
@@ -174,7 +204,7 @@ const HomePage = () => {
         <h1>List an item:</h1>
         {/** Script block below is to clear form input fields after submission */}
 
-        <form onSubmit={handleSubmit} id="productForm" ref={formRef}>
+        <form onSubmit={isEditingId ? handleUpdateProduct : handleSubmit} id="productForm" ref={formRef}>
           <input
             type="text"
             placeholder="Name"
@@ -221,7 +251,7 @@ const HomePage = () => {
           </label>
 
           <button className="submit" type="submit">
-            Post
+            {isEditingId ? "Save Changes" : "Post"}
           </button>
         </form>
 
@@ -236,7 +266,13 @@ const HomePage = () => {
             <div key={product.id} className="product-item">
               <div className="product-buttons">
                 <div className="product-edit-button">
-                  <button>edit</button>
+                  <button onClick={() => {
+                    setIsEditingId(product.id);
+                    setName(product.name);
+                    setDescription(product.description);
+                    setPrice(product.price);
+                    setQuantity(product.quantity)
+                  }}>edit</button>
                 </div>
                 <div className="product-delete-button">
                   <button onClick={() => handleDeleteProduct(product.id)}>
