@@ -120,7 +120,13 @@ const HomePage = () => {
       const data = await response.json();
       console.log("Picture uploaded successfully:", data);
 
-      setProductPicture(data.productPicture);
+        setProducts(ps => 
+          ps.map(p => 
+            p.id === productId
+            ? {...p, pictureVersion: Date.now()}
+            :p
+          )
+        )
       fetchProducts();
     } catch (error) {
       console.error("Error uploading product picture:", error);
@@ -129,7 +135,7 @@ const HomePage = () => {
 
   const handleDeleteProduct = async (id) => {
     const ok = window.confirm(
-      "Are you sure you want to delete this item? This action cannot be undone:"
+      "Are you sure you want to delete this item? This action cannot be undone."
     );
     if (!ok) return;
 
@@ -152,6 +158,7 @@ const HomePage = () => {
   e.preventDefault();
   const id = isEditingId;
     const updated = {
+      productPicture,
       name,
       description,
       price: +price,
@@ -263,15 +270,20 @@ const HomePage = () => {
       <div className="product-grid-container">
         {products.length > 0 ? (
           products.map((product) => (
-            <div key={product.id} className="product-item">
+            <div key={product.id} id={`${product.id}`} className="product-item">
               <div className="product-buttons">
                 <div className="product-edit-button">
+                
                   <button onClick={() => {
                     setIsEditingId(product.id);
                     setName(product.name);
                     setDescription(product.description);
                     setPrice(product.price);
                     setQuantity(product.quantity)
+                    
+
+                    document.getElementById(`${product.id}`)
+                    .scrollIntoView({ behavior: "smooth" });
                   }}>edit</button>
                 </div>
                 <div className="product-delete-button">
@@ -283,6 +295,7 @@ const HomePage = () => {
               {product.pictureType ? (
                 <div className="product-image">
                   <img
+                  key={`pic-${product.id}-${product.pictureVersion || product.pictureType}`}
                     src={`http://localhost:8080/api/product/${product.id}/picture`}
                     alt={product.name}
                   ></img>
@@ -290,11 +303,70 @@ const HomePage = () => {
               ) : (
                 <div className="no-picture">No image yet</div>
               )}
+    <div className="product-info-section">
+  {isEditingId === product.id ? (
+    // Inline edit form
+    <form
+      onSubmit={handleUpdateProduct}
+      className="inline-edit-form"
+    >
+    <input
+      type="file"
+      accept="image/*, .jpg, .jpeg, .png"
+      className="product-input-field"
+      onChange={handleFileChange}
+    >
+      </input>
+      <input
+        type="text"
+        value={name}
+        onChange={e => setName(e.target.value)}
+        required
+      />
+      <input
+        type="text"
+        value={description}
+        onChange={e => setDescription(e.target.value)}
+        required
+      />
+      <input
+        type="number"
+        value={price}
+        onChange={e => setPrice(e.target.value)}
+        required
+      />
+      <input
+        type="number"
+        value={quantity}
+        onChange={e => setQuantity(e.target.value)}
+        required
+      />
 
-              <h2>{product.name}</h2>
-              <p>{product.description}</p>
-              <p>Price: ${product.price}</p>
-              <p>Quantity on hand: {product.quantity}</p>
+      <button type="submit">Save</button>
+      <button
+        type="button"
+        onClick={() => {
+          setIsEditingId(null);
+          setName("");
+          setDescription("");
+          setPrice("");
+          setQuantity("");
+        }}
+      >
+        Cancel
+      </button>
+    </form>
+  ) : (
+  
+    <>
+      <h2 className="product-name">{product.name}</h2>
+      <p className="product-desc">{product.description}</p>
+      <p className="product-price">Price: ${product.price}</p>
+      <p className="product-quantity">Quantity: {product.quantity}</p>
+    </>
+  )}
+</div>
+              
 
               <div className="purchase-button">
                 {!isOpen && (
@@ -317,13 +389,22 @@ const HomePage = () => {
                 )}
 
               </div>
-              {isOpen && (
+              {isOpen && purchaseProductId === product.id && (
                   <div className="cancel-button">
                   <button>Cancel</button>
                   </div>
                 )}
 
               {product.pictureType == null && (
+       <>
+                 <input
+              type="file"
+              accept="image/*, .jpg, .jpeg, .png"
+              className="product-input-field"
+              onChange={handleFileChange}
+            />
+          
+    
                 <button
                   type="button"
                   className="upload-product-picture-button"
@@ -337,8 +418,10 @@ const HomePage = () => {
                 >
                   Upload Picture
                 </button>
+                  </>
               )}
             </div>
+            
           ))
         ) : (
           <div className="no-products-available">
