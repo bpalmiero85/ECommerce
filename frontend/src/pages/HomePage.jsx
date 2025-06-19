@@ -369,8 +369,10 @@ const HomePage = () => {
               
 
               <div className="purchase-button">
-                {!isOpen && (
-                  <button
+                {!(isOpen && purchaseProductId === product.id) && (
+                 
+                  <button 
+                    onMouseDown={e => e.stopPropagation()}
                     onClick={() => {
                       handlePurchase(product.id);
                     }}
