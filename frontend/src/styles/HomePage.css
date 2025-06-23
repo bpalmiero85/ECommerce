@@ -8,6 +8,10 @@
   
 }
 
+.product-anchor{
+ width: 300px;
+}
+
 .cancel-button {
 display: flex;
 position: relative;
@@ -32,6 +36,13 @@ position: relative;
   border-radius: 10px;
   padding: 0 5px;
 
+}
+
+.logo-card{
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  margin: 0 auto;
 }
 
 .card-image{
@@ -110,6 +121,15 @@ position: relative;
   height: 200px;
   border-radius: 15px;
 }
+
+.product-container{
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  max-height: 200px;
+  margin-top: -160px;
+}
+
 .items-for-sale-header {
   display: flex;
   position: absolute;
@@ -127,9 +147,10 @@ position: relative;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  min-width: 180px;
   height: auto;
-  padding: 20px;
-  padding-bottom: 30px;
+  padding: 5px;
+  padding-bottom: 25px;
   border-radius: 15px;
   box-shadow: 2px 2px 4px rgb(0, 0, 0, 0.3);
 }
@@ -145,7 +166,7 @@ position: relative;
   border-radius: 15px;
 }
 
-.product-item p{
+.product-item p {
  text-align: center;
 }
 .product-form{
@@ -155,6 +176,12 @@ position: relative;
   align-items: center;
   text-align: center;
   margin: 35px auto;
+
+}
+
+.product-info-section{
+  margin: 0 auto;
+  width: auto;
 
 }
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../styles/HomePage.css";
+import "../styles/ProductPage.css"
 import CreditCard from "../components/CreditCard";
 
 const HomePage = () => {
@@ -120,13 +121,11 @@ const HomePage = () => {
       const data = await response.json();
       console.log("Picture uploaded successfully:", data);
 
-        setProducts(ps => 
-          ps.map(p => 
-            p.id === productId
-            ? {...p, pictureVersion: Date.now()}
-            :p
-          )
+      setProducts((ps) =>
+        ps.map((p) =>
+          p.id === productId ? { ...p, pictureVersion: Date.now() } : p
         )
+      );
       fetchProducts();
     } catch (error) {
       console.error("Error uploading product picture:", error);
@@ -155,8 +154,8 @@ const HomePage = () => {
   };
 
   const handleUpdateProduct = async (e) => {
-  e.preventDefault();
-  const id = isEditingId;
+    e.preventDefault();
+    const id = isEditingId;
     const updated = {
       productPicture,
       name,
@@ -165,24 +164,23 @@ const HomePage = () => {
       quantity: +quantity,
     };
 
-      const response = await fetch(`http://localhost:8080/api/products/${id}`, {
-         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updated),
-      });
-        if(!response.ok) throw new Error(response.statusText);
+    const response = await fetch(`http://localhost:8080/api/products/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updated),
+    });
+    if (!response.ok) throw new Error(response.statusText);
     setIsEditingId(null);
     setName("");
     setDescription("");
     setPrice("");
     setQuantity("");
     formRef.current.reset();
-    if(selectedFile){
+    if (selectedFile) {
       await handleUploadProductPicture(id);
     }
     fetchProducts();
-  }
-  
+  };
 
   const handlePurchase = (productId) => {
     setIsOpen(true);
@@ -211,7 +209,11 @@ const HomePage = () => {
         <h1>List an item:</h1>
         {/** Script block below is to clear form input fields after submission */}
 
-        <form onSubmit={isEditingId ? handleUpdateProduct : handleSubmit} id="productForm" ref={formRef}>
+        <form
+          onSubmit={isEditingId ? handleUpdateProduct : handleSubmit}
+          id="productForm"
+          ref={formRef}
+        >
           <input
             type="text"
             placeholder="Name"
@@ -267,131 +269,135 @@ const HomePage = () => {
         )}
       </div>
 
-      
-
       <div className="product-grid-container">
         {products.length > 0 ? (
           products.map((product) => (
-            <div key={product.id} id={`${product.id}`} className="product-item">
-              <div className="product-buttons">
-                <div className="product-edit-button">
-                
-                  <button onClick={() => {
-                    setIsEditingId(product.id);
-                    setName(product.name);
-                    setDescription(product.description);
-                    setPrice(product.price);
-                    setQuantity(product.quantity)
-                    
+            <div class="logo-card">
+              <div
+                key={product.id}
+                id={`${product.id}`}
+                className="product-item"
+              >
+                <div className="product-buttons">
+                  <div className="product-edit-button">
+                    <button
+                      onClick={() => {
+                        setIsEditingId(product.id);
+                        setName(product.name);
+                        setDescription(product.description);
+                        setPrice(product.price);
+                        setQuantity(product.quantity);
 
-                    document.getElementById(`${product.id}`)
-                    .scrollIntoView({ behavior: "smooth" });
-                  }}>edit</button>
+                        document
+                          .getElementById(`${product.id}`)
+                          .scrollIntoView({ behavior: "smooth" });
+                      }}
+                    >
+                      edit
+                    </button>
+                  </div>
+                  <div className="product-delete-button">
+                    <button onClick={() => handleDeleteProduct(product.id)}>
+                      delete
+                    </button>
+                  </div>
                 </div>
-                <div className="product-delete-button">
-                  <button onClick={() => handleDeleteProduct(product.id)}>
-                    delete
-                  </button>
-                </div>
-              </div>
-              {product.pictureType ? (
-                <div className="product-image">
-                  <img
-                  key={`pic-${product.id}-${product.pictureVersion || product.pictureType}`}
-                    src={`http://localhost:8080/api/product/${product.id}/picture`}
-                    alt={product.name}
-                  ></img>
-                </div>
-              ) : (
-                <div className="no-picture">No image yet</div>
-              )}
-    <div className="product-info-section">
-  {isEditingId === product.id ? (
-    // Inline edit form
-    <form
-      onSubmit={handleUpdateProduct}
-      className="inline-edit-form"
-    >
-    <input
-      type="file"
-      accept="image/*, .jpg, .jpeg, .png"
-      className="product-input-field"
-      onChange={handleFileChange}
-    >
-      </input>
-      <input
-        type="text"
-        value={name}
-        onChange={e => setName(e.target.value)}
-        required
-      />
-      <input
-        type="text"
-        value={description}
-        onChange={e => setDescription(e.target.value)}
-        required
-      />
-      <input
-        type="number"
-        value={price}
-        onChange={e => setPrice(e.target.value)}
-        required
-      />
-      <input
-        type="number"
-        value={quantity}
-        onChange={e => setQuantity(e.target.value)}
-        required
-      />
+                {product.pictureType ? (
+                  <div className="product-image">
+                    <img
+                      key={`pic-${product.id}-${
+                        product.pictureVersion || product.pictureType
+                      }`}
+                      src={`http://localhost:8080/api/product/${product.id}/picture`}
+                      alt={product.name}
+                    ></img>
+                  </div>
+                ) : (
+                  <div className="no-picture">No image yet</div>
+                )}
+                <div className="product-info-section">
+                  {isEditingId === product.id ? (
+                    // Inline edit form
+                    <form
+                      onSubmit={handleUpdateProduct}
+                      className="inline-edit-form"
+                    >
+                      <input
+                        type="file"
+                        accept="image/*, .jpg, .jpeg, .png"
+                        className="product-input-field"
+                        onChange={handleFileChange}
+                      ></input>
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                      />
+                      <input
+                        type="text"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        required
+                      />
+                      <input
+                        type="number"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        required
+                      />
+                      <input
+                        type="number"
+                        value={quantity}
+                        onChange={(e) => setQuantity(e.target.value)}
+                        required
+                      />
 
-      <button type="submit">Save</button>
-      <button
-        type="button"
-        onClick={() => {
-          setIsEditingId(null);
-          setName("");
-          setDescription("");
-          setPrice("");
-          setQuantity("");
-        }}
-      >
-        Cancel
-      </button>
-    </form>
-  ) : (
-  
-    <>
-     <div class="logo-card">
-                <div class="logo-design">
-                    <div class="gothic-crown">
-                        <img
-                  key={`pic-${product.id}-${product.pictureVersion || product.pictureType}`}
-                    src={`http://localhost:8080/api/product/${product.id}/picture`}
-                    className="product-image"
-                    alt={product.name}
-                  ></img>
-                        <div class="crown-stars">
+                      <button type="submit">Save</button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditingId(null);
+                          setName("");
+                          setDescription("");
+                          setPrice("");
+                          setQuantity("");
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </form>
+                  ) : (
+                    <>
+                      <div class="logo-design">
+                        <div class="gothic-crown">
+                          <div class="crown-stars">
                             <div class="crown-star">✦</div>
                             <div class="crown-star">✧</div>
                             <div class="crown-star">✦</div>
+                          </div>
                         </div>
-                    </div>
+                      </div>
+                      <div className="product-container">
+                        <div class="logo-text">{product.name}</div>
+
+                        <div class="logo-description">
+                          {product.description}
+                        </div>
+                        <p className="product-price">Price: ${product.price}</p>
+                        <p className="product-quantity">
+                          Quantity: {product.quantity}
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </div>
-                <div class="logo-text">{product.name}</div>
-                <div class="logo-description">{product.description}</div>
-                 <p className="product-price">Price: ${product.price}</p>
-      <p className="product-quantity">Quantity: {product.quantity}</p>
-            </div>
-             </>
-  )}
-</div>
-              
+              </div>
 
               <div className="purchase-button">
                 {!(isOpen && purchaseProductId === product.id) && (
-                 
-                  <button 
-                    onMouseDown={e => e.stopPropagation()}
+                  <button
+                    onMouseDown={(e) => e.stopPropagation()}
                     onClick={() => {
                       handlePurchase(product.id);
                     }}
@@ -400,49 +406,43 @@ const HomePage = () => {
                   </button>
                 )}
 
-              
-
                 {isOpen && purchaseProductId == product.id && (
-                  
                   <div className="credit-card-window" ref={cardRef}>
                     {purchaseProductId == product.id && <CreditCard />}
                   </div>
                 )}
-
               </div>
               {isOpen && purchaseProductId === product.id && (
-                  <div className="cancel-button">
+                <div className="cancel-button">
                   <button>Cancel</button>
-                  </div>
-                )}
+                </div>
+              )}
 
               {product.pictureType == null && (
-       <>
-                 <input
-              type="file"
-              accept="image/*, .jpg, .jpeg, .png"
-              className="product-input-field"
-              onChange={handleFileChange}
-            />
-          
-    
-                <button
-                  type="button"
-                  className="upload-product-picture-button"
-                  onClick={() => {
-                    if (selectedFile) {
-                      handleUploadProductPicture(product.id);
-                    } else {
-                      console.error("No file selected for upload");
-                    }
-                  }}
-                >
-                  Upload Picture
-                </button>
-                  </>
+                <>
+                  <input
+                    type="file"
+                    accept="image/*, .jpg, .jpeg, .png"
+                    className="product-input-field"
+                    onChange={handleFileChange}
+                  />
+
+                  <button
+                    type="button"
+                    className="upload-product-picture-button"
+                    onClick={() => {
+                      if (selectedFile) {
+                        handleUploadProductPicture(product.id);
+                      } else {
+                        console.error("No file selected for upload");
+                      }
+                    }}
+                  >
+                    Upload Picture
+                  </button>
+                </>
               )}
             </div>
-            
           ))
         ) : (
           <div className="no-products-available">
@@ -451,7 +451,6 @@ const HomePage = () => {
         )}
       </div>
     </div>
-    
   );
 };
 

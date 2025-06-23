@@ -1,25 +1,32 @@
+import "../styles/HomePage.css"
+import "../styles/ProductPage.css"
+
 const Product = (props) => {
   return (
-     <div className="logo-card">
-                <div className="logo-design">
-                    <div className="gothic-crown">
-                             <img
-                  key={`pic-${props.id}-${props.pictureVersion || props.pictureType}`}
-                    src={`http://localhost:8080/api/product/${props.id}/picture`}
-                    className="product-image"
-                    alt={props.name}
-                  ></img>
-                        <div className="crown-stars">
-                            <div className="crown-star">✦</div>
-                            <div className="crown-star">✧</div>
-                            <div className="crown-star">✦</div>
-                        </div>
-                    </div>
-                </div>
-                <div className="logo-text">Goth & Glitter</div>
-                <div className="logo-description">Gothic Crown with twinkling stars - Perfect for the royal figurine aesthetic with dark elegance and magical sparkles</div>
+    <a className="product-anchor" href="/products">
+      <div className="logo-card">
+        <div className="logo-design">
+          <div className="gothic-rose-container">
+            <div className="gothic-rose">
+              <img
+                className="product-image"
+                src={`http://localhost:8080/api/product/${props.id}/picture`}
+              ></img>
             </div>
-            
-  )
-}
-export default Product
+            <div className="rose-glitter-effect">
+              <div className="glitter-particle">✨</div>
+              <div className="glitter-particle">✦</div>
+              <div className="glitter-particle">✧</div>
+              <div className="glitter-particle">✨</div>
+            </div>
+          </div>
+        </div>
+        <div className="logo-text">{props.name}</div>
+        <div className="logo-description2">{props.description}</div>{" "}
+        <p className="click">-- click --</p>
+      </div>
+    </a>
+  );
+};
+
+export default Product;
