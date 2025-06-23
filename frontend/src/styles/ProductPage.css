@@ -1,0 +1,603 @@
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Griffy&family=Nosifer&family=Butcherman&display=swap');
+
+.product-body {
+  background: radial-gradient(
+    ellipse at center,
+    #1a1a2e 0%,
+    #16213e 50%,
+    #0f3460 100%
+  );
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  color: white;
+  min-height: 100vh;
+  overflow-x: auto;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.product-page-header {
+  text-align: center;
+  font-family: "fantasy";
+  font-size: 2.8em;
+  margin-bottom: 40px;
+  color: #e1bee7;
+  text-shadow: 0 0 20px rgba(225, 190, 231, 0.6);
+  animation: glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 20px rgba(225, 190, 231, 0.6);
+  }
+  to {
+    text-shadow: 0 0 30px rgba(225, 190, 231, 0.9),
+      0 0 40px rgba(225, 190, 231, 0.6);
+  }
+}
+
+.logo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 40px;
+  margin-bottom: 50px;
+}
+
+.logo-card {
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid #4a148c;
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+  backdrop-filter: blur(15px);
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.logo-card::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(225, 190, 231, 0.1),
+    transparent
+  );
+  transform: rotate(45deg);
+  transition: all 0.6s ease;
+  opacity: 0;
+}
+
+.logo-card:hover::before {
+  animation: shimmer 1.5s ease-in-out infinite;
+  opacity: 1;
+}
+
+.product-image{
+  display: flex;
+  position: relative;
+  width: 150px;
+  height: 200px;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  50% {
+    transform: translateX(0%) translateY(0%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+.logo-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(74, 20, 140, 0.4);
+  border-color: #7b1fa2;
+}
+
+.logo-design {
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 25px;
+  position: relative;
+  cursor: pointer;
+}
+
+/* Crown Logo */
+.gothic-crown {
+  position: relative;
+  font-size: 80px;
+  color: #4a148c;
+  filter: drop-shadow(0 0 10px rgba(74, 20, 140, 0.8));
+  transition: all 0.3s ease;
+}
+
+.gothic-crown:hover {
+  transform: scale(1.1);
+  color: #7b1fa2;
+  filter: drop-shadow(0 0 20px rgba(123, 31, 162, 1));
+}
+
+.crown-stars {
+  position: absolute;
+  top: -20px;
+  left: -30px;
+  right: -30px;
+  height: 60px;
+}
+
+.crown-star {
+  position: absolute;
+  font-size: 16px;
+  color: #e1bee7;
+  animation: twinkle 2s infinite;
+}
+
+.crown-star:nth-child(1) {
+  top: 10px;
+  left: 20%;
+  animation-delay: 0s;
+}
+.crown-star:nth-child(2) {
+  top: 0px;
+  left: 50%;
+  animation-delay: 0.5s;
+}
+.crown-star:nth-child(3) {
+  top: 15px;
+  right: 20%;
+  animation-delay: 1s;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* Moon and Stars Logo */
+.moon-stars-combo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crescent-moon {
+  font-size: 70px;
+  color: #4a148c;
+  animation: float 4s ease-in-out infinite;
+  filter: drop-shadow(0 0 15px rgba(74, 20, 140, 0.8));
+  transition: all 0.3s ease;
+}
+
+.crescent-moon:hover {
+  color: #7b1fa2;
+  transform: scale(1.1);
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.floating-stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.floating-star {
+  position: absolute;
+  font-size: 20px;
+  color: #e1bee7;
+  animation: orbit 6s linear infinite;
+}
+
+.floating-star:nth-child(1) {
+  top: 20%;
+  left: 20%;
+  animation: orbit 6s linear infinite;
+}
+.floating-star:nth-child(2) {
+  top: 70%;
+  right: 25%;
+  animation: orbit 8s linear infinite reverse;
+  animation-delay: -2s;
+}
+.floating-star:nth-child(3) {
+  top: 30%;
+  right: 15%;
+  animation: orbit 10s linear infinite;
+  animation-delay: -4s;
+}
+
+@keyframes orbit {
+  0% {
+    transform: rotate(0deg) translateX(30px) rotate(0deg);
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(360deg) translateX(30px) rotate(-360deg);
+    opacity: 0.4;
+  }
+}
+
+/* Magic Wand Logo */
+.magic-wand-container {
+  position: relative;
+  transform: rotate(45deg);
+}
+
+.magic-wand {
+  font-size: 60px;
+  color: #4a148c;
+  filter: drop-shadow(0 0 10px rgba(74, 20, 140, 0.8));
+  transition: all 0.3s ease;
+  animation: wandGlow 3s ease-in-out infinite alternate;
+}
+
+.magic-wand:hover {
+  transform: scale(1.2);
+  color: #7b1fa2;
+}
+
+@keyframes wandGlow {
+  from {
+    filter: drop-shadow(0 0 10px rgba(74, 20, 140, 0.8));
+  }
+  to {
+    filter: drop-shadow(0 0 20px rgba(123, 31, 162, 1));
+  }
+}
+
+.wand-sparkles {
+  position: absolute;
+  top: -40px;
+  left: -40px;
+  right: -40px;
+  bottom: -40px;
+}
+
+.wand-sparkle {
+  position: absolute;
+  font-size: 14px;
+  color: #e1bee7;
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+.wand-sparkle:nth-child(1) {
+  top: 10%;
+  left: 80%;
+  animation-delay: 0s;
+}
+.wand-sparkle:nth-child(2) {
+  top: 20%;
+  left: 70%;
+  animation-delay: 0.3s;
+}
+.wand-sparkle:nth-child(3) {
+  top: 5%;
+  left: 60%;
+  animation-delay: 0.6s;
+}
+.wand-sparkle:nth-child(4) {
+  top: 15%;
+  left: 90%;
+  animation-delay: 0.9s;
+}
+.wand-sparkle:nth-child(5) {
+  top: 0%;
+  left: 75%;
+  animation-delay: 1.2s;
+}
+
+@keyframes sparkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.5) translateY(0px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) translateY(-10px);
+  }
+}
+
+/* Skull with Wings Logo */
+.winged-skull-container {
+  position: relative;
+}
+
+.skull-main {
+  font-size: 70px;
+  color: #e1bee7;
+  filter: drop-shadow(0 0 15px rgba(225, 190, 231, 0.6));
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.skull-wings {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 40px;
+  color: #7b1fa2;
+  animation: wingFlap 2s ease-in-out infinite;
+}
+
+.wing-left {
+  left: -60px;
+}
+.wing-right {
+  right: -60px;
+  transform: translateY(-50%) scaleX(-1);
+}
+
+@keyframes wingFlap {
+  0%,
+  100% {
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    transform: translateY(-55%) scale(1.1);
+  }
+}
+
+.skull-aura {
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  right: -20px;
+  bottom: -20px;
+}
+
+.aura-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #4caf50;
+  border-radius: 50%;
+  animation: auraFloat 4s ease-in-out infinite;
+}
+
+.aura-particle:nth-child(1) {
+  top: 20%;
+  left: 10%;
+  animation-delay: 0s;
+}
+.aura-particle:nth-child(2) {
+  top: 80%;
+  left: 30%;
+  animation-delay: 1s;
+}
+.aura-particle:nth-child(3) {
+  top: 30%;
+  right: 20%;
+  animation-delay: 2s;
+}
+.aura-particle:nth-child(4) {
+  bottom: 20%;
+  right: 10%;
+  animation-delay: 3s;
+}
+
+@keyframes auraFloat {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0px) scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-15px) scale(1.2);
+  }
+}
+
+/* Gothic Rose Logo */
+.gothic-rose-container {
+  position: relative;
+}
+
+.gothic-rose {
+  font-size: 80px;
+  color: #880e4f;
+  filter: drop-shadow(0 0 15px rgba(136, 14, 79, 0.8));
+  animation: roseBloom 4s ease-in-out infinite;
+}
+
+@keyframes roseBloom {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.1) rotate(5deg);
+  }
+}
+
+.rose-glitter-effect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.glitter-particle {
+  position: absolute;
+  font-size: 12px;
+  color: #e1bee7;
+  animation: glitterFall 3s linear infinite;
+}
+
+.glitter-particle:nth-child(1) {
+  left: 20%;
+  animation-delay: 0s;
+}
+.glitter-particle:nth-child(2) {
+  left: 40%;
+  animation-delay: 0.5s;
+}
+.glitter-particle:nth-child(3) {
+  left: 60%;
+  animation-delay: 1s;
+}
+.glitter-particle:nth-child(4) {
+  left: 80%;
+  animation-delay: 1.5s;
+}
+
+@keyframes glitterFall {
+  0% {
+    top: -20px;
+    opacity: 0;
+    transform: rotate(0deg);
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+    transform: rotate(360deg);
+  }
+}
+
+.logo-text {
+  font-family: "fantasy";
+  text-decoration: underline;
+  text-underline-offset: 10px;
+  font-size: 28px;
+  color: #e1bee7;
+  margin-bottom: 15px;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+  transition: all 0.3s ease;
+}
+
+
+
+.logo-card:hover .logo-text {
+  color: #ffffff;
+  text-shadow: 0 0 15px rgba(225, 190, 231, 0.8);
+}
+
+.logo-description {
+  font-size: 16px;
+  color: #c5cae9;
+  line-height: 1.6;
+  transition: all 0.3s ease;
+}
+
+.logo-description2 {
+  font-size: 20px;
+  color: #c5cae9;
+  line-height: 1.6;
+  transition: all 0.3s ease;
+}
+
+.product-price{
+  margin-top: 5px;
+  font-size: 1.5rem;
+}
+
+.product-anchor{
+  text-decoration: none;
+}
+
+.click{
+  font-size: 1.1rem;
+  margin-top: 20px;
+}
+
+.logo-card:hover .logo-description {
+  color: #e1bee7;
+}
+
+.code-section {
+  margin-top: 60px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid #1b5e20;
+  border-radius: 15px;
+  padding: 30px;
+}
+
+.code-title {
+  font-family: "Griffy", cursive;
+  font-size: 1.8em;
+  color: #4caf50;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.code-block {
+  background: #1a1a1a;
+  border: 1px solid #4a148c;
+  border-radius: 8px;
+  padding: 20px;
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  color: #e1bee7;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.copy-button {
+  background: #4a148c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.copy-button:hover {
+  background: #7b1fa2;
+  transform: translateY(-2px);
+}

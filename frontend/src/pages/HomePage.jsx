@@ -267,6 +267,8 @@ const HomePage = () => {
         )}
       </div>
 
+      
+
       <div className="product-grid-container">
         {products.length > 0 ? (
           products.map((product) => (
@@ -359,11 +361,28 @@ const HomePage = () => {
   ) : (
   
     <>
-      <h2 className="product-name">{product.name}</h2>
-      <p className="product-desc">{product.description}</p>
-      <p className="product-price">Price: ${product.price}</p>
+     <div class="logo-card">
+                <div class="logo-design">
+                    <div class="gothic-crown">
+                        <img
+                  key={`pic-${product.id}-${product.pictureVersion || product.pictureType}`}
+                    src={`http://localhost:8080/api/product/${product.id}/picture`}
+                    className="product-image"
+                    alt={product.name}
+                  ></img>
+                        <div class="crown-stars">
+                            <div class="crown-star">✦</div>
+                            <div class="crown-star">✧</div>
+                            <div class="crown-star">✦</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="logo-text">{product.name}</div>
+                <div class="logo-description">{product.description}</div>
+                 <p className="product-price">Price: ${product.price}</p>
       <p className="product-quantity">Quantity: {product.quantity}</p>
-    </>
+            </div>
+             </>
   )}
 </div>
               
@@ -432,6 +451,7 @@ const HomePage = () => {
         )}
       </div>
     </div>
+    
   );
 };
 
