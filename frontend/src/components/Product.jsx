@@ -21,8 +21,10 @@ const Product = (props) => {
             </div>
           </div>
         </div>
-        <div className="logo-text">{props.name}</div>
-        <div className="logo-description2">{props.description}</div>{" "}
+        <div className="logo-text"><h3>{props.name}</h3></div>
+        <div className="logo-description2"><p>{props.description}</p></div>
+        <div className="product-price"><p>${props.price}</p></div>
+        <div className="product-quantity"><p>Qty: {props.quantity}</p></div>
         <p className="click">-- click --</p>
       </div>
     </a>

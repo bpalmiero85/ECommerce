@@ -15,6 +15,12 @@
   overflow-x: auto;
 }
 
+.purchase-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;     
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -45,6 +51,16 @@
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 40px;
   margin-bottom: 50px;
+}
+
+.credit-card-window {
+  /* now it’s static (default), so it pushes the container’s height down */
+  margin-top: 0.5rem;
+  padding: 1rem;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 4px;
+  z-index: 1;        /* only needed if you have overlapping elements */
 }
 
 .logo-card {
@@ -81,6 +97,13 @@
   animation: shimmer 1.5s ease-in-out infinite;
   opacity: 1;
 }
+.product-item-container {
+  width: 300px;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 2rem;
+}
+
 
 .product-image{
   display: flex;
@@ -346,6 +369,8 @@
   animation: pulse 3s ease-in-out infinite;
 }
 
+
+
 @keyframes pulse {
   0%,
   100% {
@@ -539,8 +564,13 @@
 }
 
 .product-price{
+  color: rgb(181, 0, 181);
   margin-top: 5px;
   font-size: 1.5rem;
+}
+
+.product-quantity{
+  color: rgb(181, 0, 181);
 }
 
 .product-anchor{

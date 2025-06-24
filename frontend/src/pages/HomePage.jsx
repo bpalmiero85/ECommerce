@@ -187,20 +187,7 @@ const HomePage = () => {
     setPurchaseProductId(productId);
   };
 
-  const handleClickOutside = (e) => {
-    if (isOpen && cardRef.current && !cardRef.current.contains(e.target)) {
-      setIsOpen(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }
-  }, [isOpen]);
+ 
 
   return (
     <div className="home-container">

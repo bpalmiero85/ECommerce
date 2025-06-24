@@ -221,7 +221,7 @@ position: relative;
 .product-grid-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
+  gap: 80px;
   max-width: 100%;
   padding: 25px;
   margin: 0 auto;
