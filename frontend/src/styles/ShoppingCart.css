@@ -1,0 +1,15 @@
+.cart-logo-container {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  width: 35px;
+  height: 45px;
+  align-items: flex-end;
+}
+
+.cart-image {
+  position: relative;
+  margin-right: 0;
+  cursor: pointer;
+
+}

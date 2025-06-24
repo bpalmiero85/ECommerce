@@ -3,6 +3,7 @@ import "../styles/ProductPage.css";
 import "../styles/HomePage.css";
 import Product from "../components/Product";
 import CreditCard from "../components/CreditCard";
+import ShoppingCart from "../components/ShoppingCart"
 
 const ProductPage = () => {
   const [products, setProducts] = useState([]);
@@ -81,6 +82,7 @@ const ProductPage = () => {
   };
 
   return (
+    <div className="product-page-container">
     <div className="product-body">
       <div className="container">
         <h1 className="product-page-header">
@@ -91,7 +93,9 @@ const ProductPage = () => {
           {products.length > 0 ? (
             products.map((product) => (
               <>
+               <div className="product-main-container">
                 <div className="product-item-container" key={product.id}>
+               
                   <Product
                     id={product.id}
                     name={product.name}
@@ -101,6 +105,7 @@ const ProductPage = () => {
                     pictureVersion={product.pictureVersion}
                     pictureType={product.pictureType}
                   />
+                  </div>
 
                   <div className="purchase-container">
                     {purchaseProductId !== product.id && (
@@ -131,6 +136,7 @@ const ProductPage = () => {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 };

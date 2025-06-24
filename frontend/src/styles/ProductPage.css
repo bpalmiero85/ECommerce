@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Griffy&family=Nosifer&family=Butcherman&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Creepster&family=Griffy&family=Nosifer&family=Butcherman&display=swap");
 
 .product-body {
   background: radial-gradient(
@@ -8,27 +8,49 @@
     #0f3460 100%
   );
   margin: 0;
-  padding: 20px;
   font-family: Arial, sans-serif;
   color: white;
   min-height: 100vh;
   overflow-x: auto;
 }
 
+.product-main-container {
+  display: flex;
+  position: relative;
+  width: 100vw;
+  margin: 0 auto;
+}
+
+.product-page-container {
+  display: flex;
+  position: relative;
+  max-width: 100vw;
+  background-image: url("/public/goth-glitter-background.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed;
+  overflow: hidden;
+}
+
 .purchase-container {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;     
+  bottom: 0;
+  position: absolute;
+  gap: 0.5rem;
 }
 
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
+  position: absolute;
+  width: 100vw;
+  
 }
+
 
 .product-page-header {
   text-align: center;
   font-family: "fantasy";
+  max-width: 100%;
   font-size: 2.8em;
   margin-bottom: 40px;
   color: #e1bee7;
@@ -49,7 +71,7 @@
 .logo-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 40px;
+  gap: 20px;
   margin-bottom: 50px;
 }
 
@@ -58,9 +80,9 @@
   margin-top: 0.5rem;
   padding: 1rem;
   background: #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border-radius: 4px;
-  z-index: 1;        /* only needed if you have overlapping elements */
+  z-index: 1; /* only needed if you have overlapping elements */
 }
 
 .logo-card {
@@ -73,6 +95,7 @@
   transition: all 0.4s ease;
   position: relative;
   overflow: hidden;
+  height: 600px;
 }
 
 .logo-card::before {
@@ -104,8 +127,7 @@
   margin-bottom: 2rem;
 }
 
-
-.product-image{
+.product-image {
   display: flex;
   position: relative;
   width: 150px;
@@ -369,8 +391,6 @@
   animation: pulse 3s ease-in-out infinite;
 }
 
-
-
 @keyframes pulse {
   0%,
   100% {
@@ -542,8 +562,6 @@
   transition: all 0.3s ease;
 }
 
-
-
 .logo-card:hover .logo-text {
   color: #ffffff;
   text-shadow: 0 0 15px rgba(225, 190, 231, 0.8);
@@ -563,21 +581,21 @@
   transition: all 0.3s ease;
 }
 
-.product-price{
+.product-price {
   color: rgb(181, 0, 181);
   margin-top: 5px;
   font-size: 1.5rem;
 }
 
-.product-quantity{
+.product-quantity {
   color: rgb(181, 0, 181);
 }
 
-.product-anchor{
+.product-anchor {
   text-decoration: none;
 }
 
-.click{
+.click {
   font-size: 1.1rem;
   margin-top: 20px;
 }
