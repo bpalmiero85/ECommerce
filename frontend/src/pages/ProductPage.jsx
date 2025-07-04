@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import "../styles/ProductPage.css";
 import "../styles/HomePage.css";
 import Product from "../components/Product";
-import CreditCard from "../components/CreditCard";
+import CheckoutPage from "./CheckoutPage"
 import ShoppingCart from "../components/ShoppingCart"
 
 const ProductPage = () => {
@@ -118,7 +118,7 @@ const ProductPage = () => {
                     )}
                     {isOpen && purchaseProductId === product.id && (
                       <div className="credit-card-window" ref={cardRef}>
-                        <CreditCard productId={product.id} />
+                        <CheckoutPage productId={product.id} />
                         <button
                           className="cancel-button"
                           onClick={() => setIsOpen(false)}

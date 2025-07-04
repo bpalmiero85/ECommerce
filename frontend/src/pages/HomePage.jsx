@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../styles/HomePage.css";
 import "../styles/ProductPage.css"
-import CreditCard from "../components/CreditCard";
+import CheckoutPage from "./CheckoutPage"
+
 
 const HomePage = () => {
   const [products, setProducts] = useState([]);
@@ -395,7 +396,7 @@ const HomePage = () => {
 
                 {isOpen && purchaseProductId == product.id && (
                   <div className="credit-card-window" ref={cardRef}>
-                    {purchaseProductId == product.id && <CreditCard />}
+                    {purchaseProductId == product.id && <CheckoutPage />}
                   </div>
                 )}
               </div>
