@@ -323,7 +323,7 @@ const ProductPage = () => {
             repeatCount="indefinite"
           />
         </circle>
-        <circle cx="1600" cy="135" r="7" fill="#1E90FF" filter="url(#glow)">
+        <circle cx="1600" cy="145" r="7" fill="#1E90FF" filter="url(#glow)">
           <animate
             attributeName="opacity"
             values="0.2;0.6;0.2"
@@ -333,7 +333,7 @@ const ProductPage = () => {
             repeatCount="indefinite"
           />
         </circle>
-        <circle cx="1700" cy="120" r="6" fill="#FFD700" filter="url(#glow)">
+        <circle cx="1715" cy="120" r="6" fill="#FFD700" filter="url(#glow)">
           <animate
             attributeName="opacity"
             values="0.2;0.5;0.2"
@@ -373,7 +373,7 @@ const ProductPage = () => {
             repeatCount="indefinite"
           />
         </circle>
-        <circle cx=" 70" cy="160" r="4" fill="#FFD700" filter="url(#glow)">
+        <circle cx="70" cy="160" r="4" fill="#FFD700" filter="url(#glow)">
           <animate
             attributeName="opacity"
             values="0.2;0.5;0.2"
