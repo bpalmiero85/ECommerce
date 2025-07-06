@@ -186,7 +186,7 @@ const ProductPage = () => {
             attributeName="x"
             from="-50"
             to="435"
-            dur="5.5s"
+            dur="15.5s"
             begin="0s; shotting.restart+3s"
             id="shooting"
             repeatCount="indefinite"
@@ -202,16 +202,109 @@ const ProductPage = () => {
           text-anchor="middle"
           className="shooting-star"
         >
+          <animate
+            attributeName="opacity"
+            values="0.2;0.8;0.2"
+            keyTimes="0;0.5;1"
+            dur="3.2s"
+            begin="1s"
+            repeatCount="indefinite"
+          />
           ⭐
         </text>
 
-        <text x="1500" y="110" font-size="24" fill="#E1BEE7">
+        <text x="50" y="80" fontSize="32" fill="#39FF14" filter="url(#glow)">
+          ★
+           <animate
+          attributeName="opacity"
+            values="0.2;0.5;0.2"
+            keyTimes="0;0.5;1"
+            dur="5.2s"
+            begin="2s"
+            repeatCount="indefinite"
+          ></animate>
+        </text>
+
+        {/* Neon Blue ★ */}
+        <text x="1910" y="70" fontSize="32" fill="#00FFFF" filter="url(#glow)" opacity="0.6">
+          ★
+          <animate
+          attributeName="opacity"
+            values="0.2;0.5;0.2"
+            keyTimes="0;0.5;1"
+            dur="7.2s"
+            begin="1s"
+            repeatCount="indefinite"
+          ></animate>
+        </text>
+         <text x="1860" y="120" fontSize="32" fill="#D000FF" filter="url(#glow)" opacity="0.6">
+          ★
+          <animate
+          attributeName="opacity"
+            values="0.2;0.5;0.2"
+            keyTimes="0;0.5;1"
+            dur="5.2s"
+            begin="1s"
+            repeatCount="indefinite"
+          ></animate>
+        </text>
+
+        {/* Neon Purple ★ */}
+        <text x="350" y="60" fontSize="32" fill="#D000FF" filter="url(#glow)">
+          ★
+            <animate
+          attributeName="opacity"
+            values="0.2;0.4;0.2"
+            keyTimes="0;0.5;1"
+            dur="2.2s"
+            begin="1.7s"
+            repeatCount="indefinite"
+          ></animate>
+        </text>
+
+        {/* Neon Orange ★ */}
+        <text x="220" y="115" fontSize="32" fill="#FF7F00" filter="url(#glow)">
+          ★
+           <animate
+          attributeName="opacity"
+            values="0.2;0.5;0.2"
+            keyTimes="0;0.5;1"
+            dur="4.2s"
+            begin="1.7s"
+            repeatCount="indefinite"
+          ></animate>
+        </text>
+
+        <text x="450" y="110" font-size="24" fill="#E1BEE7">
+          <animate
+            attributeName="x"
+            from="450"
+            to="485"
+            dur="4.5s"
+            begin="0s; shooting.restart+3s"
+            id="shooting"
+            repeatCount="indefinite"
+          />
           ✨
         </text>
+
+        <text x="1500" y="110" font-size="24" fill="#E1BEE7">
+          <animate
+            attributeName="x"
+            from="1500"
+            to="1585"
+            dur="4.5s"
+            begin="0s; shooting.restart+3s"
+            id="shooting"
+            repeatCount="indefinite"
+          />
+          ✨
+        </text>
+
         <circle cx="300" cy="100" r="5" fill="#00FF00" filter="url(#glow)">
           <animate
             attributeName="opacity"
-            values="0.2;1;0.2"
+            values="0.2;0.5;0.2"
             keyTimes="0;0.5;1"
             dur="4.2s"
             begin="0s"
@@ -221,7 +314,7 @@ const ProductPage = () => {
         <circle cx="1600" cy="135" r="7" fill="#1E90FF" filter="url(#glow)">
           <animate
             attributeName="opacity"
-            values="0.2;1;0.2"
+            values="0.2;0.6;0.2"
             keyTimes="0;0.5;1"
             dur="5.2s"
             begin="1s"
@@ -231,7 +324,7 @@ const ProductPage = () => {
         <circle cx="1700" cy="120" r="6" fill="#FFD700" filter="url(#glow)">
           <animate
             attributeName="opacity"
-            values="0.2;1;0.2"
+            values="0.2;0.5;0.2"
             keyTimes="0;0.5;1"
             dur="3.2s"
             begin="0.8s"
@@ -241,7 +334,7 @@ const ProductPage = () => {
         <circle cx="800" cy="150" r="4" fill="#4A148C" filter="url(#glow)">
           <animate
             attributeName="opacity"
-            values="0.2;1;0.2"
+            values="0.2;0.6;0.2"
             keyTimes="0;0.5;1"
             dur="4.2s"
             begin="0.6s"
@@ -251,7 +344,7 @@ const ProductPage = () => {
         <circle cx="1800" cy="80" r="5" fill="#E1BEE7" filter="url(#glow)">
           <animate
             attributeName="opacity"
-            values="0.2;1;0.2"
+            values="0.2;0.5;0.2"
             keyTimes="0;0.5;1"
             dur="3.6s"
             begin="0s"
@@ -261,7 +354,7 @@ const ProductPage = () => {
         <circle cx="150" cy=" 50" r="3" fill="#E1BEE7" filter="url(#glow)">
           <animate
             attributeName="opacity"
-            values="0.2;1;0.2"
+            values="0.2;0.6;0.2"
             keyTimes="0;0.5;1"
             dur="4.2s"
             begin="1s"
@@ -271,7 +364,7 @@ const ProductPage = () => {
         <circle cx=" 70" cy="160" r="4" fill="#FFD700" filter="url(#glow)">
           <animate
             attributeName="opacity"
-            values="0.2;1;0.2"
+            values="0.2;0.5;0.2"
             keyTimes="0;0.5;1"
             dur="5.2s"
             begin="0.4s"
@@ -281,7 +374,7 @@ const ProductPage = () => {
         <circle cx="200" cy=" 120" r="6" fill="#39FF14" filter="url(#glow)">
           <animate
             attributeName="opacity"
-            values="0.2;1;0.2"
+            values="0.2;0.6;0.2"
             keyTimes="0;0.5;1"
             dur="4.2s"
             begin="1s"
@@ -291,10 +384,31 @@ const ProductPage = () => {
         <circle cx="140" cy="120" r="2" fill="#FF007F" filter="url(#glow)">
           <animate
             attributeName="opacity"
-            values="0.2;1;0.2"
+            values="0.2;0.5;0.2"
             keyTimes="0;0.5;1"
-            dur="6.2s"
+            dur="3.2s"
             begin="1s"
+            repeatCount="indefinite"
+          />
+        </circle>
+        <circle cx="1780" cy="130" r="5" fill="#00FF00" filter="url(#glow)">
+          <animate
+            attributeName="opacity"
+            values="0.2;0.5;0.2"
+            keyTimes="0;0.5;1"
+            dur="4.2s"
+            begin="0s"
+            repeatCount="indefinite"
+          />
+        </circle>
+
+        <circle cx="1730" cy="100" r="5" fill="#00FF00" filter="url(#glow)">
+          <animate
+            attributeName="opacity"
+            values="0.2;0.5;0.2"
+            keyTimes="0;0.5;1"
+            dur="4.2s"
+            begin="0s"
             repeatCount="indefinite"
           />
         </circle>

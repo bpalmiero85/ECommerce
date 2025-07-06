@@ -473,7 +473,7 @@ body {
 .banner-star{
   display: flex;
   position: relative;
-  animation: auraFloat 2s ease-in-out infinite;
+  animation: auraFloat2 3s ease-in-out infinite;
   z-index: 1000;
 }
 
@@ -519,6 +519,18 @@ body {
   }
 }
 
+@keyframes auraFloat2 {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0px) scale(0.8);
+  }
+  50% {
+    opacity: .6;
+    transform: translateY(-15px) scale(1.2);
+  }
+}
+
 /* Gothic Rose Logo */
 .gothic-rose-container {
   position: relative;
@@ -553,7 +565,7 @@ body {
   display: flex;
   position: relative;
   margin-top: 500px;
-  animation: wingFlap 2s ease-in-out infinite;
+  animation: wingFlap 4s ease-in-out infinite;
   z-index: 1000;
 }
 
