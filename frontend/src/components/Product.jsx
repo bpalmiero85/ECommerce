@@ -9,14 +9,15 @@ const Product = (props) => {
   const [isOpen, setIsOpen] = useState(false);
   const cardRef = useRef(null);
 
-  const handlePurchase = () => {
+  const openPurchase = () => {
     setPurchaseProductId(props.id);
     setIsOpen(true);
   };
 
   const handleClickOutside = (e) => {
-    if (isOpen && cardRef.current && !cardRef.current.contains(e.target)) {
+    if (cardRef.current && !cardRef.current.contains(e.target)) {
       setIsOpen(false);
+      setPurchaseProductId(null);
     }
   };
 
@@ -31,7 +32,7 @@ const Product = (props) => {
 
   return (
     <div className="logo-card">
-      <a className="product-anchor" href="/products">
+      <a className="product-anchor" href={`/product/${props.id}`}>
         <div className="logo-design">
           <div className="gothic-rose-container">
             <div className="gothic-rose">
@@ -67,16 +68,13 @@ const Product = (props) => {
           {purchaseProductId !== props.id && (
             <div className="purchase-buttons">
               <button
+                type="button"
                 className="purchase-button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handlePurchase(props.id);
-                }}
+                onClick={openPurchase}
               >
                 Purchase
               </button>
-              <button>Add to cart</button>
+              <button type="button">Add to cart</button>
             </div>
           )}
         </div>
@@ -85,7 +83,10 @@ const Product = (props) => {
       {isOpen && purchaseProductId === props.id && (
         <div className="credit-card-window" ref={cardRef}>
           <CheckoutPage productId={props.id} />
-          <button className="cancel-button" onClick={() => setIsOpen(false)}>
+          <button className="cancel-button" onClick={() => {
+          setIsOpen(false);
+          setPurchaseProductId(null);
+          }}>
             Cancel
           </button>
         </div>
