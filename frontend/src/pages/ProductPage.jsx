@@ -263,7 +263,19 @@ const ProductPage = () => {
         </text>
 
         {/* Neon Orange ★ */}
-        <text x="220" y="115" fontSize="32" fill="#FF7F00" filter="url(#glow)">
+        <text x="230" y="115" fontSize="32" fill="#FF7F00" filter="url(#glow)">
+          ★
+           <animate
+          attributeName="opacity"
+            values="0.2;0.5;0.2"
+            keyTimes="0;0.5;1"
+            dur="4.2s"
+            begin="1.7s"
+            repeatCount="indefinite"
+          ></animate>
+        </text>
+
+          <text x="1710" y="75" fontSize="32" fill="#FF7F00" filter="url(#glow)">
           ★
            <animate
           attributeName="opacity"
@@ -341,7 +353,7 @@ const ProductPage = () => {
             repeatCount="indefinite"
           />
         </circle>
-        <circle cx="1800" cy="80" r="5" fill="#E1BEE7" filter="url(#glow)">
+        <circle cx="1800" cy="60" r="5" fill="#E1BEE7" filter="url(#glow)">
           <animate
             attributeName="opacity"
             values="0.2;0.5;0.2"
@@ -391,7 +403,7 @@ const ProductPage = () => {
             repeatCount="indefinite"
           />
         </circle>
-        <circle cx="1780" cy="130" r="5" fill="#00FF00" filter="url(#glow)">
+        <circle cx="1790" cy="160" r="5" fill="#00FF00" filter="url(#glow)">
           <animate
             attributeName="opacity"
             values="0.2;0.5;0.2"
@@ -402,7 +414,7 @@ const ProductPage = () => {
           />
         </circle>
 
-        <circle cx="1730" cy="100" r="5" fill="#00FF00" filter="url(#glow)">
+        <circle cx="1770" cy="105" r="5" fill="#00FF00" filter="url(#glow)">
           <animate
             attributeName="opacity"
             values="0.2;0.5;0.2"
@@ -417,10 +429,6 @@ const ProductPage = () => {
       <AnimatedBackground />
       <div className="product-body">
         <div className="container">
-          <h1 className="product-page-header">
-            ✨ Goth & Glitter - Items for Sale ✨
-          </h1>
-
           <div className="logo-grid">
             {products.length > 0 ? (
               products.map((product) => (

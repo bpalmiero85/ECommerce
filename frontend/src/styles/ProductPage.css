@@ -156,6 +156,7 @@ body {
 .product-item-container {
   width: 400px;
   height: fit-content;
+  margin-top: 55px;
   padding: 1rem;
   border-radius: 4px;
   margin-bottom: 2rem;
