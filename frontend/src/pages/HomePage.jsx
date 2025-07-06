@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../styles/HomePage.css";
-import "../styles/ProductPage.css"
-import CheckoutPage from "./CheckoutPage"
+import "../styles/ProductPage.css";
 
 
 const HomePage = () => {
@@ -12,10 +11,8 @@ const HomePage = () => {
   const [quantity, setQuantity] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [productPicture, setProductPicture] = useState(null);
-  const [purchaseProductId, setPurchaseProductId] = useState(null);
   const [isEditingId, setIsEditingId] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
-  const cardRef = useRef(null);
   const formRef = useRef(null);
 
   const fetchProducts = async () => {
@@ -183,12 +180,7 @@ const HomePage = () => {
     fetchProducts();
   };
 
-  const handlePurchase = (productId) => {
-    setIsOpen(true);
-    setPurchaseProductId(productId);
-  };
 
- 
 
   return (
     <div className="home-container">
@@ -381,30 +373,6 @@ const HomePage = () => {
                   )}
                 </div>
               </div>
-
-              <div className="purchase-button">
-                {!(isOpen && purchaseProductId === product.id) && (
-                  <button
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onClick={() => {
-                      handlePurchase(product.id);
-                    }}
-                  >
-                    Purchase
-                  </button>
-                )}
-
-                {isOpen && purchaseProductId == product.id && (
-                  <div className="credit-card-window" ref={cardRef}>
-                    {purchaseProductId == product.id && <CheckoutPage />}
-                  </div>
-                )}
-              </div>
-              {isOpen && purchaseProductId === product.id && (
-                <div className="cancel-button">
-                  <button>Cancel</button>
-                </div>
-              )}
 
               {product.pictureType == null && (
                 <>

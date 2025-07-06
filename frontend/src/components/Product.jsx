@@ -1,10 +1,37 @@
-import "../styles/HomePage.css"
-import "../styles/ProductPage.css"
+import { useState, useRef, useEffect } from "react";
+import CheckoutPage from "../pages/CheckoutPage";
+import "../styles/HomePage.css";
+import "../styles/ProductPage.css";
 
 const Product = (props) => {
+  const [purchaseProductId, setPurchaseProductId] = useState(null);
+
+  const [isOpen, setIsOpen] = useState(false);
+  const cardRef = useRef(null);
+
+  const handlePurchase = () => {
+    setPurchaseProductId(props.id);
+    setIsOpen(true);
+  };
+
+  const handleClickOutside = (e) => {
+    if (isOpen && cardRef.current && !cardRef.current.contains(e.target)) {
+      setIsOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }
+  }, [isOpen]);
+
   return (
-    <a className="product-anchor" href="/products">
-      <div className="logo-card">
+    <div className="logo-card">
+      <a className="product-anchor" href="/products">
         <div className="logo-design">
           <div className="gothic-rose-container">
             <div className="gothic-rose">
@@ -21,13 +48,49 @@ const Product = (props) => {
             </div>
           </div>
         </div>
-        <div className="logo-text"><h3>{props.name}</h3></div>
-        <div className="logo-description2"><p>{props.description}</p></div>
-        <div className="product-price"><p>${props.price}</p></div>
-        <div className="product-quantity"><p>Qty: {props.quantity}</p></div>
+        <div className="logo-text">
+          <h3>{props.name}</h3>
+        </div>
+        <div className="logo-description2">
+          <p>{props.description}</p>
+        </div>
+        <div className="product-price">
+          <p>${props.price}</p>
+        </div>
+        <div className="product-quantity">
+          <p>Qty: {props.quantity}</p>
+        </div>
         <p className="click">-- click --</p>
-      </div>
-    </a>
+      </a>
+      {!isOpen && (
+        <div className="purchase-container">
+          {purchaseProductId !== props.id && (
+            <div className="purchase-buttons">
+              <button
+                className="purchase-button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handlePurchase(props.id);
+                }}
+              >
+                Purchase
+              </button>
+              <button>Add to cart</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {isOpen && purchaseProductId === props.id && (
+        <div className="credit-card-window" ref={cardRef}>
+          <CheckoutPage productId={props.id} />
+          <button className="cancel-button" onClick={() => setIsOpen(false)}>
+            Cancel
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 

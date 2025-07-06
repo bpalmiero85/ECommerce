@@ -40,7 +40,9 @@ position: relative;
 
 .logo-card{
   display: flex;
+  position: relative;
   flex-direction: column;
+  min-height: fit-content;
   position: relative;
   margin: 0 auto;
 }
@@ -97,6 +99,10 @@ position: relative;
   cursor: pointer;
 }
 
+.purchase-button{
+  margin-right: 7px;
+}
+
 .product-delete-button button {
   background-color: lightblue;
   border-radius: 5px;
@@ -126,7 +132,7 @@ position: relative;
   display: flex;
   flex-direction: column;
   position: relative;
-  max-height: 200px;
+  max-height: fit-content;
   margin-top: -160px;
 }
 
