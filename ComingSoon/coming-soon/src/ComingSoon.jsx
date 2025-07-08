@@ -1,61 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import "../styles/ProductPage.css";
-import "../styles/HomePage.css";
-import Product from "../components/Product";
-import AnimatedBackground from "../components/AnimatedBackground";
+import "./ComingSoon.css";
+import AnimatedBg from "./AnimatedBg";
 
-const ProductPage = () => {
-  const [products, setProducts] = useState([]);
-
-  useEffect(() => {
-    fetch("http://localhost:8080/api/products")
-      .then((res) => (res.ok ? res.json() : Promise.reject(res)))
-      .then(setProducts)
-      .catch(console.error);
-  }, []);
-
-  useEffect(() => {
-    if (products.length > 0) {
-      addLogoEffects();
-    }
-  }, [products]);
-
-  const addLogoEffects = () => {
-    // Click effect for logo-design
-    document.querySelectorAll(".logo-design").forEach((logo) => {
-      logo.addEventListener("click", function () {
-        this.style.transform = "scale(0.95)";
-        setTimeout(() => {
-          this.style.transform = "";
-        }, 150);
-      });
-    });
-
-    // Add extra sparkle effects on hover
-    document.querySelectorAll(".logo-card").forEach((card) => {
-      card.addEventListener("mouseenter", function () {
-        const sparkles = ["✨", "⭐", "✦", "✧"];
-        const SPARKLE_COUNT = 20;
-        for (let i = 0; i < SPARKLE_COUNT; i++) {
-          setTimeout(() => {
-            const sparkle = document.createElement("div");
-            sparkle.innerHTML =
-              sparkles[Math.floor(Math.random() * sparkles.length)];
-            Object.assign(sparkle.style, {
-              position: "absolute",
-              left: Math.random() * 100 + "%",
-              top: Math.random() * 100 + "%",
-              pointerEvents: "none",
-              animation: "sparkle 1s ease-out forwards",
-            });
-            this.appendChild(sparkle);
-            setTimeout(() => sparkle.remove(), 1000);
-          }, i * 100);
-        }
-      });
-    });
-  };
-
+const ComingSoon = () => {
   return (
     <div className="product-page-container">
       <svg
@@ -66,21 +13,21 @@ const ProductPage = () => {
         preserveAspectRatio="xMidYMid slice"
       >
         <defs>
-          {/* your original background */}
+          {/* original background */}
           <radialGradient id="bg-radial" cx="50%" cy="50%" r="75%">
             <stop offset="0%" stopColor="#39FF14" />
             <stop offset="50%" stopColor="#1a001a" />
             <stop offset="100%" stopColor="#000000" />
           </radialGradient>
 
-          {/* your original text fill */}
+          {/* original text fill */}
           <linearGradient id="text-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#222222" />
             <stop offset="50%" stopColor="#5f0aa6" />
             <stop offset="100%" stopColor="#222222" />
           </linearGradient>
 
-          {/* your glow filter */}
+          {/* glow filter */}
           <filter id="glow">
             <feGaussianBlur stdDeviation="8" result="coloredBlur" />
             <feMerge>
@@ -89,7 +36,7 @@ const ProductPage = () => {
             </feMerge>
           </filter>
 
-          {/* the animated white band */}
+          {/* animated pink band */}
           <linearGradient
             id="shine-grad"
             gradientUnits="userSpaceOnUse"
@@ -439,37 +386,22 @@ const ProductPage = () => {
           />
         </circle>
       </svg>
-
-      <AnimatedBackground />
-      <div className="product-body">
-        <div className="container">
-          <div className="logo-grid">
-            {products.length > 0 ? (
-              products.map((product) => (
-                <>
-                  <div className="product-main-container">
-                    <div className="product-item-container" key={product.id}>
-                      <Product
-                        id={product.id}
-                        name={product.name}
-                        description={product.description}
-                        price={product.price}
-                        quantity={product.quantity}
-                        pictureVersion={product.pictureVersion}
-                        pictureType={product.pictureType}
-                      />
-                    </div>
-                  </div>
-                </>
-              ))
-            ) : (
-              <p>No products available.</p>
-            )}
+      <div className="coming-soon">Coming Soon!</div>
+      <div className="logo-design">
+        <div className="gothic-rose-container">
+          <div className="rose-glitter-effect">
+            <div className="glitter-particle">✨</div>
+            <div className="glitter-particle">✦</div>
+            <div className="glitter-particle">✧</div>
+            <div className="glitter-particle">✨</div>
           </div>
         </div>
+      </div>
+      <div className="animated-bg">
+        <AnimatedBg />
       </div>
     </div>
   );
 };
 
-export default ProductPage;
+export default ComingSoon;
