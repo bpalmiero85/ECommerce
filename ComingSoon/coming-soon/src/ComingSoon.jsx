@@ -386,17 +386,28 @@ const ComingSoon = () => {
           />
         </circle>
       </svg>
-      <div className="coming-soon">Coming Soon!</div>
-      <div className="logo-design">
-        <div className="gothic-rose-container">
-          <div className="rose-glitter-effect">
-            <div className="glitter-particle">✨</div>
-            <div className="glitter-particle">✦</div>
-            <div className="glitter-particle">✧</div>
-            <div className="glitter-particle">✨</div>
-          </div>
-        </div>
+      <div className="coming-soon-desc-container">
+        
+        <p className="coming-soon-desc">
+          <strong>Goth & Glitter </strong>is where spooky meets sparkly - cute meets creepy. Blending gothic
+          edge with neon brights, glitter, and just the right amount of dark.
+          From eerie accessories to scary-cute fidgets/monsters - it's a brand
+          that celebrates the weird, the whimsical, and the wonderfully glam! 
+          <br /><br />...oh, and I guess some normal stuff too!
+        </p>
       </div>
+      <div className="coming-soon-wrapper">
+        <img src="./tape.svg" className="ribbon"></img>
+        <h1 className="coming-soon">Coming Soon!</h1>
+      </div>
+
+      <div className="glitter-effect">
+        <div className="glitter-particle">✨</div>
+        <div className="glitter-particle">✦</div>
+        <div className="glitter-particle">✧</div>
+        <div className="glitter-particle">✨</div>
+      </div>
+
       <div className="animated-bg">
         <AnimatedBg />
       </div>
