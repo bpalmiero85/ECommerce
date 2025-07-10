@@ -6,63 +6,176 @@ body {
   margin: 0;
   overflow-y: auto;
   overflow-x: hidden;
-
 }
 
-.product-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
+.color-star {
+  animation: twinkle 3s ease-in-out;
+}
+
+.monsters-title {
   color: white;
-  height: 100%;
-  width: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  margin: 0;
+  margin: 55px auto;
+  font-size: clamp(1.2rem, 2vw, 1.7rem);
+  white-space: nowrap;
+}
+
+.monster-figures,
+.fidget-figures {
+  display: flex;
+  position: relative;
+  justify-content: center;
+  align-items: flex-end;
+   margin: 0 auto;
+  gap: 1rem;
+}
+
+.monster-figures img,
+.fidget-figures img {
+  display: flex;
+}
+
+.category-wrapper {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  justify-content: center;
+  align-items: center;
+  max-width: 100vw;
+ 
+  
+}
+
+.monster-container,
+.fidget-container,
+.jewelry-container {
+  width: 100vw;
+  position: relative;
+  margin: 0 auto;
+
+
+  
+  
+}
+
+.sludge-monster1 {
+  position: relative;
+  flex: 0 1 20%;
+  max-width: 200px;
+}
+
+.monstrella1 {
+  width: 120px;
+  height: auto;
+}
+
+.sludge-monster {
+   position: relative;
+  flex: 0 1 20%;
+  max-width: 200px;
+}
+.monstrella {
+  width: 120px;
+  height: auto;
+}
+
+.circle1 {
+  animation: orbit 2s ease-in-out;
+  animation-delay: 0s;
+}
+
+.circle2 {
+  animation: orbit 2.1s ease-in-out;
+  animation-delay: 0.1s;
+}
+
+.circle3 {
+  animation: orbit 2.2s ease-in-out;
+  animation-delay: 0.2s;
+}
+
+.circle4 {
+  animation: orbit 2.3s ease-in-out;
+  animation-delay: 0.3s;
+}
+
+.circle5 {
+  animation: orbit 2.4s ease-in-out;
+  animation-delay: 0.4s;
+}
+
+.circle6 {
+  animation: orbit 2.5s ease-in-out;
+  animation-delay: 0.5s;
+}
+
+.circle7 {
+  animation: orbit 2.6s ease-in-out;
+  animation-delay: 0.6s;
+}
+
+.circle8 {
+  animation: orbit 2.7s ease-in-out;
+  animation-delay: 0.7s;
+}
+
+.circle9 {
+  animation: orbit 2.8s ease-in-out;
+  animation-delay: 0.8s;
+}
+
+.circle10 {
+  animation: orbit 2.9s ease-in-out;
+  animation-delay: 0.9s;
+}
+
+.circle11 {
+  animation: orbit 3s ease-in-out;
+  animation-delay: 1s;
 }
 
 .coming-soon-desc-container {
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
   position: relative;
-  top: 35px;
-  padding: 25px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 150px auto;
+  max-width: 1800px;
+  padding: 0 1rem;
 }
 .coming-soon-desc {
-  margin-top: 11%;
-  font-size: clamp(3rem, 7vw, 2rem);
+  margin: 25px auto;
+  padding: 25px;
+  font-size: clamp(1.9rem, 5vw, 2.2rem);
   color: white;
+  line-height: 1.4;
+}
+
+.coming-soon-grid {
+  display: grid;
+  grid-template-columns: 0.5fr 2fr 0.5fr;
+  grid-template-rows: auto;
+  gap: 2rem;
+  align-items: start;
+  justify-content: center;
+  text-align: center;
+  max-width: 100%;
+  min-width: 100vw;
+  margin: 0 auto;
 }
 
 .coming-soon-title {
   margin-bottom: 1px;
 }
 
-.product-main-container {
-  display: flex;
-  position: relative;
-  justify-content: center;
-  width: 100%;
-  margin: 0 auto;
-}
-
 .product-page-container {
   display: flex;
-  position: relative;
-  min-width: 100vw;
+  flex-direction: column;
+  justify-content: space-between;
   min-height: 100vh;
-  background-size: cover;
-  background-repeat: no-repeat;
-  overflow-y: auto;
   overflow-x: hidden;
-  margin: 0;
-  padding: 0;
-}
-
-.container {
-  position: static;
-  width: 100vw;
-  max-width: 1600px;
-  margin: 0 auto;
+  overflow-y: hidden;
 }
 
 @keyframes glow {
@@ -117,16 +230,6 @@ body {
   }
 }
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
 @keyframes orbit {
   0% {
     transform: rotate(0deg) translateX(30px) rotate(0deg);
@@ -162,13 +265,6 @@ body {
   }
 }
 
-.skull-main {
-  font-size: 70px;
-  color: #e1bee7;
-  filter: drop-shadow(0 0 15px rgba(225, 190, 231, 0.6));
-  animation: pulse 3s ease-in-out infinite;
-}
-
 @keyframes pulse {
   0%,
   100% {
@@ -187,14 +283,6 @@ body {
   50% {
     transform: translateY(-55%) scale(1.1);
   }
-}
-
-.skull-aura {
-  position: absolute;
-  top: -20px;
-  left: -20px;
-  right: -20px;
-  bottom: -20px;
 }
 
 .banner-star {
@@ -258,23 +346,6 @@ body {
   }
 }
 
-/* Gothic Rose Logo */
-.gothic-rose-container {
-  margin: 0 auto;
-  width: 100%;
-  height: 100%;
-  position: relative;
-  background-color: #7b1fa2;
-  z-index: 2000;
-}
-
-.gothic-rose {
-  font-size: 80px;
-  color: #880e4f;
-  filter: drop-shadow(0 0 15px rgba(136, 14, 79, 0.8));
-  animation: roseBloom 4s ease-in-out infinite;
-}
-
 @keyframes roseBloom {
   0%,
   100% {
@@ -283,14 +354,6 @@ body {
   50% {
     transform: scale(1.1) rotate(5deg);
   }
-}
-
-.rose-glitter-effect {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
 }
 
 .shooting-star {
@@ -302,7 +365,12 @@ body {
 }
 
 .glitter-effect {
-  display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
 }
 
 .glitter-particle {
@@ -348,69 +416,26 @@ body {
   }
 }
 
-.logo-text {
-  font-family: "fantasy";
-  text-decoration: underline;
-  text-underline-offset: 10px;
-  font-size: 28px;
-  color: #e1bee7;
-  margin-bottom: 15px;
-  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
-  transition: all 0.3s ease;
-}
-
-.logo-card:hover .logo-text {
-  color: #ffffff;
-  text-shadow: 0 0 15px rgba(225, 190, 231, 0.8);
-}
-
-.logo-description {
-  font-size: 16px;
-  color: #c5cae9;
-  line-height: 1.6;
-  transition: all 0.3s ease;
-}
-
-.logo-description2 {
-  font-size: 20px;
-  color: #c5cae9;
-  line-height: 1.6;
-  transition: all 0.3s ease;
-}
-
-.product-price {
-  color: rgb(181, 0, 181);
-  margin-top: 5px;
-  font-size: 1.5rem;
-}
-
-.product-quantity {
-  color: rgb(181, 0, 181);
-}
-
-.product-anchor {
-  text-decoration: none;
-}
-
-.code-title {
-  font-family: "Griffy", cursive;
-  font-size: 1.8em;
-  color: #4caf50;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
 .coming-soon-wrapper {
   display: flex;
   flex-direction: column;
-  position: absolute;
+  position: relative;
   align-items: center;
-  top: 85%;
+  text-align: center;
+  justify-content: flex-start;
+  top: 20%;
   left: 50%;
   transform: translateX(-50%);
   width: clamp(300px, 50vw, 800px);
   pointer-events: none;
   z-index: 2;
+}
+
+.coming-soon-master-wrapper {
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  position: relative;
 }
 
 .coming-soon-wrapper .ribbon {
@@ -422,99 +447,98 @@ body {
 
 .coming-soon-wrapper .coming-soon {
   position: relative;
-  margin: 0 auto;
+  margin: 1.5% auto;
   color: #0073ff;
   font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif !important;
   font-size: clamp(2.5rem, 6vw, 5.2rem);
-  animation: glow 2s ease-in-out infinite alternate;
   z-index: 5;
   white-space: nowrap;
 }
 
-.logo-design {
-  height: 180px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 25px;
-  position: relative;
+@media(max-width: 868px){
+  .coming-soon-desc {
+    margin-top: -60%;
+  }
+  .coming-soon-wrapper{
+    margin-top: -8%;
+  }
 }
 
 @media (max-width: 360px) {
   .coming-soon-wrapper {
     width: 280px;
-    margin-top: 35% !important;
+    bottom: 65% !important;
   }
   .coming-soon {
     font-size: 2.4rem;
   }
   .coming-soon-desc {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     margin-top: 10%;
   }
 }
 
-@media (min-width: 360px) and (max-width: 425px) {
+@media (min-width: 330px) and (max-width: 425px) {
   .coming-soon-wrapper {
-    width: clamp(300px, 50vw, 320px);
-    top: 80%;
+    width: clamp(400px, 50vw, 320px);
+    bottom: 20%;
   }
   .coming-soon {
     font-size: clamp(2.6rem, 6vw, 3rem);
   }
   .coming-soon-desc {
-    font-size: clamp(1.6rem, 5vw, 2rem);
-    margin-top: 12%;
+    min-width: none;
+    width: 95vw;
+    font-size: 1.3rem !important;
+    margin-top: 8px !important;
   }
 }
 
-@media (max-width: 360px) {
-  .coming-soon-wrapper {
-    top: 65% !important;
-    width: 340px;
-  }
-}
+
 
 @media (min-width: 426px) and (max-width: 600px) {
   .coming-soon-wrapper {
-    width: clamp(320px, 45vw, 360px);
-    top: 70% !important;
+    width: clamp(370px, 45vw, 360px);
+    bottom: 10%;
   }
   .coming-soon {
     font-size: clamp(3rem, 5vw, 4rem);
   }
   .coming-soon-desc {
-    font-size: clamp(1.8rem, 4vw, 2.2rem);
+    font-size: clamp(1.6rem, 3vw, 2.2rem) !important;
+    margin-top: -25%;
   }
 }
 
 @media (max-width: 1168px) {
   .coming-soon-wrapper {
-    top: 85%;
+    margin-bottom: 2% !important;
   }
   .coming-soon-desc {
-    font-size: 2.1rem !important;
+    font-size: 2.6rem;
+    padding: 30px;
+    margin-top: -5% !important;
   }
 }
 
 @media only screen and (max-width: 1024px) and (max-height: 600px) and (orientation: landscape) {
   .coming-soon-wrapper {
-    width: clamp(280px, 35vw, 360px) !important;
-    top: 62% !important;
+    width: clamp(280px, 35vw, 360px);
+    bottom: 38%;
   }
 
   .coming-soon-wrapper .coming-soon {
-    font-size: clamp(2.4rem, 4vw, 3.2rem) !important;
-    top: 40% !important;
+    font-size: clamp(2.4rem, 4vw, 3.2rem);
+    bottom: 60%;
   }
 
   .coming-soon-desc-container {
-    top: 8% !important;
+    top: 8%;
     padding: 15px;
   }
 
   .coming-soon-desc {
-    font-size: clamp(1.4rem, 3.5vw, 1.8rem) !important;
-    margin-top: 12%;
+    font-size: clamp(1.4rem, 3.5vw, 1.8rem);
+    margin-top: 10%;
   }
 }

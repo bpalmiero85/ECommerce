@@ -5,6 +5,7 @@ import AnimatedBg from "./AnimatedBg";
 const ComingSoon = () => {
   return (
     <div className="product-page-container">
+      {/* 1. SVG banner at top (fixed) */}
       <svg
         className="banner"
         height="200"
@@ -134,7 +135,7 @@ const ComingSoon = () => {
             from="-50"
             to="435"
             dur="15.5s"
-            begin="0s; shotting.restart+3s"
+            begin="0s; shooting.restart+3s"
             id="shooting"
             repeatCount="indefinite"
           />
@@ -160,7 +161,14 @@ const ComingSoon = () => {
           ⭐
         </text>
 
-        <text x="50" y="80" fontSize="32" fill="#39FF14" filter="url(#glow)">
+        <text
+          x="50"
+          y="80"
+          fontSize="32"
+          fill="#39FF14"
+          filter="url(#glow)"
+          className="color-star"
+        >
           ★
           <animate
             attributeName="opacity"
@@ -180,6 +188,7 @@ const ComingSoon = () => {
           fill="#00FFFF"
           filter="url(#glow)"
           opacity="0.6"
+          className="color-star"
         >
           ★
           <animate
@@ -198,6 +207,7 @@ const ComingSoon = () => {
           fill="#D000FF"
           filter="url(#glow)"
           opacity="0.6"
+          className="color-star"
         >
           ★
           <animate
@@ -211,7 +221,14 @@ const ComingSoon = () => {
         </text>
 
         {/* Neon Purple ★ */}
-        <text x="350" y="60" fontSize="32" fill="#D000FF" filter="url(#glow)">
+        <text
+          x="350"
+          y="60"
+          fontSize="32"
+          fill="#D000FF"
+          filter="url(#glow)"
+          className="color-star"
+        >
           ★
           <animate
             attributeName="opacity"
@@ -224,7 +241,14 @@ const ComingSoon = () => {
         </text>
 
         {/* Neon Orange ★ */}
-        <text x="230" y="115" fontSize="32" fill="#FF7F00" filter="url(#glow)">
+        <text
+          x="230"
+          y="115"
+          fontSize="32"
+          fill="#FF7F00"
+          filter="url(#glow)"
+          className="color-star"
+        >
           ★
           <animate
             attributeName="opacity"
@@ -236,7 +260,14 @@ const ComingSoon = () => {
           ></animate>
         </text>
 
-        <text x="1710" y="75" fontSize="32" fill="#FF7F00" filter="url(#glow)">
+        <text
+          x="1710"
+          y="75"
+          fontSize="32"
+          fill="#FF7F00"
+          filter="url(#glow)"
+          className="color-star"
+        >
           ★
           <animate
             attributeName="opacity"
@@ -274,7 +305,14 @@ const ComingSoon = () => {
           ✨
         </text>
 
-        <circle cx="300" cy="100" r="5" fill="#00FF00" filter="url(#glow)">
+        <circle
+          cx="300"
+          cy="100"
+          r="5"
+          fill="#00FF00"
+          filter="url(#glow)"
+          className="circle1"
+        >
           <animate
             attributeName="opacity"
             values="0.2;0.5;0.2"
@@ -284,7 +322,14 @@ const ComingSoon = () => {
             repeatCount="indefinite"
           />
         </circle>
-        <circle cx="1600" cy="145" r="7" fill="#1E90FF" filter="url(#glow)">
+        <circle
+          cx="1600"
+          cy="145"
+          r="7"
+          fill="#1E90FF"
+          filter="url(#glow)"
+          className="circle2"
+        >
           <animate
             attributeName="opacity"
             values="0.2;0.6;0.2"
@@ -294,7 +339,14 @@ const ComingSoon = () => {
             repeatCount="indefinite"
           />
         </circle>
-        <circle cx="1715" cy="120" r="6" fill="#FFD700" filter="url(#glow)">
+        <circle
+          cx="1715"
+          cy="120"
+          r="6"
+          fill="#FFD700"
+          filter="url(#glow)"
+          className="circle3"
+        >
           <animate
             attributeName="opacity"
             values="0.2;0.5;0.2"
@@ -304,7 +356,14 @@ const ComingSoon = () => {
             repeatCount="indefinite"
           />
         </circle>
-        <circle cx="800" cy="150" r="4" fill="#4A148C" filter="url(#glow)">
+        <circle
+          cx="800"
+          cy="150"
+          r="4"
+          fill="#4A148C"
+          filter="url(#glow)"
+          className="circle4"
+        >
           <animate
             attributeName="opacity"
             values="0.2;0.6;0.2"
@@ -314,7 +373,14 @@ const ComingSoon = () => {
             repeatCount="indefinite"
           />
         </circle>
-        <circle cx="1800" cy="60" r="5" fill="#E1BEE7" filter="url(#glow)">
+        <circle
+          cx="1800"
+          cy="60"
+          r="5"
+          fill="#E1BEE7"
+          filter="url(#glow)"
+          className="circle5"
+        >
           <animate
             attributeName="opacity"
             values="0.2;0.5;0.2"
@@ -324,7 +390,14 @@ const ComingSoon = () => {
             repeatCount="indefinite"
           />
         </circle>
-        <circle cx="150" cy=" 50" r="3" fill="#E1BEE7" filter="url(#glow)">
+        <circle
+          cx="150"
+          cy=" 50"
+          r="3"
+          fill="#E1BEE7"
+          filter="url(#glow)"
+          className="circle6"
+        >
           <animate
             attributeName="opacity"
             values="0.2;0.6;0.2"
@@ -334,7 +407,14 @@ const ComingSoon = () => {
             repeatCount="indefinite"
           />
         </circle>
-        <circle cx="70" cy="160" r="4" fill="#FFD700" filter="url(#glow)">
+        <circle
+          cx="70"
+          cy="160"
+          r="4"
+          fill="#FFD700"
+          filter="url(#glow)"
+          className="circle7"
+        >
           <animate
             attributeName="opacity"
             values="0.2;0.5;0.2"
@@ -344,7 +424,14 @@ const ComingSoon = () => {
             repeatCount="indefinite"
           />
         </circle>
-        <circle cx="200" cy=" 120" r="6" fill="#39FF14" filter="url(#glow)">
+        <circle
+          cx="200"
+          cy=" 120"
+          r="6"
+          fill="#39FF14"
+          filter="url(#glow)"
+          className="circle8"
+        >
           <animate
             attributeName="opacity"
             values="0.2;0.6;0.2"
@@ -354,7 +441,14 @@ const ComingSoon = () => {
             repeatCount="indefinite"
           />
         </circle>
-        <circle cx="140" cy="120" r="2" fill="#FF007F" filter="url(#glow)">
+        <circle
+          cx="140"
+          cy="120"
+          r="2"
+          fill="#FF007F"
+          filter="url(#glow)"
+          className="circle9"
+        >
           <animate
             attributeName="opacity"
             values="0.2;0.5;0.2"
@@ -364,7 +458,14 @@ const ComingSoon = () => {
             repeatCount="indefinite"
           />
         </circle>
-        <circle cx="1790" cy="160" r="5" fill="#00FF00" filter="url(#glow)">
+        <circle
+          cx="1790"
+          cy="160"
+          r="5"
+          fill="#00FF00"
+          filter="url(#glow)"
+          className="circle10"
+        >
           <animate
             attributeName="opacity"
             values="0.2;0.5;0.2"
@@ -375,7 +476,14 @@ const ComingSoon = () => {
           />
         </circle>
 
-        <circle cx="1770" cy="105" r="5" fill="#00FF00" filter="url(#glow)">
+        <circle
+          cx="1770"
+          cy="105"
+          r="5"
+          fill="#00FF00"
+          filter="url(#glow)"
+          className="circle11"
+        >
           <animate
             attributeName="opacity"
             values="0.2;0.5;0.2"
@@ -387,11 +495,15 @@ const ComingSoon = () => {
         </circle>
       </svg>
 
+      {/* 2. Animated background */}
       <div className="animated-bg">
         <AnimatedBg />
       </div>
+      {/* 3. Main content wrapper */}
       <div className="coming-soon-master-wrapper">
         <div className="coming-soon-desc-container">
+        
+          {/* Falling stars overlay */}
           <div className="glitter-effect">
             <div className="glitter-particle">✨</div>
             <div className="glitter-particle">✦</div>
@@ -399,25 +511,69 @@ const ComingSoon = () => {
             <div className="glitter-particle">✨</div>
           </div>
 
-          <p className="coming-soon-desc">
-            <strong>Goth & Glitter </strong>is where spooky meets sparkly - cute
-            meets creepy. Blending gothic edge with neon brights, glitter, and
-            just the right amount of dark. From eerie accessories to scary-cute
-            fidgets/monsters - it's a brand that celebrates the weird, the
-            whimsical, and the wonderfully glam!
-            <br />
-            <br />
-            ...oh, and I guess some normal stuff too!
-          </p>
+          {/* Descriptive text */}
+          <div className="coming-soon-desc">
+            <p>
+              <strong>Goth & Glitter</strong> is where spooky meets sparkly and
+              cute meets creepy. Blending gothic edge with neon brights,
+              glitter, and just the right amount of dark. From eerie accessories
+              to scary-cute fidgets and monsters, it&apos;s a brand that
+              celebrates the weird, the whimsical, and the wonderfully glam!
+              <br />
+              <br />
+              (…oh, and I guess some normal stuff too!)
+            </p>
+          </div>
+
+          {/* "Coming Soon" ribbon */}
+          <div className="coming-soon-wrapper">
+            <img src="./tape.svg" className="ribbon"></img>
+            <h3 className="coming-soon">Coming Soon!</h3>
+          </div>
+
+          {/* Product categories grid */}
+          <div className="coming-soon-grid">
+            <div className="category-wrapper">
+
+              {/* Category: Monsters Figurines */}
+              {/* <div className="monster-container">
+                <h3 className="monsters-title">Monsters Figurines:</h3>
+                <div className="monster-figures">
+                  <img
+                    className="sludge-monster1"
+                    src="./sludge-monster-clipped.png"
+                  ></img>
+                  <img className="monstrella1" src="./monstrella.png"></img>
+                </div>
+              </div> */}
+
+              {/* Category: Fidget Buddies */}
+              {/* <div className="fidget-container">
+                <h3 className="monsters-title">Fidget Buddies:</h3>
+                <div className="fidget-figures">
+                  <img
+                    className="sludge-monster"
+                    src="./sludge-monster-clipped.png"
+                  />
+                  <img className="monstrella" src="./monstrella.png" />
+                </div>
+              </div> */}
+              {/* Category: Jewelry */}
+              <div className="jewelry-container">
+                {/* <h3 className="monsters-title">Jewelry: </h3> */}
+                <div className="fidget-figures">
+                  <img
+                    className="sludge-monster"
+                    src="./sludge-monster-clipped.png"
+                  />
+                  <img className="monstrella" src="./monstrella.png" />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      
       </div>
-        <div className="coming-soon-wrapper">
-          <img src="./tape.svg" className="ribbon"></img>
-          <h1 className="coming-soon">Coming Soon!</h1>
-        </div>
     </div>
-    
   );
 };
 
