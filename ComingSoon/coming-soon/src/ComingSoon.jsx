@@ -6,6 +6,7 @@ const ComingSoon = () => {
   return (
     <div className="product-page-container">
       {/* 1. SVG banner at top (fixed) */}
+      <div className="banner-top"></div>
       <svg
         className="banner"
         height="200"
