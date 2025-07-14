@@ -84,7 +84,7 @@ const ComingSoon = () => {
         {/* background */}
         <rect width="100%" height="100%" fill="url(#bg-radial)" />
 
-        {/* your text + glow */}
+        {/* text + glow */}
         <g
           fontFamily="Creepster, Griffy, cursive"
           fontSize="120"
@@ -113,7 +113,7 @@ const ComingSoon = () => {
             Goth &amp; Glitter
           </text>
 
-          {/* your existing rocking animation */}
+          {/* rocking animation */}
           <animateTransform
             attributeName="transform"
             type="rotate"
@@ -121,7 +121,7 @@ const ComingSoon = () => {
             dur="5s"
             repeatCount="indefinite"
           />
-          {/* your original sparkles */}
+          {/* original sparkles */}
         </g>
         <text
           x="150"
@@ -282,12 +282,10 @@ const ComingSoon = () => {
 
         <text x="450" y="110" font-size="24" fill="#E1BEE7">
           <animate
-            attributeName="x"
-            from="450"
-            to="485"
-            dur="4.5s"
-            begin="0s; shooting.restart+3s"
-            id="shooting"
+            attributeName="opacity"
+            values="0.2;1;0.2"
+            keyTimes="0;0.5;1"
+            dur="2.5s"
             repeatCount="indefinite"
           />
           ✨
@@ -295,12 +293,10 @@ const ComingSoon = () => {
 
         <text x="1500" y="110" font-size="24" fill="#E1BEE7">
           <animate
-            attributeName="x"
-            from="1500"
-            to="1585"
-            dur="4.5s"
-            begin="0s; shooting.restart+3s"
-            id="shooting"
+            attributeName="opacity"
+            values="0.2;1;0.2"
+            keyTimes="0;0.5;1"
+            dur="2.5s"
             repeatCount="indefinite"
           />
           ✨
@@ -503,7 +499,6 @@ const ComingSoon = () => {
       {/* 3. Main content wrapper */}
       <div className="coming-soon-master-wrapper">
         <div className="coming-soon-desc-container">
-        
           {/* Falling stars overlay */}
           <div className="glitter-effect">
             <div className="glitter-particle">✨</div>
@@ -535,7 +530,6 @@ const ComingSoon = () => {
           {/* Product categories grid */}
           <div className="coming-soon-grid">
             <div className="category-wrapper">
-
               {/* Category: Monsters Figurines */}
               {/* <div className="monster-container">
                 <h3 className="monsters-title">Monsters Figurines:</h3>
