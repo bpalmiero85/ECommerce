@@ -9,7 +9,7 @@ function FeaturedProducts() {
     <section className="products-section">
       <div className="section-header">
         <h2 className="section-title">
-          <span className="neon-glow" style={{ color: "var(--neon-purple)" }}>
+          <span className="neon-glow" style={{ color: "var(--neon-pink)" }}>
             POPULAR
           </span>{" "}
           CREATIONS
@@ -106,44 +106,9 @@ function HeroSection() {
 }
 
 // Header Component
-function Header() {
+function Nav() {
   return (
-    <header className="header">
-   
-
-      {/* Navigation */}
-      <div className="nav-container">
-        <nav className="nav">
-          <a href="#home">Home</a>
-          <a href="#gallery" style={{ "--hover-color": "var(--neon-blue)" }}>
-            Gallery
-          </a>
-          <a href="#shop" style={{ "--hover-color": "var(--neon-purple)" }}>
-            Shop
-          </a>
-          <a href="#contact" style={{ "--hover-color": "var(--neon-pink)" }}>
-            Contact
-          </a>
-        </nav>
-      </div>
-
-      {/* Right side actions */}
-      <div className="nav-actions">
-        <button className="btn btn-sm btn-ghost" style={{ color: "white" }}>
-          🔍
-        </button>
-        <button
-          className="btn btn-sm btn-ghost relative"
-          style={{ color: "white" }}
-        >
-          🛒
-          <span className="cart-badge">0</span>
-        </button>
-        <button className="btn btn-sm btn-ghost" style={{ color: "white" }}>
-          👤
-        </button>
-      </div>
-    </header>
+   ""
   );
 }
 
@@ -164,7 +129,6 @@ export default function FeaturedProductsPage() {
 
       {/* Main content */}
       <div className="relative z-10">
-        <Header />
         <HeroSection />
         <FeaturedProducts />
       </div>
