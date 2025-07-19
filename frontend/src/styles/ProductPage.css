@@ -25,6 +25,16 @@ body {
   margin: auto auto;
 }
 
+.gglogo{
+  display: flex;
+  position: relative;
+  margin: 0 auto;
+  margin-bottom: 15px;
+  width: 205px;
+  height: 105px;
+  z-index: 1;
+}
+
 .product-page-container {
   display: flex;
   position: relative;
@@ -39,6 +49,67 @@ body {
 .purchase-container {
   display: flex;
   gap: 0.5rem;
+}
+
+
+.footer {
+  position: relative;
+  z-index: 10;
+  padding: 2rem 1.5rem;
+  border-top: 1px solid rgba(0, 255, 136, 0.2);
+  margin-top: 3rem;
+  text-align: center;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.footer-logo-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  background: linear-gradient(
+    to bottom right,
+    var(--neon-green),
+    var(--neon-purple)
+  );
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-logo-text {
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: var(--neon-green);
+}
+
+.footer-text {
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.footer-links a {
+  color: #9ca3af;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: var(--neon-green);
 }
 
 .container {

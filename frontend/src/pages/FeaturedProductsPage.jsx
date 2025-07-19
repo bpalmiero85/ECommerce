@@ -135,12 +135,11 @@ export default function FeaturedProductsPage() {
 
       {/* Footer */}
       <footer className="footer">
-        <div className="footer-logo">
-          <div className="footer-logo-icon">
-            <span style={{ color: "black", fontWeight: "bold" }}>👻</span>
+          <div>
+             <img className="gglogo" src="./gglogo.svg"></img>
           </div>
-          <span className="footer-logo-text neon-glow">GOTH & GLITTER</span>
-        </div>
+         
+      
         <p className="footer-text">
           © 2025 Goth & Glitter. Conjuring cute spooky magic through 3D
           printing.
