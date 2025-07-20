@@ -2,10 +2,20 @@ import { useState, useEffect, useRef } from "react";
 import "../styles/ProductPage.css";
 import "../styles/HomePage.css";
 import Product from "../components/Product";
+import ShoppingCart from "../components/ShoppingCart";
 import AnimatedBackground from "../components/AnimatedBackground";
 
 const ProductPage = () => {
   const [products, setProducts] = useState([]);
+  const [isCartShown, setIsCartShown] = useState(false);
+
+  const handleClickCart = () => {
+    setIsCartShown(true);
+  }
+
+  const handleCancelCart = () => {
+    setIsCartShown(false);
+  }
 
   useEffect(() => {
     fetch("http://localhost:8080/api/products")
@@ -58,6 +68,12 @@ const ProductPage = () => {
 
   return (
     <div className="product-page-container">
+    {isCartShown && (
+      <div className="cart-modal">
+        <ShoppingCart />
+        <button onClick={handleCancelCart}>Cancel</button>
+      </div>
+    )}
       <div className="banner-nav-container">
         <svg
           className="banner"
@@ -485,6 +501,7 @@ const ProductPage = () => {
                   🔍
                 </button>
                 <button
+                  onClick={handleClickCart}
                   className="btn btn-sm btn-ghost relative"
                   style={{ color: "white" }}
                 >

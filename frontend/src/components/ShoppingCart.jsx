@@ -7,7 +7,7 @@ const ShoppingCart = () => {
   const handleClickCart = () => {
     return (
       <div className="shopping-cart-container">
-
+          
       </div>
     )
   }

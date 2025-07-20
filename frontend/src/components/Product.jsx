@@ -21,6 +21,10 @@ const Product = (props) => {
     }
   };
 
+  const handleAddToCart = () => {
+    
+  }
+
   useEffect(() => {
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
@@ -74,7 +78,7 @@ const Product = (props) => {
               >
                 Purchase
               </button>
-              <button type="button">Add to cart</button>
+              <button onClick={handleAddToCart} type="button">Add to cart</button>
             </div>
           )}
         </div>

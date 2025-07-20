@@ -573,6 +573,17 @@ const ComingSoon = () => {
           </div>
         </div>
       </div>
+      {/* Footer */}
+      <footer className="footer">
+        <div>
+          <img className="gglogo" src="./gglogo.svg"></img>
+        </div>
+
+        <p className="footer-text">
+          © 2025 Goth & Glitter. Conjuring cute spooky magic through 3D
+          printing.
+        </p>
+      </footer>
     </div>
   );
 };

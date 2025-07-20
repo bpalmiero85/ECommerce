@@ -35,6 +35,13 @@ body {
   z-index: 1;
 }
 
+.cart-modal{
+  width: 100vw;
+  height: 100vh;
+  opacity: 0.5;
+  background-color: white;
+}
+
 .product-page-container {
   display: flex;
   position: relative;
