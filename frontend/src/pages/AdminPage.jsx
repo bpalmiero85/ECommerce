@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import "../styles/HomePage.css";
+import "../styles/AdminPage.css";
 import "../styles/ProductPage.css";
 
 
-const HomePage = () => {
+const AdminPage = () => {
   const [products, setProducts] = useState([]);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -410,4 +410,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default AdminPage;

@@ -1,16 +1,19 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
+import { CartContext } from "../contexts/CartContext";
 import "../styles/ProductPage.css";
-import "../styles/HomePage.css";
+import "../styles/AdminPage.css";
 import Product from "../components/Product";
 import ShoppingCart from "../components/ShoppingCart";
 import AnimatedBackground from "../components/AnimatedBackground";
+import CheckoutPage from "./CheckoutPage";
 
 const ProductPage = () => {
   const [products, setProducts] = useState([]);
   const [isCartShown, setIsCartShown] = useState(false);
+  const { cartItems } = useContext(CartContext);
 
   const handleClickCart = () => {
-    setIsCartShown(true);
+    setIsCartShown(open => !open);
   }
 
   const handleCancelCart = () => {
@@ -71,6 +74,7 @@ const ProductPage = () => {
     {isCartShown && (
       <div className="cart-modal">
         <ShoppingCart />
+        <CheckoutPage />
         <button onClick={handleCancelCart}>Cancel</button>
       </div>
     )}
@@ -506,7 +510,7 @@ const ProductPage = () => {
                   style={{ color: "white" }}
                 >
                   🛒
-                  <span className="cart-badge">0</span>
+                  <span className="cart-badge">{cartItems.length}</span>
                 </button>
                 <button
                   className="btn btn-sm btn-ghost"

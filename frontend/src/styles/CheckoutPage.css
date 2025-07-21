@@ -1,0 +1,33 @@
+.checkout-form {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  color: black;
+  z-index: 3000;
+}
+
+/* the outer wrapper you gave via className */
+.StripeElement {
+  display: flex;
+  flex-direction: column;
+  background-color: #f8f8f8;
+  padding: 12px 0px;
+  margin: 0 auto;
+  border: 1px solid #ccd0d2;
+  border-radius: 4px;
+  transition: border-color 0.2s ease;
+
+  /* match your form font */
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+}
+
+/* when the CardElement is focused */
+.StripeElement--focus {
+  border-color: #80bfff;
+  box-shadow: 0 0 0 1px #80bfff;
+}
+
+/* invalid state */
+.StripeElement--invalid {
+  border-color: #fa755a;
+}

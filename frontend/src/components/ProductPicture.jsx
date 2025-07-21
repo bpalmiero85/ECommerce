@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef, useCallback } from "react"; 
 import Cropper from "react-easy-crop";
-import "../styles/HomePage.css";
+import "../styles/AdminPage.css";
 
 const createImage = (url) =>
   new Promise((resolve, reject) => {

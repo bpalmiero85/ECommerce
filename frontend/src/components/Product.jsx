@@ -1,16 +1,22 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
+import { CartContext } from "../contexts/CartContext";
 import CheckoutPage from "../pages/CheckoutPage";
-import "../styles/HomePage.css";
+import "../styles/AdminPage.css";
 import "../styles/ProductPage.css";
 
-const Product = (props) => {
+const Product = ({ id, name, price, quantity, description, pictureVersion, pictureType }) => {
+  const { addToCart } = useContext(CartContext);
   const [purchaseProductId, setPurchaseProductId] = useState(null);
+  const [subtotal, setSubtotal] = useState(0);
 
   const [isOpen, setIsOpen] = useState(false);
   const cardRef = useRef(null);
 
+  const imageUrl = `http://localhost:8080/api/product/${id}/picture`;
+
   const openPurchase = () => {
-    setPurchaseProductId(props.id);
+    setSubtotal(price);
+    setPurchaseProductId(id);
     setIsOpen(true);
   };
 
@@ -21,9 +27,10 @@ const Product = (props) => {
     }
   };
 
-  const handleAddToCart = () => {
-    
+  const addPriceToCart = () => {
+    setSubtotal(prev => prev + price);
   }
+
 
   useEffect(() => {
     if (isOpen) {
@@ -36,13 +43,13 @@ const Product = (props) => {
 
   return (
     <div className="logo-card">
-      <a className="product-anchor" href={`/product/${props.id}`}>
+      <a className="product-anchor" href={`/product/${id}`}>
         <div className="logo-design">
           <div className="gothic-rose-container">
             <div className="gothic-rose">
               <img
                 className="product-image"
-                src={`http://localhost:8080/api/product/${props.id}/picture`}
+                src={`http://localhost:8080/api/product/${id}/picture`}
               ></img>
             </div>
             <div className="rose-glitter-effect">
@@ -54,22 +61,22 @@ const Product = (props) => {
           </div>
         </div>
         <div className="logo-text">
-          <h3>{props.name}</h3>
+          <h3>{name}</h3>
         </div>
         <div className="logo-description2">
-          <p>{props.description}</p>
+          <p>{description}</p>
         </div>
         <div className="product-price">
-          <p>${props.price}</p>
+          <p>${price}</p>
         </div>
         <div className="product-quantity">
-          <p>Qty: {props.quantity}</p>
+          <p>Qty: {quantity}</p>
         </div>
         <p className="click">-- click --</p>
       </a>
       {!isOpen && (
         <div className="purchase-container">
-          {purchaseProductId !== props.id && (
+          {purchaseProductId !== id && (
             <div className="purchase-buttons">
               <button
                 type="button"
@@ -78,19 +85,30 @@ const Product = (props) => {
               >
                 Purchase
               </button>
-              <button onClick={handleAddToCart} type="button">Add to cart</button>
+              <button
+                type="button"
+                onClick={() => {
+                  addToCart({ id, name, price, imageUrl });
+                  addPriceToCart();
+                }}
+              >
+                Add to cart
+              </button>
             </div>
           )}
         </div>
       )}
 
-      {isOpen && purchaseProductId === props.id && (
+      {isOpen && purchaseProductId === id && (
         <div className="credit-card-window" ref={cardRef}>
-          <CheckoutPage productId={props.id} />
-          <button className="cancel-button" onClick={() => {
-          setIsOpen(false);
-          setPurchaseProductId(null);
-          }}>
+          <CheckoutPage productId={id} />
+          <button
+            className="cancel-button"
+            onClick={() => {
+              setIsOpen(false);
+              setPurchaseProductId(null);
+            }}
+          >
             Cancel
           </button>
         </div>

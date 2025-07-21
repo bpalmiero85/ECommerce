@@ -46,7 +46,7 @@ function HeroSection() {
           world.
         </p>
 
-        <button className="btn btn-lg btn-gradient neon-glow">Shop Now</button>
+        <button className="btn btn-lg btn-gradient bold">Shop Now</button>
       </div>
 
       {/* Right side - Hero image area */}
