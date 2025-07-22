@@ -12,11 +12,6 @@
  width: 300px;
 }
 
-.cancel-button {
-display: flex;
-position: relative;
-}
-
 .credit-card-window{
   display: flex;
   position: relative;

@@ -4,7 +4,15 @@ import CheckoutPage from "../pages/CheckoutPage";
 import "../styles/AdminPage.css";
 import "../styles/ProductPage.css";
 
-const Product = ({ id, name, price, quantity, description, pictureVersion, pictureType }) => {
+const Product = ({
+  id,
+  name,
+  price,
+  quantity,
+  description,
+  pictureVersion,
+  pictureType,
+}) => {
   const { addToCart } = useContext(CartContext);
   const [purchaseProductId, setPurchaseProductId] = useState(null);
   const [subtotal, setSubtotal] = useState(0);
@@ -28,9 +36,8 @@ const Product = ({ id, name, price, quantity, description, pictureVersion, pictu
   };
 
   const addPriceToCart = () => {
-    setSubtotal(prev => prev + price);
-  }
-
+    setSubtotal((prev) => prev + price);
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -96,21 +103,6 @@ const Product = ({ id, name, price, quantity, description, pictureVersion, pictu
               </button>
             </div>
           )}
-        </div>
-      )}
-
-      {isOpen && purchaseProductId === id && (
-        <div className="credit-card-window" ref={cardRef}>
-          <CheckoutPage productId={id} />
-          <button
-            className="cancel-button"
-            onClick={() => {
-              setIsOpen(false);
-              setPurchaseProductId(null);
-            }}
-          >
-            Cancel
-          </button>
         </div>
       )}
     </div>

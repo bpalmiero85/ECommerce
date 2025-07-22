@@ -2,6 +2,7 @@ import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useState, useContext } from 'react';
 import { CartContext } from "../contexts/CartContext";
 import "../styles/CheckoutPage.css";
+import "../styles/ProductPage.css";
 
 export default function CheckoutPage() {
   const CARD_ELEMENT_OPTIONS = {
@@ -83,10 +84,11 @@ export default function CheckoutPage() {
       </div>
 
       {error && <div style={{ color: 'red' }}>{error}</div>}
-
+    <div className="cart-modal-cancel-button button">
       <button type="submit" disabled={!stripe || processing || succeeded}>
         {processing ? 'Processing...' : succeeded ? 'Paid!' : 'Pay'}
       </button>
+      </div>
     </form>
   );
 }

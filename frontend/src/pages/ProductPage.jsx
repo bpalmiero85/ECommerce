@@ -13,12 +13,12 @@ const ProductPage = () => {
   const { cartItems } = useContext(CartContext);
 
   const handleClickCart = () => {
-    setIsCartShown(open => !open);
-  }
+    setIsCartShown((open) => !open);
+  };
 
   const handleCancelCart = () => {
     setIsCartShown(false);
-  }
+  };
 
   useEffect(() => {
     fetch("http://localhost:8080/api/products")
@@ -71,13 +71,19 @@ const ProductPage = () => {
 
   return (
     <div className="product-page-container">
-    {isCartShown && (
-      <div className="cart-modal">
-        <ShoppingCart />
-        <CheckoutPage />
-        <button onClick={handleCancelCart}>Cancel</button>
-      </div>
-    )}
+      {isCartShown && (
+        <div className="cart-modal">
+          <ShoppingCart />
+          <div className="checkout-page">
+            <CheckoutPage />
+            <div className="cart-modal-cancel-button">
+              <button type="button" onClick={handleCancelCart}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="banner-nav-container">
         <svg
           className="banner"

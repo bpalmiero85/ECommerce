@@ -25,7 +25,7 @@ body {
   margin: auto auto;
 }
 
-.gglogo{
+.gglogo {
   display: flex;
   position: relative;
   margin: 0 auto;
@@ -35,7 +35,7 @@ body {
   z-index: 1;
 }
 
-.cart-modal{
+.cart-modal {
   display: flex;
   flex-direction: column;
   position: absolute;
@@ -47,6 +47,32 @@ body {
   border-radius: 20px;
   padding: 20px;
   background-color: rgb(255, 255, 255);
+}
+
+.cart-modal-cancel-button button {
+  display: flex;
+  position: absolute;
+  border-radius: 8px;
+  background: linear-gradient(to right, var(--neon-green), var(--neon-blue));
+  color: black;
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 15px auto;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.checkout-page {
+  display: flex;
+  width: 100%;
+  margin: 0 auto;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.cart-modal-cancel-button button:hover {
+  color: rgb(0, 255, 0);
+  background: linear-gradient(to right, var(--neon-blue), var(--neon-purple));
 }
 
 .product-page-container {
@@ -64,8 +90,6 @@ body {
   display: flex;
   gap: 0.5rem;
 }
-
-
 
 .footer {
   position: relative;
