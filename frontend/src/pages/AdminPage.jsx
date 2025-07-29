@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import "../styles/AdminPage.css";
 import "../styles/ProductPage.css";
 
-
 const AdminPage = () => {
   const [products, setProducts] = useState([]);
   const [name, setName] = useState("");
@@ -153,34 +152,67 @@ const AdminPage = () => {
 
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
+
+    if(!isEditingId) {
+      console.error("No product selected to edit");
+      return;
+    }
+    console.log("Saving product: ", isEditingId, {name, description, price, quantity});
     const id = isEditingId;
     const updated = {
-      productPicture,
       name,
       description,
       price: +price,
       quantity: +quantity,
     };
-
+try{
     const response = await fetch(`http://localhost:8080/api/products/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updated),
-    });
-    if (!response.ok) throw new Error(response.statusText);
+    }
+  );
+
+
+    if (!response.ok){
+      throw new Error(`Failed to update: ${response.statusText}`);
+    } 
+    if(selectedFile){
+      console.log("Uploading picture...");
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      const picRes = await fetch(
+        `http://localhost:8080/api/product/${id}/uploadPicture`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      console.log("<- Pic upload status: ", picRes.status, picRes.statusText);
+      const picText = await picRes.text();
+      console.log("<- Pic upload body: ", picText);
+      if(!picRes.ok) throw new Error(`Image upload failed: ${picRes.status}: ${picText}`);
+    }
+    console.log("Update succeeded, refreshing list...")
     setIsEditingId(null);
     setName("");
     setDescription("");
     setPrice("");
     setQuantity("");
-    formRef.current.reset();
-    if (selectedFile) {
-      await handleUploadProductPicture(id);
-    }
-    fetchProducts();
+    setSelectedFile(null);
+
+    await fetchProducts();
+
+  } catch(error){
+    console.error(error);
+
+  } finally{
+    console.groupEnd();
+  }
+
+      
   };
-
-
 
   return (
     <div className="home-container">
@@ -252,9 +284,10 @@ const AdminPage = () => {
       <div className="product-grid-container">
         {products.length > 0 ? (
           products.map((product) => (
-            <div class="logo-card">
+            <div 
+             key={product.id}
+             className="logo-card">
               <div
-                key={product.id}
                 id={`${product.id}`}
                 className="product-item"
               >
@@ -333,8 +366,14 @@ const AdminPage = () => {
                         required
                       />
 
-                      <button type="submit">Save</button>
                       <button
+                        className="edit-button"
+                        type="submit"
+                      >
+                        Save
+                      </button>
+                      <button
+                        className="edit-button"
                         type="button"
                         onClick={() => {
                           setIsEditingId(null);
@@ -349,19 +388,19 @@ const AdminPage = () => {
                     </form>
                   ) : (
                     <>
-                      <div class="logo-design">
-                        <div class="gothic-crown">
-                          <div class="crown-stars">
-                            <div class="crown-star">✦</div>
-                            <div class="crown-star">✧</div>
-                            <div class="crown-star">✦</div>
+                      <div className="logo-design">
+                        <div className="gothic-crown">
+                          <div className="crown-stars">
+                            <div className="crown-star">✦</div>
+                            <div className="crown-star">✧</div>
+                            <div className="crown-star">✦</div>
                           </div>
                         </div>
                       </div>
                       <div className="product-container">
-                        <div class="logo-text">{product.name}</div>
+                        <div className="logo-text">{product.name}</div>
 
-                        <div class="logo-description">
+                        <div className="logo-description">
                           {product.description}
                         </div>
                         <p className="product-price">Price: ${product.price}</p>
