@@ -6,11 +6,23 @@
   z-index: 3000;
 }
 
+.payment-form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 15px;
+
+}
+
+.payment-form-input{
+  margin-top: 10px;
+}
+
 /* the outer wrapper you gave via className */
 .StripeElement {
   display: flex;
   flex-direction: column;
   background-color: #f8f8f8;
+  min-width: 250px;
   padding: 12px 0px;
   margin: 0 auto;
   border: 1px solid #ccd0d2;
@@ -29,5 +41,25 @@
 
 /* invalid state */
 .StripeElement--invalid {
-  border-color: #fa755a;
+  border-color: red;
+}
+
+.inline-card-error {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  margin-top: 6px;
+  color: red;
+  font-size: 0.9rem;
+  z-index: 10;
+}
+
+.inline-invalid-email {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  margin-top: 6px;
+  color: red;
+  font-size: 0.9rem;
+  z-index: 10;
 }

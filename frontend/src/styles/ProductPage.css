@@ -51,15 +51,38 @@ body {
 
 .cart-modal-cancel-button button {
   display: flex;
+  position: relative;
+  border-radius: 8px;
+  background: linear-gradient(to right, var(--neon-green), var(--neon-blue));
+  color: black;
+  font-weight: 600;
+  font-size: 0.8rem;
+  margin: 15px auto;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.cart-modal-pay-button button{
+  display: flex;
   position: absolute;
   border-radius: 8px;
   background: linear-gradient(to right, var(--neon-green), var(--neon-blue));
   color: black;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.9rem;
   margin: 15px auto;
-  padding: 5px;
+  padding: 3px 5px;
   cursor: pointer;
+}
+
+.cart-modal-pay-button button:not(:disabled):hover {
+   color: rgb(0, 255, 0);
+  background: linear-gradient(to right, var(--neon-blue), var(--neon-purple));
+}
+
+.cart-modal-pay-button button:disabled {
+  background: lightgray;
+  cursor: not-allowed;
 }
 
 .checkout-page {

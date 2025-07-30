@@ -1,6 +1,30 @@
-import React, { useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 
-export default function AnimatedBackground() {
+/**
+ * AnimatedBackground Component
+ *
+ * Renders a full-screen animated starry background using an HTML5 canvas.
+ * The stars gently move, flicker, and wrap around the screen edges.
+ *
+ * @component
+ *
+ * @param {Object} [props] - Optional component properties.
+ * @param {number} [props.numStars=200] - Number of stars to render in the background.
+ * @param {string[]} [props.colors=["rgb(144, 0, 255)", "rgba(0, 255, 0, 0.7)", "rgb(0, 42, 255)", "rgba(255, 217, 0, 0.76)"]]
+ *    - Array of star colors, chosen randomly for each star.
+ *
+ * @returns {JSX.Element} A fixed position canvas element displaying an animated background.
+ */
+
+export default function AnimatedBackground({
+  numStars = 200,
+  colors = [
+    "rgb(144, 0, 255)",
+    "rgba(0,255,0,0.7)",
+    "rgb(0, 42, 255)",
+    "rgba(255, 217, 0, 0.76)",
+  ],
+}) {
   const canvasRef = useRef();
 
   useEffect(() => {
@@ -15,15 +39,8 @@ export default function AnimatedBackground() {
     radGrad.addColorStop(0, "rgb(11, 11, 121)");
     radGrad.addColorStop(1, "rgb(179, 0, 255)");
     const stars = [];
-    const colors = [
-      "rgb(144, 0, 255)",
-      "rgba(0,255,0,0.7)",
-      "rgb(0, 42, 255)",
-      "rgba(255, 217, 0, 0.76)",
-    ];
-    const numStars = 200;
 
-    // build our starfield
+    // build starfield
     for (let i = 0; i < numStars; i++) {
       stars.push({
         x: Math.random() * width,
@@ -76,7 +93,7 @@ export default function AnimatedBackground() {
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  }, []);
+  }, [numStars, colors]);
 
   return (
     <canvas
@@ -87,8 +104,8 @@ export default function AnimatedBackground() {
         left: 0,
         width: "100vw",
         height: "100vh",
-        zIndex: -1, // sit behind everything
-        pointerEvents: "none", // clicks go through
+        zIndex: -1,
+        pointerEvents: "none",
       }}
     />
   );

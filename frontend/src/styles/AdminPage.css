@@ -99,8 +99,6 @@
   margin-right: 7px;
 }
 
-
-
 .home-container {
   display: flex;
   flex-direction: column;
@@ -133,7 +131,6 @@
   position: relative;
   margin-top: 15px;
   font-size: 1.3rem;
-
 }
 
 .product-item {
@@ -170,6 +167,7 @@
   display: flex;
   position: relative;
   flex-direction: column;
+  margin-top: 25px;
   width: 100%;
   max-width: 400px;
   justify-content: center;
