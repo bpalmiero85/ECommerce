@@ -66,6 +66,69 @@ export default function CheckoutPage() {
   // Check validity of user email address
   const [isEmailValid, setIsEmailValid] = useState(false);
 
+  // Store what state (location) the user resides in
+  const [shippingState, setShippingState] = useState("");
+
+  // Charge local state's sales tax if shipping locally
+  const [isLocal, setIsLocal] = useState(false);
+
+  // Sales tax ($0 for any state but local)
+  const [salesTax, setSalesTax] = useState(0);
+
+  // List of US States
+  const STATES = [
+    "AL",
+    "AK",
+    "AZ",
+    "AR",
+    "CA",
+    "CO",
+    "CT",
+    "DE",
+    "FL",
+    "GA",
+    "HI",
+    "ID",
+    "IL",
+    "IN",
+    "IA",
+    "KS",
+    "KY",
+    "LA",
+    "ME",
+    "MD",
+    "MA",
+    "MI",
+    "MN",
+    "MS",
+    "MO",
+    "MT",
+    "NE",
+    "NV",
+    "NH",
+    "NJ",
+    "NM",
+    "NY",
+    "NC",
+    "ND",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VT",
+    "VA",
+    "WA",
+    "WV",
+    "WI",
+    "WY",
+  ];
+
   /**
    * Handles the form submission to process the payment.
    * 1. Calls the backend to create a PaymentIntent and retrieve clientSecret.
@@ -78,13 +141,20 @@ export default function CheckoutPage() {
     e.preventDefault();
     setProcessing(true);
 
+    
+
     try {
       // 1) Hit backend to create a PaymentIntent
-      const { clientSecret } = await fetch("/api/create-payment-intent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: Math.round(subtotal * 100),
+         const tax = shippingState === "OH" ? subtotal * 0.0725 : 0;
+         const total = subtotal + tax;
+
+         const { clientSecret } = await fetch("/api/create-payment-intent", {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({
+            amount: Math.round(total * 100),
+            state: shippingState,
+          
         }),
       }).then((r) => r.json());
 
@@ -127,6 +197,9 @@ export default function CheckoutPage() {
       {/* Display subtotal and collect customer details */}
       <form className="payment-form">
         <h3>Subtotal: ${subtotal.toFixed(2)}</h3>
+        {shippingState === "OH" && 
+            <h3>Ohio sales tax: ${(subtotal * 0.0725).toFixed(2)}</h3>
+        }
         <label className="payment-form-input">
           Name:
           <br />
@@ -154,20 +227,36 @@ export default function CheckoutPage() {
           />
         </label>
         {!isEmailValid && email.length > 0 && (
-          <div className="inline-invalid-email">Please enter a valid email address.</div>
+          <div className="inline-invalid-email">
+            Please enter a valid email address.
+          </div>
         )}
+        <br />
+        <label htmlFor="state-select">State:</label>
+        <select
+          value={shippingState}
+          onChange={(e) => setShippingState(e.target.value)}
+        >
+          {STATES.map((state) => (
+            <option key={state} value={state}>
+              {state}
+            </option>
+          ))}
+        </select>
       </form>
 
       {/* Stripe CardElement for secure card input */}
       <div style={{ margin: "20px 0" }} className="card-element">
-        <CardElement className="StripeElement" options={CARD_ELEMENT_OPTIONS} onChange={(e) => {
-          console.log("Complete: ", e.complete, "Error: ", e.error);
-          setIsCardComplete(e.complete)
-          setCardError(e.error ? e.error.message : null)
-          }} />
-          {cardError && 
-            <div className="inline-card-error">{cardError}</div>
-          }
+        <CardElement
+          className="StripeElement"
+          options={CARD_ELEMENT_OPTIONS}
+          onChange={(e) => {
+            console.log("Complete: ", e.complete, "Error: ", e.error);
+            setIsCardComplete(e.complete);
+            setCardError(e.error ? e.error.message : null);
+          }}
+        />
+        {cardError && <div className="inline-card-error">{cardError}</div>}
       </div>
 
       {/* Display Stripe or network errors */}
@@ -175,7 +264,18 @@ export default function CheckoutPage() {
 
       {/* Payment button */}
       <div className="cart-modal-pay-button">
-        <button type="submit" disabled={!stripe || !isCardComplete || processing || succeeded || !name.trim() || !email.trim() || !isEmailValid}>
+        <button
+          type="submit"
+          disabled={
+            !stripe ||
+            !isCardComplete ||
+            processing ||
+            succeeded ||
+            !name.trim() ||
+            !email.trim() ||
+            !isEmailValid
+          }
+        >
           {processing ? "Processing..." : succeeded ? "Paid!" : "Pay"}
         </button>
       </div>

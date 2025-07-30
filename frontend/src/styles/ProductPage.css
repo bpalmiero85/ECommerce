@@ -59,6 +59,9 @@ body {
   font-size: 0.8rem;
   margin: 15px auto;
   padding: 5px;
+  /** Using 'background' below causes a red highlight.
+      This is intentional - animating gradients directly isn't supported. */
+  transition: background 0.3s ease, color 0.3s ease;
   cursor: pointer;
 }
 
@@ -72,6 +75,10 @@ body {
   font-size: 0.9rem;
   margin: 15px auto;
   padding: 3px 5px;
+  overflow: hidden;
+  /** Using 'background' below causes a red highlight.
+      This is intentional - animating gradients directly isn't supported. */
+  transition: background 0.3s ease, color 0.3s ease;
   cursor: pointer;
 }
 

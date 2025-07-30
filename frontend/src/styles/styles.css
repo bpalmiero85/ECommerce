@@ -132,6 +132,9 @@ p {
   border: none;
   text-decoration: none;
   outline: none;
+  /** Note: Using 'background' here causes a red highlight in VS Code.
+      This is intentional - animating gradients directly isn't fully supported. */
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 .btn:focus-visible {
@@ -150,7 +153,7 @@ p {
   font-size: clamp(0.9rem, 2vw, 1.8rem);
 }
 
-.bold{
+.bold {
   font-weight: 800;
 }
 
@@ -186,6 +189,7 @@ p {
 }
 
 .btn-gradient:hover {
+  color: rgb(0, 255, 85);
   background: linear-gradient(to right, var(--neon-blue), var(--neon-purple));
 }
 
@@ -422,7 +426,7 @@ p {
   min-width: 100%;
   font-size: clamp(1rem, 3vw, 1.6rem);
   justify-content: center;
-  gap: clamp(1rem, 3vw , 3rem);
+  gap: clamp(1rem, 3vw, 3rem);
   z-index: 2000;
 }
 
@@ -746,7 +750,6 @@ p {
 .add-to-cart {
   width: 100%;
 }
-
 
 .bg-dots {
   position: absolute;
