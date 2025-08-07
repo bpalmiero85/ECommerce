@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState, useRef, useCallback } from "react"; 
+import { useEffect, useState, useRef, useCallback } from "react";
 import Cropper from "react-easy-crop";
 import "../styles/AdminPage.css";
 
@@ -60,6 +60,7 @@ const ProductPicture = ({
   const [isCropping, setIsCropping] = useState(false);
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const [pictureVersion, setPictureVersion] = useState(Date.now());
   const [product, setProduct] = useState(null);
   const [productPicture, setProductPicture] = useState(
     product?.productPicture || null
@@ -68,6 +69,7 @@ const ProductPicture = ({
   useEffect(() => {
     if (product?.productPicture) {
       setProductPicture(product.productPicture);
+      setPictureVersion(Date.now());
     }
   }, [product]);
 
@@ -89,47 +91,52 @@ const ProductPicture = ({
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
-  const handleCropAndUpload = useCallback(async (productId) => {
-    if (!selectedFile || !product) {
-      console.error("No file selected or product not loaded");
-      return;
-    }
-
-    try {
-      const croppedImage = await getCroppedImg(
-        URL.createObjectURL(selectedFile),
-        croppedAreaPixels
-      );
-
-      const formData = new FormData();
-      formData.append("file", croppedImage);
-      formData.append("name", product.name);
-
-      const response = await fetch(
-        `http://localhost:8080/api/products/${productId}/uploadPicture`,
-        {
-          method: "POST",
-          body: formData,
-          credentials: "include",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+  const handleCropAndUpload = useCallback(
+    async (productId) => {
+      if (!selectedFile || !product) {
+        console.error("No file selected or product not loaded");
+        return;
       }
 
-      const data = await response.json();
-      console.log("Product picture uploaded successfully", data);
+      try {
+        const croppedImage = await getCroppedImg(
+          URL.createObjectURL(selectedFile),
+          croppedAreaPixels
+        );
 
-      setProductPicture(data.productPicture);
-      setIsPictureUploaded(true);
-      onUpload();
-      setIsCropping(false);
-      setCroppingStatus(false);
-    } catch (e) {
-      console.error("Error cropping or uploading image:", e);
-    }
-  }, [croppedAreaPixels, selectedFile, product, onUpload, setCroppingStatus]);
+        const formData = new FormData();
+        formData.append("file", croppedImage);
+        formData.append("name", product.name);
+
+        const response = await fetch(
+          `http://localhost:8080/api/products/${productId}/uploadPicture`,
+          {
+            method: "POST",
+            body: formData,
+            credentials: "include",
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Product picture uploaded successfully", data);
+
+        setProduct(data);
+        setProductPicture(data.productPicture);
+        setPictureVersion(data.pictureVersion || Date.now());
+        setIsPictureUploaded(true);
+        onUpload();
+        setIsCropping(false);
+        setCroppingStatus(false);
+      } catch (e) {
+        console.error("Error cropping or uploading image:", e);
+      }
+    },
+    [croppedAreaPixels, selectedFile, product, onUpload, setCroppingStatus]
+  );
 
   return (
     <div className="product-picture-container">
@@ -159,7 +166,7 @@ const ProductPicture = ({
           ) : productPicture ? (
             <div className="product-picture">
               <img
-                src={`http://localhost:8080/api/products/${productId}/${productPicture}`}
+                src={`http://localhost:8080/api/products/${productId}/${productPicture}?version=${pictureVersion}`}
                 alt="Product Picture"
                 className="current-product-picture"
               />

@@ -11,27 +11,24 @@ const Product = ({
   quantity,
   description,
   pictureVersion,
-  pictureType,
 }) => {
   const { addToCart } = useContext(CartContext);
-  const [purchaseProductId, setPurchaseProductId] = useState(null);
   const [subtotal, setSubtotal] = useState(0);
-
   const [isOpen, setIsOpen] = useState(false);
   const cardRef = useRef(null);
+  const [added, setAdded] = useState(false);
 
-  const imageUrl = `http://localhost:8080/api/product/${id}/picture`;
+  const imageUrl = `http://localhost:8080/api/product/${id}/picture?version=${pictureVersion}`;
 
-  const openPurchase = () => {
+  const openPurchase = (e) => {
+    e.preventDefault();
     setSubtotal(price);
-    setPurchaseProductId(id);
     setIsOpen(true);
   };
 
   const handleClickOutside = (e) => {
     if (cardRef.current && !cardRef.current.contains(e.target)) {
       setIsOpen(false);
-      setPurchaseProductId(null);
     }
   };
 
@@ -54,10 +51,7 @@ const Product = ({
         <div className="logo-design">
           <div className="gothic-rose-container">
             <div className="gothic-rose">
-              <img
-                className="product-image"
-                src={`http://localhost:8080/api/product/${id}/picture`}
-              ></img>
+              <img className="product-image" src={imageUrl} alt={name}></img>
             </div>
             <div className="rose-glitter-effect">
               <div className="glitter-particle">✨</div>
@@ -79,32 +73,32 @@ const Product = ({
         <div className="product-quantity">
           <p>Qty: {quantity}</p>
         </div>
-        <p className="click">-- click --</p>
       </a>
-      {!isOpen && (
-        <div className="purchase-container">
-          {purchaseProductId !== id && (
-            <div className="purchase-buttons">
-              <button
-                type="button"
-                className="purchase-button"
-                onClick={openPurchase}
-              >
-                Purchase
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  addToCart({ id, name, price, imageUrl });
-                  addPriceToCart();
-                }}
-              >
-                Add to cart
-              </button>
-            </div>
-          )}
+
+      <div className={`purchse-container${isOpen ? " hidden" : ""}`}>
+        <div className="purchase-buttons">
+          <button
+            type="button"
+            className="purchase-button"
+            onClick={openPurchase}
+            disabled={isOpen}
+          >
+            Purchase
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              addToCart({ id, name, price, imageUrl });
+              addPriceToCart();
+              setAdded(true);
+            }}
+          >
+            {added ? "Added to cart" : "Add to cart"}
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 };

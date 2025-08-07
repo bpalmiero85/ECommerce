@@ -1,10 +1,34 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import ProductPage from "../pages/ProductPage.jsx";
 import "../styles/ProductPage.css";
 import "../styles/styles.css";
 
-// Featured Products Component
 function FeaturedProducts() {
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/api/products");
+        if (!response.ok) throw new Error(`Error: ${response.status}`);
+        const fetched = await response.json();
+
+        setProducts((prev) => {
+          const existingIds = new Set(prev.map((p) => p.id));
+          const onlyNew = fetched.filter((p) => !existingIds.has(p.id));
+          return [...prev, ...onlyNew];
+        });
+      } catch (err) {
+        console.error("Error fetching products:", err);
+      }
+    };
+
+    fetchProducts();
+    const interval = setInterval(fetchProducts, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section className="products-section">
       <div className="section-header">
@@ -20,7 +44,7 @@ function FeaturedProducts() {
       </div>
 
       <div className="products-grid">
-        <ProductPage products />
+        <ProductPage products={products} />
       </div>
     </section>
   );
@@ -74,18 +98,6 @@ function HeroSection() {
             >
               ⭐
             </div>
-            <div
-              className="absolute animate-pulse"
-              style={{ bottom: "2rem", left: "2rem", fontSize: "1.25rem" }}
-            >
-              🎭
-            </div>
-            <div
-              className="absolute animate-bounce"
-              style={{ top: "3rem", left: "3rem", fontSize: "1rem" }}
-            >
-              🔮
-            </div>
           </div>
 
           {/* Dashed orbit lines */}
@@ -107,9 +119,7 @@ function HeroSection() {
 
 // Header Component
 function Nav() {
-  return (
-   ""
-  );
+  return "";
 }
 
 // Main App Component
@@ -135,11 +145,10 @@ export default function FeaturedProductsPage() {
 
       {/* Footer */}
       <footer className="footer">
-          <div>
-             <img className="gglogo" src="./gglogo.svg"></img>
-          </div>
-         
-      
+        <div>
+          <img className="gglogo" src="./gglogo.svg"></img>
+        </div>
+
         <p className="footer-text">
           © 2025 Goth & Glitter. Conjuring cute spooky magic through 3D
           printing.
@@ -147,7 +156,7 @@ export default function FeaturedProductsPage() {
         <div className="footer-links">
           <a href="#">Privacy Policy</a>
           <a href="#">Terms of Service</a>
-          <a href="#">Contact Us</a>
+          <button type="button">Contact Us</button>
         </div>
       </footer>
     </div>

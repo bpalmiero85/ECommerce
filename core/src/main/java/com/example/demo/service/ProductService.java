@@ -35,6 +35,7 @@ public class ProductService {
     if (productOptional.isPresent()) {
       Product product = productOptional.get();
       product.setProductPictureFile(productPictureData);
+      product.setPictureVersion(System.currentTimeMillis());
       return productRepository.save(product);
     } else {
       throw new RuntimeException("Product not found");
@@ -50,6 +51,7 @@ public class ProductService {
       product.setDescription(updatedProduct.getDescription());
       product.setPrice(updatedProduct.getPrice());
       product.setQuantity(updatedProduct.getQuantity());
+      product.setPictureVersion(System.currentTimeMillis());
       return productRepository.save(product);
     } else {
       throw new RuntimeException("Product not found");

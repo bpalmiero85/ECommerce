@@ -28,6 +28,8 @@ public class Product {
 
   private String pictureType;
 
+  private long pictureVersion;
+
   @Column(nullable = false)
   private String name;
 

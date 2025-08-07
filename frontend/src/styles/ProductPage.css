@@ -120,6 +120,10 @@ body {
   gap: 0.5rem;
 }
 
+.purchase-container.hidden{
+  display: none;
+}
+
 .footer {
   position: relative;
   z-index: 10;
@@ -218,7 +222,6 @@ body {
 }
 
 .credit-card-window {
-  /* now it’s static (default), so it pushes the container’s height down */
   margin-top: 0.5rem;
   position: relative;
   padding: 1rem;
@@ -235,11 +238,14 @@ body {
   border-radius: 20px;
   padding: 40px 40px 40px 40px;
   text-align: center;
+  justify-content: center;
+  align-items: center;
   backdrop-filter: blur(15px);
   transition: all 0.4s ease;
   position: relative;
   overflow: hidden;
   height: fit-content;
+  margin: 25px;
   min-height: 600px;
 }
 

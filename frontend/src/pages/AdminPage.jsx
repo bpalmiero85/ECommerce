@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../styles/AdminPage.css";
 import "../styles/ProductPage.css";
+import ProductPicture from "../components/ProductPicture";
 
 const AdminPage = () => {
   const [products, setProducts] = useState([]);
@@ -12,6 +13,8 @@ const AdminPage = () => {
   const [productPicture, setProductPicture] = useState(null);
   const [isEditingId, setIsEditingId] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [isPictureUploaded, setIsPictureUploaded] = useState(false);
+  const [croppingStatus, setCroppingStatus] = useState(false);
   const formRef = useRef(null);
 
   const fetchProducts = async () => {
@@ -26,7 +29,7 @@ const AdminPage = () => {
 
       const data = await response.json();
 
-      setProducts(data);
+      setProducts(data); 
     } catch (error) {
       console.error("Error fetching products", error);
     }
@@ -117,12 +120,6 @@ const AdminPage = () => {
 
       const data = await response.json();
       console.log("Picture uploaded successfully:", data);
-
-      setProducts((ps) =>
-        ps.map((p) =>
-          p.id === productId ? { ...p, pictureVersion: Date.now() } : p
-        )
-      );
       fetchProducts();
     } catch (error) {
       console.error("Error uploading product picture:", error);
@@ -194,6 +191,11 @@ try{
       console.log("<- Pic upload body: ", picText);
       if(!picRes.ok) throw new Error(`Image upload failed: ${picRes.status}: ${picText}`);
     }
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, pictureVersion: Date.now() } : p
+      )
+    );
     console.log("Update succeeded, refreshing list...")
     setIsEditingId(null);
     setName("");
@@ -210,7 +212,6 @@ try{
   } finally{
     console.groupEnd();
   }
-
       
   };
 
@@ -284,14 +285,22 @@ try{
       <div className="product-grid-container">
         {products.length > 0 ? (
           products.map((product) => (
+           
             <div 
              key={product.id}
              className="logo-card">
+             
               <div
                 id={`${product.id}`}
                 className="product-item"
               >
                 <div className="product-buttons">
+                 <ProductPicture 
+                  productId={product.id}
+                  onUpload={() => fetchProducts()}
+                  setIsPictureUploaded={setIsPictureUploaded}
+                  setCroppingStatus={setCroppingStatus}
+              />
                   <div className="product-edit-button">
                     <button
                       onClick={() => {
@@ -300,6 +309,9 @@ try{
                         setDescription(product.description);
                         setPrice(product.price);
                         setQuantity(product.quantity);
+                        setProductPicture(product.productPicture);
+                      
+                     
 
                         document
                           .getElementById(`${product.id}`)
@@ -321,7 +333,7 @@ try{
                       key={`pic-${product.id}-${
                         product.pictureVersion || product.pictureType
                       }`}
-                      src={`http://localhost:8080/api/product/${product.id}/picture`}
+                      src={`http://localhost:8080/api/product/${product.id}/picture?version=${product.pictureVersion || Date.now()}`}
                       alt={product.name}
                     ></img>
                   </div>
