@@ -62,20 +62,32 @@ const ProductPicture = ({
   const fileInputRef = useRef(null);
   const [pictureVersion, setPictureVersion] = useState(Date.now());
   const [product, setProduct] = useState(null);
-  const [productPicture, setProductPicture] = useState(
-    product?.productPicture || null
-  );
 
-  useEffect(() => {
-    if (product?.productPicture) {
-      setProductPicture(product.productPicture);
-      setPictureVersion(Date.now());
-    }
-  }, [product]);
 
   const handleFileSelect = () => {
     fileInputRef.current.click();
   };
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+      const response = await fetch(
+        `http://localhost:8080/api/products/${productId}`, {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const product = await response.json();
+      setProduct(product);
+    } catch (e) {
+      console.error("Failed to load product", e);
+    }
+    };
+    fetchProducts();
+  }, [productId]);
 
   const handleFileChange = (e) => {
     if (e.target.files.length > 0) {
@@ -125,7 +137,6 @@ const ProductPicture = ({
         console.log("Product picture uploaded successfully", data);
 
         setProduct(data);
-        setProductPicture(data.productPicture);
         setPictureVersion(data.pictureVersion || Date.now());
         setIsPictureUploaded(true);
         onUpload();
@@ -163,10 +174,10 @@ const ProductPicture = ({
                 </div>
               )}
             </>
-          ) : productPicture ? (
+          ) : product?.productPicture ? (
             <div className="product-picture">
               <img
-                src={`http://localhost:8080/api/products/${productId}/${productPicture}?version=${pictureVersion}`}
+                src={`http://localhost:8080/api/products/${productId}/${product.productPicture}?version=${pictureVersion}`}
                 alt="Product Picture"
                 className="current-product-picture"
               />
@@ -185,7 +196,7 @@ const ProductPicture = ({
             style={{ display: "none" }}
           />
 
-          {productPicture && !isCropping && (
+          {product?.productPicture && !isCropping && (
             <div className="update-pic-container">
               <button onClick={handleFileSelect} className="update-pic-button">
                 Update Product Picture

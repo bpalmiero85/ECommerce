@@ -212,9 +212,9 @@ body {
   }
 }
 
-.logo-grid {
+.product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   column-gap: 5rem;
   justify-content: center;
   margin-top: 175px;
@@ -232,7 +232,7 @@ body {
   z-index: 2000;
 }
 
-.logo-card {
+.product-card {
   background: rgba(0, 0, 0, 0.7);
   border: 2px solid #4a148c;
   border-radius: 20px;
@@ -261,7 +261,7 @@ body {
   margin: 0 auto;
 }
 
-.logo-card::before {
+.product-card::before {
   content: "";
   position: absolute;
   top: -50%;
@@ -279,7 +279,7 @@ body {
   opacity: 0;
 }
 
-.logo-card:hover::before {
+.product-card:hover::before {
   animation: shimmer 1.5s ease-in-out infinite;
   opacity: 1;
 }
@@ -313,13 +313,13 @@ body {
   }
 }
 
-.logo-card:hover {
+.product-card:hover {
   transform: translateY(-10px) scale(1.02);
   box-shadow: 0 20px 40px rgba(74, 20, 140, 0.4);
   border-color: #7b1fa2;
 }
 
-.logo-design {
+.product-design {
   height: 180px;
   display: flex;
   align-items: center;
@@ -745,7 +745,7 @@ body {
   }
 }
 
-.logo-text {
+.product-text {
   font-family: "fantasy";
   text-decoration: underline;
   text-underline-offset: 10px;
@@ -756,19 +756,19 @@ body {
   transition: all 0.3s ease;
 }
 
-.logo-card:hover .logo-text {
+.product-card:hover .product-text {
   color: #ffffff;
   text-shadow: 0 0 15px rgba(225, 190, 231, 0.8);
 }
 
-.logo-description {
+.product-description {
   font-size: 16px;
   color: #c5cae9;
   line-height: 1.6;
   transition: all 0.3s ease;
 }
 
-.logo-description2 {
+.product-description2 {
   font-size: 20px;
   color: #c5cae9;
   line-height: 1.6;
@@ -794,7 +794,7 @@ body {
   margin-top: 20px;
 }
 
-.logo-card:hover .logo-description {
+.product-card:hover .product-description {
   color: #e1bee7;
 }
 
@@ -845,7 +845,7 @@ body {
 }
 
 @media (max-width: 800px){
-  .logo-grid{
+  .product-grid{
     grid-template-columns: 1fr 1fr;
   }
 }

@@ -92,7 +92,6 @@ function HeroSection() {
               style={{
                 top: "1rem",
                 right: "1rem",
-                fontSize: "1.5rem",
                 animation: "spin 2s linear infinite",
               }}
             >

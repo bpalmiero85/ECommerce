@@ -26,7 +26,6 @@ export default function CheckoutPage() {
     style: {
       base: {
         color: "#222",
-        fontSize: "16px",
         fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
         fontSmoothing: "antialiased",
         "::placeholder": {

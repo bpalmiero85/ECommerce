@@ -370,13 +370,13 @@ p {
   z-index: 10;
 }
 
-.logo {
+.product {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.logo-icon {
+.product-icon {
   width: 2rem;
   height: 2rem;
   margin-top: 55px;
@@ -636,7 +636,7 @@ p {
 .products-grid {
   margin-top: -200px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1.5rem;
 }
 

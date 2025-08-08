@@ -34,7 +34,7 @@ const ProductPage = ({ products: externalProducts }) => {
   }, [products]);
 
   const addLogoEffects = () => {
-    document.querySelectorAll(".logo-design").forEach((logo) => {
+    document.querySelectorAll(".product-design").forEach((logo) => {
       if (!logo.dataset.effectAdded) {
         logo.addEventListener("click", function () {
           this.style.transform = "scale(0.95)";
@@ -42,11 +42,11 @@ const ProductPage = ({ products: externalProducts }) => {
             this.style.transform = "";
           }, 150);
         });
-        logo.dataset.effectAdded = "true"; 
+        logo.dataset.effectAdded = "true";
       }
     });
 
-    document.querySelectorAll(".logo-card").forEach((card) => {
+    document.querySelectorAll(".product-card").forEach((card) => {
       if (!card.dataset.effectAdded) {
         card.addEventListener("mouseenter", function () {
           const sparkles = ["✨", "⭐", "✦", "✧"];
@@ -96,14 +96,14 @@ const ProductPage = ({ products: externalProducts }) => {
           preserveAspectRatio="xMidYMid slice"
         >
           <defs>
-            {/* your original background */}
+            {/* original background */}
             <radialGradient id="bg-radial" cx="50%" cy="50%" r="75%">
               <stop offset="0%" stopColor="#39FF14" />
               <stop offset="50%" stopColor="#1a001a" />
               <stop offset="100%" stopColor="#000000" />
             </radialGradient>
 
-            {/* your original text fill */}
+            {/* original text fill */}
             <linearGradient
               id="text-gradient"
               x1="0%"
@@ -116,7 +116,7 @@ const ProductPage = ({ products: externalProducts }) => {
               <stop offset="100%" stopColor="#222222" />
             </linearGradient>
 
-            {/* your glow filter */}
+            {/* glow filter */}
             <filter id="glow">
               <feGaussianBlur stdDeviation="8" result="coloredBlur" />
               <feMerge>
@@ -171,10 +171,9 @@ const ProductPage = ({ products: externalProducts }) => {
           {/* background */}
           <rect width="100%" height="100%" fill="url(#bg-radial)" />
 
-          {/* your text + glow */}
+          {/* text + glow */}
           <g
             fontFamily="Creepster, Griffy, cursive"
-            fontSize="120"
             textAnchor="middle"
             dominantBaseline="middle"
             filter="url(#glow)"
@@ -200,7 +199,7 @@ const ProductPage = ({ products: externalProducts }) => {
               Goth &amp; Glitter
             </text>
 
-            {/* your existing rocking animation */}
+            {/* existing rocking animation */}
             <animateTransform
               attributeName="transform"
               type="rotate"
@@ -208,16 +207,9 @@ const ProductPage = ({ products: externalProducts }) => {
               dur="5s"
               repeatCount="indefinite"
             />
-            {/* your original sparkles */}
+            {/* original sparkles */}
           </g>
-          <text
-            x="150"
-            y="105"
-            font-size="24"
-            fill="#E1BEE7"
-            text-anchor="middle"
-            className="banner-star"
-          >
+          <text x="150" y="105" fill="#E1BEE7" className="banner-star">
             <animate
               attributeName="x"
               from="-50"
@@ -230,14 +222,7 @@ const ProductPage = ({ products: externalProducts }) => {
             ⭐
           </text>
 
-          <text
-            x="1600"
-            y="155"
-            font-size="24"
-            fill="#E1BEE7"
-            text-anchor="middle"
-            className="shooting-star"
-          >
+          <text x="1600" y="155" fill="#E1BEE7" className="shooting-star">
             <animate
               attributeName="opacity"
               values="0.2;0.8;0.2"
@@ -249,7 +234,7 @@ const ProductPage = ({ products: externalProducts }) => {
             ⭐
           </text>
 
-          <text x="50" y="80" fontSize="32" fill="#39FF14" filter="url(#glow)">
+          <text x="50" y="80" fill="#39FF14" filter="url(#glow)">
             ★
             <animate
               attributeName="opacity"
@@ -265,7 +250,6 @@ const ProductPage = ({ products: externalProducts }) => {
           <text
             x="1910"
             y="70"
-            fontSize="32"
             fill="#00FFFF"
             filter="url(#glow)"
             opacity="0.6"
@@ -283,7 +267,6 @@ const ProductPage = ({ products: externalProducts }) => {
           <text
             x="1860"
             y="120"
-            fontSize="32"
             fill="#D000FF"
             filter="url(#glow)"
             opacity="0.6"
@@ -300,7 +283,7 @@ const ProductPage = ({ products: externalProducts }) => {
           </text>
 
           {/* Neon Purple ★ */}
-          <text x="350" y="60" fontSize="32" fill="#D000FF" filter="url(#glow)">
+          <text x="350" y="60" fill="#D000FF" filter="url(#glow)">
             ★
             <animate
               attributeName="opacity"
@@ -313,13 +296,7 @@ const ProductPage = ({ products: externalProducts }) => {
           </text>
 
           {/* Neon Orange ★ */}
-          <text
-            x="230"
-            y="115"
-            fontSize="32"
-            fill="#FF7F00"
-            filter="url(#glow)"
-          >
+          <text x="230" y="115" fill="#FF7F00" filter="url(#glow)">
             ★
             <animate
               attributeName="opacity"
@@ -331,13 +308,7 @@ const ProductPage = ({ products: externalProducts }) => {
             ></animate>
           </text>
 
-          <text
-            x="1710"
-            y="75"
-            fontSize="32"
-            fill="#FF7F00"
-            filter="url(#glow)"
-          >
+          <text x="1710" y="75" fill="#FF7F00" filter="url(#glow)">
             ★
             <animate
               attributeName="opacity"
@@ -349,7 +320,7 @@ const ProductPage = ({ products: externalProducts }) => {
             ></animate>
           </text>
 
-          <text x="450" y="110" font-size="24" fill="#E1BEE7">
+          <text x="450" y="110" fill="#E1BEE7">
             <animate
               attributeName="x"
               from="450"
@@ -362,7 +333,7 @@ const ProductPage = ({ products: externalProducts }) => {
             ✨
           </text>
 
-          <text x="1500" y="110" font-size="24" fill="#E1BEE7">
+          <text x="1500" y="110" fill="#E1BEE7">
             <animate
               attributeName="x"
               from="1500"
@@ -537,28 +508,26 @@ const ProductPage = ({ products: externalProducts }) => {
       <AnimatedBackground />
       <div className="product-body">
         <div className="container">
-          <div className="logo-grid">
-            {products.length > 0 ? (
-              products.map((product) => (
-                <>
-                  <div className="product-main-container">
-                    <div className="product-item-container" key={product.id}>
-                      <Product
-                        id={product.id}
-                        name={product.name}
-                        description={product.description}
-                        price={product.price}
-                        quantity={product.quantity}
-                        pictureVersion={product.pictureVersion}
-                        pictureType={product.pictureType}
-                      />
-                    </div>
+          <div className="product-grid">
+            <div className="product-main-container">
+              {products.length > 0 ? (
+                products.map((product) => (
+                  <div className="product-item-container" key={product.id}>
+                    <Product
+                      id={product.id}
+                      name={product.name}
+                      description={product.description}
+                      price={product.price}
+                      quantity={product.quantity}
+                      pictureVersion={product.pictureVersion}
+                      pictureType={product.pictureType}
+                    />
                   </div>
-                </>
-              ))
-            ) : (
-              <p>No products available.</p>
-            )}
+                ))
+              ) : (
+                <p>No products available.</p>
+              )}
+            </div>
           </div>
         </div>
       </div>

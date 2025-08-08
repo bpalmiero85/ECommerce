@@ -92,8 +92,6 @@ const ComingSoon = () => {
           {/* text + glow */}
           <g
             fontFamily="Creepster, Griffy, cursive"
-            fontSize="120"
-            textAnchor="middle"
             dominantBaseline="middle"
             filter="url(#glow)"
           >
@@ -131,9 +129,9 @@ const ComingSoon = () => {
           <text
             x="150"
             y="105"
-            font-size="24"
+            fonSize="24"
             fill="#E1BEE7"
-            text-anchor="middle"
+            textAnchor="middle"
             className="banner-star"
           >
             <animate
@@ -151,9 +149,7 @@ const ComingSoon = () => {
           <text
             x="1600"
             y="155"
-            font-size="24"
             fill="#E1BEE7"
-            text-anchor="middle"
             className="shooting-star"
           >
             <animate
@@ -170,7 +166,6 @@ const ComingSoon = () => {
           <text
             x="50"
             y="80"
-            fontSize="32"
             fill="#39FF14"
             filter="url(#glow)"
             className="color-star"
@@ -190,7 +185,6 @@ const ComingSoon = () => {
           <text
             x="1910"
             y="70"
-            fontSize="32"
             fill="#00FFFF"
             filter="url(#glow)"
             opacity="0.6"
@@ -209,7 +203,6 @@ const ComingSoon = () => {
           <text
             x="1860"
             y="120"
-            fontSize="32"
             fill="#D000FF"
             filter="url(#glow)"
             opacity="0.6"
@@ -230,7 +223,6 @@ const ComingSoon = () => {
           <text
             x="350"
             y="60"
-            fontSize="32"
             fill="#D000FF"
             filter="url(#glow)"
             className="color-star"
@@ -250,7 +242,6 @@ const ComingSoon = () => {
           <text
             x="230"
             y="115"
-            fontSize="32"
             fill="#FF7F00"
             filter="url(#glow)"
             className="color-star"
@@ -269,7 +260,6 @@ const ComingSoon = () => {
           <text
             x="1710"
             y="75"
-            fontSize="32"
             fill="#FF7F00"
             filter="url(#glow)"
             className="color-star"
@@ -285,7 +275,7 @@ const ComingSoon = () => {
             ></animate>
           </text>
 
-          <text x="450" y="110" font-size="24" fill="#E1BEE7">
+          <text x="450" y="110" fill="#E1BEE7">
             <animate
               attributeName="opacity"
               values="0.2;1;0.2"
@@ -296,7 +286,7 @@ const ComingSoon = () => {
             ✨
           </text>
 
-          <text x="1500" y="110" font-size="24" fill="#E1BEE7">
+          <text x="1500" y="110" fill="#E1BEE7">
             <animate
               attributeName="opacity"
               values="0.2;1;0.2"

@@ -288,7 +288,7 @@ try{
            
             <div 
              key={product.id}
-             className="logo-card">
+             className="product-card">
              
               <div
                 id={`${product.id}`}
@@ -400,7 +400,7 @@ try{
                     </form>
                   ) : (
                     <>
-                      <div className="logo-design">
+                      <div className="product-design">
                         <div className="gothic-crown">
                           <div className="crown-stars">
                             <div className="crown-star">✦</div>
@@ -410,9 +410,9 @@ try{
                         </div>
                       </div>
                       <div className="product-container">
-                        <div className="logo-text">{product.name}</div>
+                        <div className="product-text">{product.name}</div>
 
-                        <div className="logo-description">
+                        <div className="product-description">
                           {product.description}
                         </div>
                         <p className="product-price">Price: ${product.price}</p>

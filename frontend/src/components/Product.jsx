@@ -46,9 +46,9 @@ const Product = ({
   }, [isOpen]);
 
   return (
-    <div className="logo-card">
+    <div className="product-card">
       <a className="product-anchor" href={`/product/${id}`}>
-        <div className="logo-design">
+        <div className="product-design">
           <div className="gothic-rose-container">
             <div className="gothic-rose">
               <img className="product-image" src={imageUrl} alt={name}></img>
@@ -61,10 +61,10 @@ const Product = ({
             </div>
           </div>
         </div>
-        <div className="logo-text">
+        <div className="product-text">
           <h3>{name}</h3>
         </div>
-        <div className="logo-description2">
+        <div className="product-description2">
           <p>{description}</p>
         </div>
         <div className="product-price">
