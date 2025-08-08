@@ -16,8 +16,13 @@ function FeaturedProducts() {
         setProducts((prev) => {
           const existingIds = new Set(prev.map((p) => p.id));
           const onlyNew = fetched.filter((p) => !existingIds.has(p.id));
-          return [...prev, ...onlyNew];
+          const fetchedMap = new Map(fetched.map((p) => [p.id, p]));
+          const updatedProducts = prev.map((oldProd) =>
+            fetchedMap.has(oldProd.id) ? fetchedMap.get(oldProd.id) : oldProd
+          );
+          return [...updatedProducts, ...onlyNew];
         });
+
       } catch (err) {
         console.error("Error fetching products:", err);
       }

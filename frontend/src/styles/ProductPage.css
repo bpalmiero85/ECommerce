@@ -845,7 +845,8 @@ body {
 }
 
 @media (max-width: 800px){
-  .product-grid{
+  .product-grid {
+    max-width: 100%;
     grid-template-columns: 1fr 1fr;
   }
 }
