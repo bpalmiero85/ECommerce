@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ProductPage from "../pages/ProductPage.jsx";
-import "../styles/ProductPage.css";
 import "../styles/styles.css";
+import "../styles/ProductPage.css";
 
 function FeaturedProducts() {
   const [products, setProducts] = useState([]);

@@ -712,11 +712,6 @@ p {
   margin-left: 0.25rem;
 }
 
-.product-name {
-  color: white;
-  font-weight: 500;
-  margin-bottom: 0.75rem;
-}
 
 .price-section {
   display: flex;

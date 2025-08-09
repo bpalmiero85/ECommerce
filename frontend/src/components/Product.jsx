@@ -11,6 +11,7 @@ const Product = ({
   quantity,
   description,
   pictureVersion,
+  onDecrementQty,
 }) => {
   const { addToCart } = useContext(CartContext);
   const [subtotal, setSubtotal] = useState(0);
@@ -25,6 +26,7 @@ const Product = ({
     setSubtotal(price);
     setIsOpen(true);
   };
+
 
   const handleClickOutside = (e) => {
     if (cardRef.current && !cardRef.current.contains(e.target)) {
@@ -46,7 +48,8 @@ const Product = ({
   }, [isOpen]);
 
   return (
-    <div className="product-card">
+    <div className={`product-card ${quantity === 0 ? "sold-out" : ""}`}>
+    {quantity === 0 && <div className="sold-out-badge">Sold Out</div>}
       <a className="product-anchor" href={`/product/${id}`}>
         <div className="product-design">
           <div className="gothic-rose-container">
@@ -61,21 +64,21 @@ const Product = ({
             </div>
           </div>
         </div>
-        <div className="product-text">
-          <h3>{name}</h3>
+        <div className="product-name-container">
+          <h3 className="product-name">{name}</h3>
         </div>
-        <div className="product-description2">
-          <p>{description}</p>
+        <div className="product-description-container">
+          <p className="product-description">{description}</p>
         </div>
-        <div className="product-price">
-          <p>${price}</p>
+        <div className="product-price-container">
+          <p className="product-price">${price}</p>
         </div>
-        <div className="product-quantity">
-          <p>Qty: {quantity}</p>
+        <div className="product-quantity-container">
+          <p className="product-quantity">Available qty: {quantity}</p>
         </div>
       </a>
 
-      <div className={`purchse-container${isOpen ? " hidden" : ""}`}>
+      <div className={`purchase-container${isOpen ? " hidden" : ""}`}>
         <div className="purchase-buttons">
           <button
             type="button"
@@ -87,16 +90,19 @@ const Product = ({
           </button>
           <button
             type="button"
+            className={added ? "added-to-cart" : "add-to-cart"}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              onDecrementQty(id);
               addToCart({ id, name, price, imageUrl });
               addPriceToCart();
               setAdded(true);
             }}
           >
-            {added ? "Added to cart" : "Add to cart"}
+            {quantity === 0 ? "Currently Sold Out" : added ? "Item in your cart" : "Add to cart"}
           </button>
+          {added && <div className="check-mark"><h3>✅</h3></div>}
         </div>
       </div>
     </div>

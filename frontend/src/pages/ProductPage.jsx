@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useContext } from "react";
 import { CartContext } from "../contexts/CartContext";
-import "../styles/ProductPage.css";
 import "../styles/AdminPage.css";
+import "../styles/ProductPage.css";
 import Product from "../components/Product";
 import ShoppingCart from "../components/ShoppingCart";
 import AnimatedBackground from "../components/AnimatedBackground";
@@ -19,6 +19,15 @@ const ProductPage = ({ products: externalProducts }) => {
   const handleCancelCart = () => {
     setIsCartShown(false);
   };
+
+    const decrementProductQty = (productId) => {
+    setProducts(prev => 
+      prev.map((p) => 
+        p.id === productId && p.quantity > 0 ? { ...p, quantity: p.quantity - 1 } : p
+      )
+    )
+  };
+
 
   useEffect(() => {
     if (externalProducts?.length > 0) {
@@ -521,6 +530,7 @@ const ProductPage = ({ products: externalProducts }) => {
                       quantity={product.quantity}
                       pictureVersion={product.pictureVersion}
                       pictureType={product.pictureType}
+                      onDecrementQty={decrementProductQty}
                     />
                   </div>
                 ))

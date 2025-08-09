@@ -410,7 +410,7 @@ try{
                         </div>
                       </div>
                       <div className="product-container">
-                        <div className="product-text">{product.name}</div>
+                        <div className="product-name">{product.name}</div>
 
                         <div className="product-description">
                           {product.description}
