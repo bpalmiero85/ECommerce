@@ -215,9 +215,9 @@
   background-color: rgb(66, 143, 169);
   cursor: pointer;
 }
+
 .product-grid-container {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   grid-template-columns: repeat(auto-fill);
   gap: 80px;
   max-width: 100%;

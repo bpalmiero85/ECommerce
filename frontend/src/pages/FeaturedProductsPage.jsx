@@ -48,7 +48,7 @@ function FeaturedProducts() {
         </p>
       </div>
 
-      <div className="products-grid">
+      <div className="products-grid-container">
         <ProductPage products={products} />
       </div>
     </section>

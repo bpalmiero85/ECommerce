@@ -168,7 +168,7 @@ const ProductPicture = ({
               </div>
               {isCropping && (
                 <div className="crop-button-container">
-                  <button onClick={handleCropAndUpload} className="crop-button">
+                  <button onClick={() => handleCropAndUpload(productId)} className="crop-button">
                     Crop & Save
                   </button>
                 </div>
@@ -183,9 +183,7 @@ const ProductPicture = ({
               />
             </div>
           ) : (
-            <button onClick={handleFileSelect} className="upload-button">
-              Upload Product Picture
-            </button>
+           ""
           )}
 
           <input

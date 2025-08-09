@@ -633,11 +633,10 @@ p {
   font-size: 1.125rem;
 }
 
-.products-grid {
+.products-grid-container {
   margin-top: -200px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .product-card:hover {
@@ -803,6 +802,7 @@ p {
   background: var(--neon-cyan);
 }
 
+
 @media (max-width: 785px) {
   .nav-actions {
     margin-top: 15px;
@@ -820,10 +820,5 @@ p {
 
   .section-title {
     font-size: 2.5rem;
-  }
-
-  .products-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto;
   }
 }

@@ -507,9 +507,9 @@ const ProductPage = ({ products: externalProducts }) => {
 
       <AnimatedBackground />
       <div className="product-body">
-        <div className="container">
+        <div className="product-main-container">
+        <div className="products-container">
           <div className="product-grid">
-            <div className="product-main-container">
               {products.length > 0 ? (
                 products.map((product) => (
                   <div className="product-item-container" key={product.id}>
@@ -531,7 +531,7 @@ const ProductPage = ({ products: externalProducts }) => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
   );
 };
 
