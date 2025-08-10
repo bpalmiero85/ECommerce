@@ -9,8 +9,15 @@ import CheckoutPage from "./CheckoutPage";
 
 const ProductPage = ({ products: externalProducts }) => {
   const [products, setProducts] = useState([]);
+  const [availableById, setAvailableById] = useState({});
   const [isCartShown, setIsCartShown] = useState(false);
   const { cartItems } = useContext(CartContext);
+
+  async function fetchAvailable(id){
+    const resp = await fetch(`http://localhost:8080/api/inventory/${id}/available`);
+    const qty = await resp.json();
+    setAvailableById(prev => ({ ...prev, [id]: qty}));
+  }
 
   const handleClickCart = () => {
     setIsCartShown((open) => !open);
@@ -27,6 +34,10 @@ const ProductPage = ({ products: externalProducts }) => {
       )
     )
   };
+
+  useEffect(() => {
+    if(!products.length) return;
+  }, [products]);
 
 
   useEffect(() => {
@@ -527,10 +538,10 @@ const ProductPage = ({ products: externalProducts }) => {
                       name={product.name}
                       description={product.description}
                       price={product.price}
-                      quantity={product.quantity}
+                      quantity={availableById[product.id] ?? product.quantity}
                       pictureVersion={product.pictureVersion}
                       pictureType={product.pictureType}
-                      onDecrementQty={decrementProductQty}
+                      onReserved={fetchAvailable}
                     />
                   </div>
                 ))

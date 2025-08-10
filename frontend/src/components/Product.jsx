@@ -11,11 +11,12 @@ const Product = ({
   quantity,
   description,
   pictureVersion,
-  onDecrementQty,
+  onReserved,
 }) => {
   const { addToCart } = useContext(CartContext);
   const [subtotal, setSubtotal] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const cardRef = useRef(null);
   const [added, setAdded] = useState(false);
 
@@ -26,7 +27,6 @@ const Product = ({
     setSubtotal(price);
     setIsOpen(true);
   };
-
 
   const handleClickOutside = (e) => {
     if (cardRef.current && !cardRef.current.contains(e.target)) {
@@ -49,18 +49,12 @@ const Product = ({
 
   return (
     <div className={`product-card ${quantity === 0 ? "sold-out" : ""}`}>
-    {quantity === 0 && <div className="sold-out-badge">Sold Out</div>}
+      {quantity === 0 && <div className="sold-out-badge">Sold Out</div>}
       <a className="product-anchor" href={`/product/${id}`}>
         <div className="product-design">
           <div className="gothic-rose-container">
             <div className="gothic-rose">
               <img className="product-image" src={imageUrl} alt={name}></img>
-            </div>
-            <div className="rose-glitter-effect">
-              <div className="glitter-particle">✨</div>
-              <div className="glitter-particle">✦</div>
-              <div className="glitter-particle">✧</div>
-              <div className="glitter-particle">✨</div>
             </div>
           </div>
         </div>
@@ -91,18 +85,39 @@ const Product = ({
           <button
             type="button"
             className={added ? "added-to-cart" : "add-to-cart"}
-            onClick={(e) => {
+            disabled={isOpen || quantity === 0 || saving}
+            onClick={async (e) => {
               e.preventDefault();
               e.stopPropagation();
-              onDecrementQty(id);
-              addToCart({ id, name, price, imageUrl });
-              addPriceToCart();
-              setAdded(true);
+              if (quantity === 0 || saving) return;
+              setSaving(true);
+              const res = await fetch(`http://localhost:8080/api/inventory/${id}/reserve`, {
+                method: "POST",
+              });
+              if (res.ok) {
+                addToCart({ id, name, price, imageUrl });
+                setAdded(true);
+                onReserved?.(id);
+                addPriceToCart();
+              } else if (res.status === 409) {
+                alert("Sorry, this item just sold out.");
+              }
+            
+              setSaving(false);
             }}
           >
-            {quantity === 0 ? "Currently Sold Out" : added ? "Item in your cart" : "Add to cart"}
+            {quantity === 0
+              ? "Sold Out"
+              : saving ? "Adding..."
+              : added 
+              ? "Item in your cart"
+              : "Add to cart"}
           </button>
-          {added && <div className="check-mark"><h3>✅</h3></div>}
+          {added && (
+            <div className="check-mark">
+              <h3>✅</h3>
+            </div>
+          )}
         </div>
       </div>
     </div>

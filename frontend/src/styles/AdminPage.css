@@ -218,7 +218,7 @@
 
 .product-grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 80px;
   max-width: 100%;
   padding: 25px;

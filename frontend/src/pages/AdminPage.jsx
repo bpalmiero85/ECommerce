@@ -29,7 +29,7 @@ const AdminPage = () => {
 
       const data = await response.json();
 
-      setProducts(data); 
+      setProducts(data);
     } catch (error) {
       console.error("Error fetching products", error);
     }
@@ -150,11 +150,16 @@ const AdminPage = () => {
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
 
-    if(!isEditingId) {
+    if (!isEditingId) {
       console.error("No product selected to edit");
       return;
     }
-    console.log("Saving product: ", isEditingId, {name, description, price, quantity});
+    console.log("Saving product: ", isEditingId, {
+      name,
+      description,
+      price,
+      quantity,
+    });
     const id = isEditingId;
     const updated = {
       name,
@@ -162,57 +167,53 @@ const AdminPage = () => {
       price: +price,
       quantity: +quantity,
     };
-try{
-    const response = await fetch(`http://localhost:8080/api/products/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updated),
-    }
-  );
+    try {
+      const response = await fetch(`http://localhost:8080/api/products/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updated),
+      });
 
+      if (!response.ok) {
+        throw new Error(`Failed to update: ${response.statusText}`);
+      }
+      if (selectedFile) {
+        console.log("Uploading picture...");
+        const formData = new FormData();
+        formData.append("file", selectedFile);
 
-    if (!response.ok){
-      throw new Error(`Failed to update: ${response.statusText}`);
-    } 
-    if(selectedFile){
-      console.log("Uploading picture...");
-      const formData = new FormData();
-      formData.append("file", selectedFile);
-
-      const picRes = await fetch(
-        `http://localhost:8080/api/product/${id}/uploadPicture`,
-        {
-          method: "POST",
-          body: formData,
-        }
+        const picRes = await fetch(
+          `http://localhost:8080/api/product/${id}/uploadPicture`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+        console.log("<- Pic upload status: ", picRes.status, picRes.statusText);
+        const picText = await picRes.text();
+        console.log("<- Pic upload body: ", picText);
+        if (!picRes.ok)
+          throw new Error(`Image upload failed: ${picRes.status}: ${picText}`);
+      }
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === id ? { ...p, pictureVersion: Date.now() } : p
+        )
       );
-      console.log("<- Pic upload status: ", picRes.status, picRes.statusText);
-      const picText = await picRes.text();
-      console.log("<- Pic upload body: ", picText);
-      if(!picRes.ok) throw new Error(`Image upload failed: ${picRes.status}: ${picText}`);
+      console.log("Update succeeded, refreshing list...");
+      setIsEditingId(null);
+      setName("");
+      setDescription("");
+      setPrice("");
+      setQuantity("");
+      setSelectedFile(null);
+
+      await fetchProducts();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      console.groupEnd();
     }
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === id ? { ...p, pictureVersion: Date.now() } : p
-      )
-    );
-    console.log("Update succeeded, refreshing list...")
-    setIsEditingId(null);
-    setName("");
-    setDescription("");
-    setPrice("");
-    setQuantity("");
-    setSelectedFile(null);
-
-    await fetchProducts();
-
-  } catch(error){
-    console.error(error);
-
-  } finally{
-    console.groupEnd();
-  }
-      
   };
 
   return (
@@ -220,9 +221,7 @@ try{
       <div className="product-form">
         <h1>Home</h1>
         <h1>List an item:</h1>
-        {/** Script block below is to clear form input fields after submission */}
-
-        <form
+          <form
           onSubmit={isEditingId ? handleUpdateProduct : handleSubmit}
           id="productForm"
           ref={formRef}
@@ -285,22 +284,15 @@ try{
       <div className="product-grid-container">
         {products.length > 0 ? (
           products.map((product) => (
-           
-            <div 
-             key={product.id}
-             className="product-card">
-             
-              <div
-                id={`${product.id}`}
-                className="product-item"
-              >
+            <div key={product.id} className="product-card">
+              <div id={`${product.id}`} className="product-item">
                 <div className="product-buttons">
-                 <ProductPicture 
-                  productId={product.id}
-                  onUpload={() => fetchProducts()}
-                  setIsPictureUploaded={setIsPictureUploaded}
-                  setCroppingStatus={setCroppingStatus}
-              />
+                  <ProductPicture
+                    productId={product.id}
+                    onUpload={() => fetchProducts()}
+                    setIsPictureUploaded={setIsPictureUploaded}
+                    setCroppingStatus={setCroppingStatus}
+                  />
                   <div className="product-edit-button">
                     <button
                       onClick={() => {
@@ -310,8 +302,6 @@ try{
                         setPrice(product.price);
                         setQuantity(product.quantity);
                         setProductPicture(product.productPicture);
-                      
-                     
 
                         document
                           .getElementById(`${product.id}`)
@@ -333,7 +323,11 @@ try{
                       key={`pic-${product.id}-${
                         product.pictureVersion || product.pictureType
                       }`}
-                      src={`http://localhost:8080/api/product/${product.id}/picture?version=${product.pictureVersion || Date.now()}`}
+                      src={`http://localhost:8080/api/product/${
+                        product.id
+                      }/picture?version=${
+                        product.pictureVersion || Date.now()
+                      }`}
                       alt={product.name}
                     ></img>
                   </div>
@@ -378,10 +372,7 @@ try{
                         required
                       />
 
-                      <button
-                        className="edit-button"
-                        type="submit"
-                      >
+                      <button className="edit-button" type="submit">
                         Save
                       </button>
                       <button
@@ -400,15 +391,6 @@ try{
                     </form>
                   ) : (
                     <>
-                      <div className="product-design">
-                        <div className="gothic-crown">
-                          <div className="crown-stars">
-                            <div className="crown-star">✦</div>
-                            <div className="crown-star">✧</div>
-                            <div className="crown-star">✦</div>
-                          </div>
-                        </div>
-                      </div>
                       <div className="product-container">
                         <div className="product-name">{product.name}</div>
 

@@ -8,21 +8,26 @@ import org.springframework.stereotype.Service;
 import com.example.demo.model.Product;
 import com.example.demo.repository.ProductRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class ProductService {
 
   private final ProductRepository productRepository;
-
-  public ProductService(ProductRepository productRepository) {
-    this.productRepository = productRepository;
-  }
+  private final InventoryMemory inventory;
 
   public Product saveProduct(Product product) {
-    return productRepository.save(product);
+    Product saved = productRepository.save(product);
+    inventory.setStock(saved.getId(), saved.getQuantity());
+    return saved;
   }
 
   public List<Product> getAllProducts() {
-    return productRepository.findAll();
+    List<Product> list = productRepository.findAll();
+
+    list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
+    return list;
   }
 
   public Optional<Product> getProductById(Long id) {
@@ -52,7 +57,10 @@ public class ProductService {
       product.setPrice(updatedProduct.getPrice());
       product.setQuantity(updatedProduct.getQuantity());
       product.setPictureVersion(System.currentTimeMillis());
-      return productRepository.save(product);
+      Product saved = productRepository.save(product);
+
+      inventory.setStock(saved.getId(), saved.getQuantity());
+      return saved;
     } else {
       throw new RuntimeException("Product not found");
     }
