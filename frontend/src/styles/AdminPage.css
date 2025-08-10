@@ -118,14 +118,6 @@
   border-radius: 15px;
 }
 
-.product-container {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  max-height: fit-content;
-  margin-top: -160px;
-}
-
 .items-for-sale-header {
   display: flex;
   position: relative;

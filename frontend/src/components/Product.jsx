@@ -17,6 +17,8 @@ const Product = ({
   const [subtotal, setSubtotal] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [isLastItemShown, setIsLastItemShown] = useState(false);
   const cardRef = useRef(null);
   const [added, setAdded] = useState(false);
 
@@ -27,6 +29,15 @@ const Product = ({
     setSubtotal(price);
     setIsOpen(true);
   };
+
+  const showTempMessage = (text, ms = 2200) => {
+    setMessage(text);
+    setIsLastItemShown(true);
+    setTimeout(() => {
+      setIsLastItemShown(false);
+      setMessage("");
+    }, ms);
+  }; 
 
   const handleClickOutside = (e) => {
     if (cardRef.current && !cardRef.current.contains(e.target)) {
@@ -94,6 +105,11 @@ const Product = ({
               const res = await fetch(`http://localhost:8080/api/inventory/${id}/reserve`, {
                 method: "POST",
               });
+
+              if(quantity === 1){
+                showTempMessage("You got the last one!");
+              }
+
               if (res.ok) {
                 addToCart({ id, name, price, imageUrl });
                 setAdded(true);
@@ -107,7 +123,7 @@ const Product = ({
             }}
           >
             {quantity === 0
-              ? "Sold Out"
+              ? (added ? "Item in your cart" : "Sold Out")
               : saving ? "Adding..."
               : added 
               ? "Item in your cart"
@@ -117,6 +133,9 @@ const Product = ({
             <div className="check-mark">
               <h3>✅</h3>
             </div>
+          )}
+          {isLastItemShown && (
+            <div className="last-item-message">{message}</div>
           )}
         </div>
       </div>

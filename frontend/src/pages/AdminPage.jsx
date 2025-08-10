@@ -391,7 +391,7 @@ const AdminPage = () => {
                     </form>
                   ) : (
                     <>
-                      <div className="product-container">
+                      <div className="admin-product-container">
                         <div className="product-name">{product.name}</div>
 
                         <div className="product-description">

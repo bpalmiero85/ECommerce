@@ -76,6 +76,17 @@ body {
   font-weight:700;
 }
 
+.last-item-message{
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  color: black;
+  font-size: 0.8rem;
+  border-radius: 10px;
+  border: 2px solid rgb(0, 255, 0);
+  background-color: rgb(219, 99, 255);
+}
+
 .cart-modal-pay-button button {
   display: flex;
   position: absolute;
