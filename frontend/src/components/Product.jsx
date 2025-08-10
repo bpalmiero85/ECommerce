@@ -3,6 +3,7 @@ import { CartContext } from "../contexts/CartContext";
 import CheckoutPage from "../pages/CheckoutPage";
 import "../styles/AdminPage.css";
 import "../styles/ProductPage.css";
+import ShoppingCart from "./ShoppingCart";
 
 const Product = ({
   id,
@@ -30,14 +31,10 @@ const Product = ({
     setIsOpen(true);
   };
 
-  const showTempMessage = (text, ms = 2200) => {
+  const showTempMessage = (text) => {
     setMessage(text);
     setIsLastItemShown(true);
-    setTimeout(() => {
-      setIsLastItemShown(false);
-      setMessage("");
-    }, ms);
-  }; 
+  };
 
   const handleClickOutside = (e) => {
     if (cardRef.current && !cardRef.current.contains(e.target)) {
@@ -87,14 +84,6 @@ const Product = ({
         <div className="purchase-buttons">
           <button
             type="button"
-            className="purchase-button"
-            onClick={openPurchase}
-            disabled={isOpen}
-          >
-            Purchase
-          </button>
-          <button
-            type="button"
             className={added ? "added-to-cart" : "add-to-cart"}
             disabled={isOpen || quantity === 0 || saving}
             onClick={async (e) => {
@@ -102,11 +91,14 @@ const Product = ({
               e.stopPropagation();
               if (quantity === 0 || saving) return;
               setSaving(true);
-              const res = await fetch(`http://localhost:8080/api/inventory/${id}/reserve`, {
-                method: "POST",
-              });
+              const res = await fetch(
+                `http://localhost:8080/api/inventory/${id}/reserve`,
+                {
+                  method: "POST",
+                }
+              );
 
-              if(quantity === 1){
+              if (quantity === 1) {
                 showTempMessage("You got the last one!");
               }
 
@@ -118,14 +110,17 @@ const Product = ({
               } else if (res.status === 409) {
                 alert("Sorry, this item just sold out.");
               }
-            
+
               setSaving(false);
             }}
           >
             {quantity === 0
-              ? (added ? "Item in your cart" : "Sold Out")
-              : saving ? "Adding..."
-              : added 
+              ? added
+                ? "Item in your cart"
+                : "Sold Out"
+              : saving
+              ? "Adding..."
+              : added
               ? "Item in your cart"
               : "Add to cart"}
           </button>
