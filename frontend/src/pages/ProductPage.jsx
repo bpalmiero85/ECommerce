@@ -548,6 +548,19 @@ const ProductPage = ({ products: externalProducts }) => {
               ) : (
                 <p>No products available.</p>
               )}
+                <button
+                  onClick={handleClickCart}
+                  className="btn btn-lg btn-ghost anchored"
+                  style={{ color: "white" }}
+                >
+                <div className="cart-header">
+                <p className="cart-header-text">Your Cart</p>
+                </div>
+                <div className="cart-container">
+                  <img className="shopping-cart" src="shopping-cart.png"></img>
+                  </div>
+                  <span className="cart-badge">{cartItems.length}</span>
+                </button>
             </div>
           </div>
         </div>

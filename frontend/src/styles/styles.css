@@ -274,6 +274,45 @@ p {
   position: relative;
 }
 
+.anchored {
+  background: rgb(255, 204, 1);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  max-width: 40px;
+  height: 40px;
+  padding: 1px;
+  position: fixed;
+  right: 1px;
+  bottom: 15px;
+}
+
+.shopping-cart {
+  width: 60px;
+  height: 30px;
+  right: 25px;
+  position: relative;
+}
+
+.cart-container {
+  left: 10px;
+  width: 100%;
+  position: relative;
+  justify-content: center;
+  display: flex;
+}
+
+.cart-header {
+  width: 100%;
+  height: auto;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.cart-header-text {
+  margin-top: -45px;
+  color: rgb(247, 0, 255);
+}
+
 .absolute {
   position: absolute;
 }
@@ -712,7 +751,6 @@ p {
   margin-left: 0.25rem;
 }
 
-
 .price-section {
   display: flex;
   align-items: center;
@@ -796,7 +834,6 @@ p {
   height: 0.25rem;
   background: var(--neon-cyan);
 }
-
 
 @media (max-width: 785px) {
   .nav-actions {
