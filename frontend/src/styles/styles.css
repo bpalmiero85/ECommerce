@@ -276,6 +276,7 @@ p {
 
 .anchored {
   background: rgb(255, 204, 1);
+  text-shadow: 0 0 7px #fff;
   border-radius: 50%;
   transform: translateX(-50%);
   max-width: 40px;
@@ -304,7 +305,7 @@ p {
 .cart-header {
   width: 100%;
   height: auto;
-  margin-bottom: 15px;
+  margin-bottom: 20px; 
   position: relative;
 }
 
@@ -676,10 +677,6 @@ p {
   margin-top: -200px;
   display: flex;
   flex-direction: column;
-}
-
-.product-card:hover {
-  transform: scale(1.05);
 }
 
 .wishlist-btn {

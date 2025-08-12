@@ -56,18 +56,43 @@ const Product = ({
   }, [isOpen]);
 
   return (
-    <div className={`product-card ${quantity === 0 ? "sold-out" : ""}`}>
+    <div className={quantity === 0 ? "product-card-sold-out" : `product-card ${quantity === 0 ? "sold-out" : ""}`}>
       {quantity === 0 && <div className="sold-out-badge">Sold Out</div>}
-      <a className="product-anchor" href={`/product/${id}`}>
+      <a
+        className={`product-anchor ${quantity === 0 ? "is-disabled" : ""}`}
+        tabIndex={quantity === 0 ? -1 : 0}
+        href={quantity === 0 ? undefined : `/product/${id}`}
+        aria-disabled={quantity === 0}
+        onClick={
+          quantity === 0
+            ? (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }
+            : undefined
+        }
+        onKeyDown={
+          quantity === 0
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }
+              }
+            : undefined
+        }
+      >
         <div className="product-design">
-          <div className="gothic-rose-container">
-            <div className="gothic-rose">
+          <div className="animated-item-container">
+            <div className={quantity === 0 ? "animated-item-sold-out" : "animated-item"}>
               <img className="product-image" src={imageUrl} alt={name}></img>
             </div>
           </div>
         </div>
         <div className="product-name-container">
-          <h3 className="product-name">{name}</h3>
+          <h3 className={quantity === 0 ? "sold-out-name" : "product-name"}>
+            {name}
+          </h3>
         </div>
         <div className="product-description-container">
           <p className="product-description">{description}</p>

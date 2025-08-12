@@ -13,10 +13,12 @@ const ProductPage = ({ products: externalProducts }) => {
   const [isCartShown, setIsCartShown] = useState(false);
   const { cartItems } = useContext(CartContext);
 
-  async function fetchAvailable(id){
-    const resp = await fetch(`http://localhost:8080/api/inventory/${id}/available`);
+  async function fetchAvailable(id) {
+    const resp = await fetch(
+      `http://localhost:8080/api/inventory/${id}/available`
+    );
     const qty = await resp.json();
-    setAvailableById(prev => ({ ...prev, [id]: qty}));
+    setAvailableById((prev) => ({ ...prev, [id]: qty }));
   }
 
   const handleClickCart = () => {
@@ -27,18 +29,19 @@ const ProductPage = ({ products: externalProducts }) => {
     setIsCartShown(false);
   };
 
-    const decrementProductQty = (productId) => {
-    setProducts(prev => 
-      prev.map((p) => 
-        p.id === productId && p.quantity > 0 ? { ...p, quantity: p.quantity - 1 } : p
+  const decrementProductQty = (productId) => {
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === productId && p.quantity > 0
+          ? { ...p, quantity: p.quantity - 1 }
+          : p
       )
-    )
+    );
   };
 
   useEffect(() => {
-    if(!products.length) return;
+    if (!products.length) return;
   }, [products]);
-
 
   useEffect(() => {
     if (externalProducts?.length > 0) {
@@ -57,6 +60,10 @@ const ProductPage = ({ products: externalProducts }) => {
     document.querySelectorAll(".product-design").forEach((logo) => {
       if (!logo.dataset.effectAdded) {
         logo.addEventListener("click", function () {
+          const qty = Number(
+            this.closest(".product-item-container")?.dataset.qty || "0"
+          );
+          if (qty <= 0) return;
           this.style.transform = "scale(0.95)";
           setTimeout(() => {
             this.style.transform = "";
@@ -69,6 +76,10 @@ const ProductPage = ({ products: externalProducts }) => {
     document.querySelectorAll(".product-card").forEach((card) => {
       if (!card.dataset.effectAdded) {
         card.addEventListener("mouseenter", function () {
+          const qty = Number(
+            this.closest(".product-item-container")?.dataset.qty || "0"
+          );
+          if (qty <= 0) return;
           const sparkles = ["✨", "⭐", "✦", "✧"];
           const SPARKLE_COUNT = 20;
           for (let i = 0; i < SPARKLE_COUNT; i++) {
@@ -478,7 +489,7 @@ const ProductPage = ({ products: externalProducts }) => {
             />
           </circle>
         </svg>
-        <div className="nav-container">
+   
           <div className="nav-container">
             <nav className="nav">
               <a href="#home">Home</a>
@@ -523,16 +534,20 @@ const ProductPage = ({ products: externalProducts }) => {
             </nav>
           </div>
         </div>
-      </div>
+    
 
       <AnimatedBackground />
       <div className="product-body">
         <div className="product-main-container">
-        <div className="products-container">
-          <div className="product-grid">
+          <div className="products-container">
+            <div className="product-grid">
               {products.length > 0 ? (
                 products.map((product) => (
-                  <div className="product-item-container" key={product.id}>
+                  <div
+                    className="product-item-container"
+                    key={product.id}
+                    data-qty={availableById[product.id] ?? product.quantity}
+                  >
                     <Product
                       id={product.id}
                       name={product.name}
@@ -548,24 +563,33 @@ const ProductPage = ({ products: externalProducts }) => {
               ) : (
                 <p>No products available.</p>
               )}
-                <button
-                  onClick={handleClickCart}
-                  className="btn btn-lg btn-ghost anchored"
-                  style={{ color: "white" }}
-                >
-                <div className="cart-header">
-                <p className="cart-header-text">Your Cart</p>
+              {cartItems.length > 0 && (
+                <div className="second-cart-container">
+                  <button
+                    onClick={handleClickCart}
+                    className="btn btn-lg btn-ghost anchored"
+                    style={{ color: "white" }}
+                  >
+                    <div className="second-cart-container"></div>
+                    <div className="cart-header">
+                      <p className="cart-header-text">Your Cart</p>
+                    </div>
+
+                    <div className="cart-container">
+                      <img
+                        className="shopping-cart"
+                        src="shopping-cart.png"
+                      ></img>
+                    </div>
+                    <span className="cart-badge">{cartItems.length}</span>
+                  </button>
                 </div>
-                <div className="cart-container">
-                  <img className="shopping-cart" src="shopping-cart.png"></img>
-                  </div>
-                  <span className="cart-badge">{cartItems.length}</span>
-                </button>
+              )}
             </div>
           </div>
         </div>
       </div>
-      </div>
+    </div>
   );
 };
 

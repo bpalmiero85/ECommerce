@@ -64,19 +64,29 @@ body {
   cursor: pointer;
 }
 
-.sold-out { opacity: 0.7; filter: grayscale(0.2); }
-.sold-out-badge {
-  position:absolute; 
-  top:12px; 
-  right:12px; 
-  padding:6px 10px;
-  border-radius:6px; 
-  background:#7b1fa2; 
-  color:#fff; 
-  font-weight:700;
+.sold-out {
+  opacity: 0.7;
+  filter: grayscale(0.2);
+
 }
 
-.last-item-message{
+.sold-out-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #7b1fa2;
+  color: #fff;
+  cursor: not-allowed;
+  font-weight: 700;
+}
+
+.sold-out {
+  cursor: not-allowed;
+}
+
+.last-item-message {
   display: flex;
   flex-direction: column;
   position: absolute;
@@ -281,12 +291,36 @@ body {
   min-height: 600px;
 }
 
-.item-cart{
+.product-card-sold-out{
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 20px;
+  padding: 40px 40px 40px 40px;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(15px);
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+  height: fit-content;
+  margin: 25px;
+  min-height: 600px;
+  opacity: 0.7;
+  filter: grayscale(0.2);
+  cursor: not-allowed;
+}
+
+
+
+.product-card:hover {
+  transform: scale(1.05);
+}
+
+.item-cart {
   position: absolute;
   bottom: 10px;
   right: 10px;
 }
-  
 
 .main-title {
   stroke: rgb(255, 0, 238);
@@ -302,15 +336,15 @@ body {
 .purchase-button {
   cursor: pointer;
 }
-.purchase-button-off{
+.purchase-button-off {
   display: none;
 }
 
-.add-to-cart{
+.add-to-cart {
   cursor: pointer;
 }
 
-.added-to-cart{
+.added-to-cart {
   padding: 2px;
   background-color: rgb(0, 255, 0);
 }
@@ -381,53 +415,6 @@ body {
   justify-content: center;
   margin-bottom: 25px;
   position: relative;
-
-}
-
-/* Crown Logo */
-.gothic-crown {
-  position: relative;
-  font-size: 80px;
-  color: #4a148c;
-  filter: drop-shadow(0 0 10px rgba(74, 20, 140, 0.8));
-  transition: all 0.3s ease;
-}
-
-.gothic-crown:hover {
-  transform: scale(1.1);
-  color: #7b1fa2;
-  filter: drop-shadow(0 0 20px rgba(123, 31, 162, 1));
-}
-
-.crown-stars {
-  position: absolute;
-  top: -20px;
-  left: -30px;
-  right: -30px;
-  height: 60px;
-}
-
-.crown-star {
-  position: absolute;
-  font-size: 16px;
-  color: #e1bee7;
-  animation: twinkle 2s infinite;
-}
-
-.crown-star:nth-child(1) {
-  top: 10px;
-  left: 20%;
-  animation-delay: 0s;
-}
-.crown-star:nth-child(2) {
-  top: 0px;
-  left: 50%;
-  animation-delay: 0.5s;
-}
-.crown-star:nth-child(3) {
-  top: 15px;
-  right: 20%;
-  animation-delay: 1s;
 }
 
 @keyframes twinkle {
@@ -719,16 +706,18 @@ body {
   }
 }
 
-/* Gothic Rose Logo */
-.gothic-rose-container {
+.animated-item-container {
   position: relative;
 }
 
-.gothic-rose {
+.animated-item {
   font-size: 80px;
   color: #880e4f;
   filter: drop-shadow(0 0 15px rgba(136, 14, 79, 0.8));
   animation: roseBloom 4s ease-in-out infinite;
+}
+
+.animated-item-sold-out {
 }
 
 @keyframes roseBloom {
@@ -804,6 +793,14 @@ body {
   margin-bottom: 15px;
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
   transition: all 0.3s ease;
+}
+
+.sold-out-name {
+  font-family: "fantasy";
+  text-decoration: underline;
+  text-underline-offset: 10px;
+  font-size: 2rem;
+  color: #e1bee7;
 }
 
 .product-name {
