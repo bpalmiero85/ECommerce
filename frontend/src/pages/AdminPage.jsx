@@ -15,7 +15,17 @@ const AdminPage = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isPictureUploaded, setIsPictureUploaded] = useState(false);
   const [croppingStatus, setCroppingStatus] = useState(false);
+  const [category, setCategory] = useState("");
   const formRef = useRef(null);
+  const CATEGORIES = [
+    "Fidgets & Sensory",
+    "Jewelry",
+    "Figurines",
+    "Accessories",
+    "Home Decor",
+    "Custom Orders",
+    "Garbage Ghouls",
+  ]
 
   const fetchProducts = async () => {
     try {
@@ -53,6 +63,7 @@ const AdminPage = () => {
           description: description,
           price: parseFloat(price),
           quantity: parseInt(quantity, 10),
+          category: category,
         }),
       });
 
@@ -206,6 +217,7 @@ const AdminPage = () => {
       setDescription("");
       setPrice("");
       setQuantity("");
+      setCategory("");
       setSelectedFile(null);
 
       await fetchProducts();
@@ -261,6 +273,23 @@ const AdminPage = () => {
             onChange={(e) => setQuantity(e.target.value)}
             required
           />
+          <div className="category-select">
+          <label>Category: </label>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+          {CATEGORIES.map((category) => (
+              <option 
+                key={category} 
+                value={category}
+              >
+            {category}
+            </option>
+          ))}
+          </select>
+          </div>
+         
           <label className="custom-file-upload">
             Upload picture
             <input
@@ -371,6 +400,21 @@ const AdminPage = () => {
                         onChange={(e) => setQuantity(e.target.value)}
                         required
                       />
+                      <label>Category: </label>
+                      <select
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                      >
+                        {CATEGORIES.map((category) => (
+                          <option
+                            key={category}
+                            value={category}
+                          >
+                            {category}
+                          </option>
+                        ))}
+                      </select>
+                      
 
                       <button className="edit-button" type="submit">
                         Save
