@@ -56,6 +56,9 @@ export default function CheckoutPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
+  // Empty cart state
+  const [isEmpty, setIsEmpty] = useState(true);
+
   // Stripe card state
   const [isCardComplete, setIsCardComplete] = useState(false);
 
@@ -140,20 +143,17 @@ export default function CheckoutPage() {
     e.preventDefault();
     setProcessing(true);
 
-    
-
     try {
       // 1) Hit backend to create a PaymentIntent
-         const tax = shippingState === "OH" ? subtotal * 0.0725 : 0;
-         const total = subtotal + tax;
+      const tax = shippingState === "OH" ? subtotal * 0.0725 : 0;
+      const total = subtotal + tax;
 
-         const { clientSecret } = await fetch("/api/create-payment-intent", {
-         method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({
-            amount: Math.round(total * 100),
-            state: shippingState,
-          
+      const { clientSecret } = await fetch("/api/create-payment-intent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: Math.round(total * 100),
+          state: shippingState,
         }),
       }).then((r) => r.json());
 
@@ -196,9 +196,9 @@ export default function CheckoutPage() {
       {/* Display subtotal and collect customer details */}
       <form className="payment-form">
         <h3>Subtotal: ${subtotal.toFixed(2)}</h3>
-        {shippingState === "OH" && 
-            <h3>Ohio sales tax: ${(subtotal * 0.0725).toFixed(2)}</h3>
-        }
+        {shippingState === "OH" && (
+          <h3>Ohio sales tax: ${(subtotal * 0.0725).toFixed(2)}</h3>
+        )}
         <label className="payment-form-input">
           Name:
           <br />

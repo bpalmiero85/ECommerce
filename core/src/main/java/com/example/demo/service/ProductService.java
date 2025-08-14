@@ -54,7 +54,7 @@ public class ProductService {
   }
 
   public List<Product> getProductCategory(String category){
-    List<Product> list = productRepository.findByCategoryOrderByNameAsc(category);
+    List<Product> list = productRepository.findByCategoryIgnoreCaseOrderByNameAsc(category);
     list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
     return list;
   } 

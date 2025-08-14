@@ -58,11 +58,18 @@ public class ProductController {
 
   @CrossOrigin(origins = "http://localhost:3000")
   @GetMapping("/products")
-  public List<Product> getAllProducts(@RequestParam(value= "category", required = false) String category) {
-    if(category != null && !category.isBlank()){
+  public List<Product> getAllProducts(@RequestParam(value = "category", required = false) String category) {
+    if (category != null && !category.isBlank()) {
       return productService.getProductCategory(category);
     }
     return productService.getAllProducts();
+  }
+
+  @GetMapping("/products/category/{category}")
+  public ResponseEntity<List<Product>> getProductByCategory(@PathVariable String category) {
+    List<Product> products = productService.getProductCategory(category);
+    
+    return ResponseEntity.ok(products);
   }
 
   @GetMapping("/products/{id}")
