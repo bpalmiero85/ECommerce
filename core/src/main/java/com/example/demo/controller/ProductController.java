@@ -3,6 +3,8 @@ package com.example.demo.controller;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,20 +22,15 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:3000",
-     methods        = {
+@CrossOrigin(origins = "http://localhost:3000", methods = {
     RequestMethod.GET,
     RequestMethod.POST,
     RequestMethod.PUT,
     RequestMethod.DELETE,
     RequestMethod.OPTIONS
-  },
-  allowedHeaders = "*",
-  allowCredentials = "true"
-)
+}, allowedHeaders = "*", allowCredentials = "true")
 public class ProductController {
 
   private final ProductService productService;
@@ -48,22 +45,23 @@ public class ProductController {
     return ResponseEntity.ok(newProduct);
   }
 
-  @PostMapping(
-    value = "/product/{productId}/uploadPicture",
-    consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-  public ResponseEntity<Product> uploadProductPicture(@PathVariable Long productId, @RequestParam("file") MultipartFile file) throws IOException {
+  @PostMapping(value = "/product/{productId}/uploadPicture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<Product> uploadProductPicture(@PathVariable Long productId,
+      @RequestParam("file") MultipartFile file) throws IOException {
     Product product = productService.getProductById(productId).orElseThrow();
-      product.setProductPictureFile(file.getBytes());
-      product.setPictureType(file.getContentType());
-      Product updated = productService.saveProduct(product);
-   return ResponseEntity.ok(updated);
-  
-}
+    product.setProductPictureFile(file.getBytes());
+    product.setPictureType(file.getContentType());
+    Product updated = productService.saveProduct(product);
+    return ResponseEntity.ok(updated);
+
+  }
 
   @CrossOrigin(origins = "http://localhost:3000")
   @GetMapping("/products")
-  public List<Product> getAllProducts() {
+  public List<Product> getAllProducts(@RequestParam(value= "category", required = false) String category) {
+    if(category != null && !category.isBlank()){
+      return productService.getProductCategory(category);
+    }
     return productService.getAllProducts();
   }
 
@@ -77,20 +75,19 @@ public class ProductController {
   public ResponseEntity<byte[]> getProductPicture(@PathVariable Long id) {
     Optional<Product> product = productService.getProductById(id);
 
-    if(product.isEmpty()) {
+    if (product.isEmpty()) {
       return ResponseEntity.notFound().build();
     }
 
     Product prod = product.get();
     byte[] data = prod.getProductPictureFile();
-    if(data == null || data.length == 0) {
+    if (data == null || data.length == 0) {
       return ResponseEntity.notFound().build();
     }
     MediaType mediaType = MediaType.parseMediaType(prod.getPictureType());
     return ResponseEntity.ok().contentType(mediaType).body(data);
 
   }
-
 
   @PutMapping("/products/{id}")
   public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product) {

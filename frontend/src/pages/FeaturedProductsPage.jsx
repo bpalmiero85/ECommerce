@@ -7,9 +7,13 @@ function FeaturedProducts() {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchProducts = async (category) => {
       try {
-        const response = await fetch("http://localhost:8080/api/products");
+        const url = category
+          ? `http://localhost:8080/api/products?category=${encodeURIComponent}`
+          : "http://localhost:8080/api/products";
+        const response = await fetch(url);
+
         if (!response.ok) throw new Error(`Error: ${response.status}`);
         const fetched = await response.json();
 
@@ -22,7 +26,6 @@ function FeaturedProducts() {
           );
           return [...updatedProducts, ...onlyNew];
         });
-
       } catch (err) {
         console.error("Error fetching products:", err);
       }

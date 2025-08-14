@@ -25,20 +25,21 @@ const AdminPage = () => {
     "Home Decor",
     "Custom Orders",
     "Garbage Ghouls",
-  ]
+  ];
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (category) => {
     try {
-      const response = await fetch("http://localhost:8080/api/products", {
-        method: "GET",
-      });
+      const url =
+        category && category.trim()
+          ? `http://localhost:8080/api/products?category=${encodeURIComponent(
+              category.trim()
+            )}`
+          : `http://localhost:8080/api/products`;
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
+      const response = await fetch(url, { method: "GET" });
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
 
       const data = await response.json();
-
       setProducts(data);
     } catch (error) {
       console.error("Error fetching products", error);
@@ -47,10 +48,14 @@ const AdminPage = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [category]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!category || !category.trim()) {
+      alert("Please select a category before saving changes.");
+      return;
+    }
 
     try {
       const response = await fetch("http://localhost:8080/api/product", {
@@ -63,7 +68,7 @@ const AdminPage = () => {
           description: description,
           price: parseFloat(price),
           quantity: parseInt(quantity, 10),
-          category: category,
+          category,
         }),
       });
 
@@ -76,8 +81,6 @@ const AdminPage = () => {
       setPrice("");
       setQuantity("");
       setSelectedFile(null);
-
-      formRef.current.reset();
 
       if (selectedFile) {
         await handleUploadProductPicture(newProduct.id);
@@ -170,6 +173,7 @@ const AdminPage = () => {
       description,
       price,
       quantity,
+      category,
     });
     const id = isEditingId;
     const updated = {
@@ -177,6 +181,7 @@ const AdminPage = () => {
       description,
       price: +price,
       quantity: +quantity,
+      category: category,
     };
     try {
       const response = await fetch(`http://localhost:8080/api/products/${id}`, {
@@ -233,7 +238,7 @@ const AdminPage = () => {
       <div className="product-form">
         <h1>Home</h1>
         <h1>List an item:</h1>
-          <form
+        <form
           onSubmit={isEditingId ? handleUpdateProduct : handleSubmit}
           id="productForm"
           ref={formRef}
@@ -274,22 +279,23 @@ const AdminPage = () => {
             required
           />
           <div className="category-select">
-          <label>Category: </label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-          {CATEGORIES.map((category) => (
-              <option 
-                key={category} 
-                value={category}
-              >
-            {category}
-            </option>
-          ))}
-          </select>
+            <label>Category: </label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              required
+            >
+              <option value="" disabled>
+                -- Select a category --
+              </option>
+              {CATEGORIES.filter((category) => category).map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
           </div>
-         
+
           <label className="custom-file-upload">
             Upload picture
             <input
@@ -330,6 +336,7 @@ const AdminPage = () => {
                         setDescription(product.description);
                         setPrice(product.price);
                         setQuantity(product.quantity);
+                        setCategory(product.category);
                         setProductPicture(product.productPicture);
 
                         document
@@ -406,15 +413,11 @@ const AdminPage = () => {
                         onChange={(e) => setCategory(e.target.value)}
                       >
                         {CATEGORIES.map((category) => (
-                          <option
-                            key={category}
-                            value={category}
-                          >
+                          <option key={category} value={category}>
                             {category}
                           </option>
                         ))}
                       </select>
-                      
 
                       <button className="edit-button" type="submit">
                         Save

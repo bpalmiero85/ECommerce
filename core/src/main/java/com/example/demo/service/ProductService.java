@@ -3,7 +3,9 @@ package com.example.demo.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.example.demo.model.Product;
 import com.example.demo.repository.ProductRepository;
@@ -18,6 +20,9 @@ public class ProductService {
   private final InventoryMemory inventory;
 
   public Product saveProduct(Product product) {
+    if(product.getCategory() == null || product.getCategory().isBlank()){
+      throw new  ResponseStatusException(HttpStatus.BAD_REQUEST, "Category is required when posting a product.");
+    }
     Product saved = productRepository.save(product);
     inventory.setStock(saved.getId(), saved.getQuantity());
     return saved;
@@ -48,6 +53,13 @@ public class ProductService {
 
   }
 
+  public List<Product> getProductCategory(String category){
+    List<Product> list = productRepository.findByCategoryOrderByNameAsc(category);
+    list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
+    return list;
+  } 
+
+
   public Product updateProduct(Long id, Product updatedProduct) {
     Optional<Product> existingProduct = productRepository.findById(id);
     if (existingProduct.isPresent()) {
@@ -56,6 +68,7 @@ public class ProductService {
       product.setDescription(updatedProduct.getDescription());
       product.setPrice(updatedProduct.getPrice());
       product.setQuantity(updatedProduct.getQuantity());
+      product.setCategory(updatedProduct.getCategory());
       product.setPictureVersion(System.currentTimeMillis());
       Product saved = productRepository.save(product);
 

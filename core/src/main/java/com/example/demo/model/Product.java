@@ -42,6 +42,9 @@ public class Product {
   @Column(nullable = false)
   private Integer quantity;
 
+  @Column(nullable = false)
+  private String category;
+
   @Lob
   @Column(name = "product_picture_file")
   private byte[] productPictureFile;
