@@ -11,6 +11,7 @@ const Product = ({
   price,
   quantity,
   description,
+  category,
   pictureVersion,
   onReserved,
 }) => {
@@ -56,7 +57,13 @@ const Product = ({
   }, [isOpen]);
 
   return (
-    <div className={quantity === 0 ? "product-card-sold-out" : `product-card ${quantity === 0 ? "sold-out" : ""}`}>
+    <div
+      className={
+        quantity === 0
+          ? "product-card-sold-out"
+          : `product-card ${quantity === 0 ? "sold-out" : ""}`
+      }
+    >
       {quantity === 0 && <div className="sold-out-badge">Sold Out</div>}
       <a
         className={`product-anchor ${quantity === 0 ? "is-disabled" : ""}`}
@@ -84,7 +91,11 @@ const Product = ({
       >
         <div className="product-design">
           <div className="animated-item-container">
-            <div className={quantity === 0 ? "animated-item-sold-out" : "animated-item"}>
+            <div
+              className={
+                quantity === 0 ? "animated-item-sold-out" : "animated-item"
+              }
+            >
               <img className="product-image" src={imageUrl} alt={name}></img>
             </div>
           </div>
@@ -124,7 +135,7 @@ const Product = ({
               );
 
               if (quantity === 1) {
-                showTempMessage("You got the last one!");
+               showTempMessage("You got the last one!");
               }
 
               if (res.ok) {

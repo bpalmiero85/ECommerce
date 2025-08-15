@@ -163,7 +163,7 @@ export default function FeaturedProductsPage() {
         <div className="footer-links">
           <a href="#">Privacy Policy</a>
           <a href="#">Terms of Service</a>
-          <button type="button">Contact Us</button>
+          <a href="#">Contact Us</a>
         </div>
       </footer>
     </div>

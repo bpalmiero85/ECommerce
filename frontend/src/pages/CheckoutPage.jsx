@@ -245,7 +245,7 @@ export default function CheckoutPage() {
       </form>
 
       {/* Stripe CardElement for secure card input */}
-      <div style={{ margin: "20px 0" }} className="card-element">
+      <div className="card-element">
         <CardElement
           className="StripeElement"
           options={CARD_ELEMENT_OPTIONS}

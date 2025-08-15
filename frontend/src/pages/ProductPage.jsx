@@ -29,15 +29,17 @@ const ProductPage = ({ products: externalProducts }) => {
     setIsCartShown(false);
   };
 
-  const decrementProductQty = (productId) => {
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === productId && p.quantity > 0
-          ? { ...p, quantity: p.quantity - 1 }
-          : p
-      )
-    );
-  };
+  // May use in the future ---
+  
+  // const decrementProductQty = (productId) => {
+  //   setProducts((prev) =>
+  //     prev.map((p) =>
+  //       p.id === productId && p.quantity > 0
+  //         ? { ...p, quantity: p.quantity - 1 }
+  //         : p
+  //     )
+  //   );
+  // };
 
   useEffect(() => {
     if (!products.length) return;
@@ -551,6 +553,7 @@ const ProductPage = ({ products: externalProducts }) => {
                     <Product
                       id={product.id}
                       name={product.name}
+                      category={product.category}
                       description={product.description}
                       price={product.price}
                       quantity={availableById[product.id] ?? product.quantity}

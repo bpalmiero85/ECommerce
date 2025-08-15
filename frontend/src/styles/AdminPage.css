@@ -29,7 +29,9 @@
 }
 
 
-
+.product-card{
+  min-width: 300px;
+}
 
 
 .card-image {
@@ -206,12 +208,14 @@
 
 .product-grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 80px;
-  max-width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  row-gap: 0.5rem;
+  column-gap: 0.5rem;
+  width: 100%;
+  max-width: 1200px;
   place-items: center;
   padding: 25px;
-  margin: 0 auto;
+  justify-items: center;
   justify-content: center;
   align-items: center;
 }

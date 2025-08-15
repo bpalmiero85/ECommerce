@@ -17,6 +17,9 @@ const AdminPage = () => {
   const [croppingStatus, setCroppingStatus] = useState(false);
   const [category, setCategory] = useState("");
   const formRef = useRef(null);
+  const mainFileRef = useRef(null);
+  const editFileRef = useRef(null);
+  const cardFileRefs = useRef({});
   const CATEGORIES = [
     "Fidgets & Sensory",
     "Jewelry",
@@ -81,6 +84,7 @@ const AdminPage = () => {
       setPrice("");
       setQuantity("");
       setSelectedFile(null);
+      if (mainFileRef.current) mainFileRef.current.value = "";
 
       if (selectedFile) {
         await handleUploadProductPicture(newProduct.id);
@@ -95,7 +99,8 @@ const AdminPage = () => {
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      setSelectedFile(e.target.files[0]);
+      const file = e?.target?.files?.[0];
+      if (file) setSelectedFile(file);
       console.log("File selected:", e.target.files[0]);
     } else {
       console.error("No file selected");
@@ -224,6 +229,7 @@ const AdminPage = () => {
       setQuantity("");
       setCategory("");
       setSelectedFile(null);
+      if (editFileRef.current) editFileRef.current.value = "";
 
       await fetchProducts();
     } catch (error) {
@@ -299,10 +305,11 @@ const AdminPage = () => {
           <label className="custom-file-upload">
             Upload picture
             <input
+              ref={mainFileRef}
               type="file"
               accept="image/*, .jpg, .jpeg, .png"
               className="product-input-field"
-              onChange={handleFileChange}
+              onChange={(e) => handleFileChange(e)}
             />
           </label>
 
@@ -378,10 +385,11 @@ const AdminPage = () => {
                       className="inline-edit-form"
                     >
                       <input
+                        ref={editFileRef}
                         type="file"
                         accept="image/*, .jpg, .jpeg, .png"
                         className="product-input-field"
-                        onChange={handleFileChange}
+                        onChange={(e) => handleFileChange(e)}
                       ></input>
                       <input
                         type="text"
@@ -440,10 +448,14 @@ const AdminPage = () => {
                     <>
                       <div className="admin-product-container">
                         <div className="product-name">{product.name}</div>
+                        <div className="product-category">
+                          Category: {product.category}
+                        </div>
 
                         <div className="product-description">
                           {product.description}
                         </div>
+
                         <p className="product-price">Price: ${product.price}</p>
                         <p className="product-quantity">
                           Quantity: {product.quantity}
@@ -457,6 +469,7 @@ const AdminPage = () => {
               {product.pictureType == null && (
                 <>
                   <input
+                    ref={(el) => (cardFileRefs.current[product.id] = el)}
                     type="file"
                     accept="image/*, .jpg, .jpeg, .png"
                     className="product-input-field"

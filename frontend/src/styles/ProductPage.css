@@ -64,10 +64,15 @@ body {
   cursor: pointer;
 }
 
+.check-mark{
+  margin-left: 10px;
+}
+
 .sold-out {
+  max-width: 400px;
+  min-width: 300px;
   opacity: 0.7;
   filter: grayscale(0.2);
-
 }
 
 .sold-out-badge {
@@ -80,6 +85,7 @@ body {
   color: #fff;
   cursor: not-allowed;
   font-weight: 700;
+  z-index: 500;
 }
 
 .sold-out {
@@ -98,8 +104,10 @@ body {
   color: white;
   padding: 7px;
   font-weight: 800;
-  font-size: 0.8rem;
+  font-size: 1rem;
   border-radius: 10px;
+  white-space: nowrap;
+  margin: 15px 0 15px 0;
   border: 2px solid rgb(0, 255, 0);
   background-color: rgb(183, 49, 224);
 }
@@ -256,10 +264,13 @@ body {
 .product-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  column-gap: 2rem;
+  column-gap: 1.3rem;
+  row-gap: 1rem;
   width: 100%;
+  max-width: 1200px;
   justify-content: center;
-  margin-top: 175px;
+  justify-items: center;
+  margin: 175px auto;
   max-height: fit-content;
 }
 
@@ -274,11 +285,12 @@ body {
   z-index: 2000;
 }
 
+
 .product-card {
   background: rgba(0, 0, 0, 0.7);
   border: 2px solid #4a148c;
   border-radius: 20px;
-  padding: 40px 40px 40px 40px;
+  padding: 40px 40px 0px 40px;
   text-align: center;
   justify-content: center;
   align-items: center;
@@ -287,11 +299,11 @@ body {
   position: relative;
   overflow: hidden;
   height: fit-content;
-  margin: 25px;
   min-height: 600px;
+  min-width: 300px;
 }
 
-.product-card-sold-out{
+.product-card-sold-out {
   background: rgba(0, 0, 0, 0.7);
   border-radius: 20px;
   padding: 40px 40px 40px 40px;
@@ -309,8 +321,6 @@ body {
   filter: grayscale(0.2);
   cursor: not-allowed;
 }
-
-
 
 .product-card:hover {
   transform: scale(1.05);
@@ -342,11 +352,14 @@ body {
 
 .add-to-cart {
   cursor: pointer;
+  margin-bottom: 15px;
 }
 
 .added-to-cart {
   padding: 2px;
   background-color: rgb(0, 255, 0);
+  margin-bottom: 15px;
+  font-size: 1rem;
 }
 
 .product-card::before {
@@ -818,6 +831,14 @@ body {
 
 .product-description {
   font-size: 1.4rem;
+  color: #c5cae9;
+  line-height: 1.6;
+  transition: all 0.3s ease;
+}
+
+.product-category {
+  margin-top: 15px;
+  font-size: 1rem;
   color: #c5cae9;
   line-height: 1.6;
   transition: all 0.3s ease;
