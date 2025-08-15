@@ -299,7 +299,7 @@ body {
   position: relative;
   overflow: hidden;
   height: fit-content;
-  min-height: 600px;
+  height: fit-content;
   min-width: 300px;
 }
 
@@ -356,7 +356,7 @@ body {
 }
 
 .added-to-cart {
-  padding: 2px;
+  padding: 4px;
   background-color: rgb(0, 255, 0);
   margin-bottom: 15px;
   font-size: 1rem;
@@ -830,7 +830,7 @@ body {
 }
 
 .product-description {
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   color: #c5cae9;
   line-height: 1.6;
   transition: all 0.3s ease;
