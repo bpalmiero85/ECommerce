@@ -581,7 +581,8 @@ const ProductPage = ({ products: externalProducts }) => {
                     <div className="cart-container">
                       <img
                         className="shopping-cart"
-                        src="shopping-cart.png"
+                        src="/shopping-cart.png"
+                        alt="Cart"
                       ></img>
                     </div>
                     <span className="cart-badge">{cartItems.length}</span>

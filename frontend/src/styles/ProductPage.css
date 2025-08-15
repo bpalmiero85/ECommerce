@@ -15,6 +15,10 @@ body {
   margin: 0;
 }
 
+.product-anchor-is-disabled{
+  cursor: not-allowed;
+}
+
 .product-main-container {
   display: flex;
   position: relative;
@@ -69,10 +73,9 @@ body {
 }
 
 .sold-out {
-  max-width: 400px;
-  min-width: 300px;
   opacity: 0.7;
   filter: grayscale(0.2);
+  cursor: not-allowed;
 }
 
 .sold-out-badge {
@@ -107,7 +110,7 @@ body {
   font-size: 1rem;
   border-radius: 10px;
   white-space: nowrap;
-  margin: 15px 0 15px 0;
+  margin: 15px 0 35px 0;
   border: 2px solid rgb(0, 255, 0);
   background-color: rgb(183, 49, 224);
 }
@@ -141,6 +144,7 @@ body {
 
 .checkout-page {
   display: flex;
+  flex-direction: column;
   width: 100%;
   margin: 0 auto;
   flex-direction: column;
@@ -285,6 +289,22 @@ body {
   z-index: 2000;
 }
 
+.product-card img {
+  transition: opacity .2s ease;
+}
+
+
+.add-to-cart,
+.added-to-cart,
+.sold-out-added-to-cart {
+  width: 100%;
+  height: 25px;
+  padding: 5px 10px;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+  text-align: center;
+  border-radius: 5px;
+}
 
 .product-card {
   background: rgba(0, 0, 0, 0.7);
@@ -299,8 +319,14 @@ body {
   position: relative;
   overflow: hidden;
   height: fit-content;
-  height: fit-content;
   min-width: 300px;
+  box-sizing: border-box;
+}
+
+.product-card .media{
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  object-fit: cover;
 }
 
 .product-card-sold-out {
@@ -311,14 +337,15 @@ body {
   justify-content: center;
   align-items: center;
   backdrop-filter: blur(15px);
-  transition: all 0.4s ease;
   position: relative;
   overflow: hidden;
   height: fit-content;
-  margin: 25px;
-  min-height: 600px;
+  min-height: 500px;
+  min-width: 300px;
+  border: 2px solid transparent;
   opacity: 0.7;
   filter: grayscale(0.2);
+  box-sizing: border-box;
   cursor: not-allowed;
 }
 
@@ -357,9 +384,23 @@ body {
 
 .added-to-cart {
   padding: 4px;
+  color: black;
+  max-width: 100%;
   background-color: rgb(0, 255, 0);
   margin-bottom: 15px;
+  border-radius: 5px;
   font-size: 1rem;
+}
+
+.sold-out-added-to-cart {
+  padding: 4px;
+  color: black;
+  max-width: 100%;
+  background-color: rgb(0, 255, 0);
+  margin-bottom: 15px;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: not-allowed;
 }
 
 .product-card::before {
@@ -731,6 +772,7 @@ body {
 }
 
 .animated-item-sold-out {
+  cursor: not-allowed;
 }
 
 @keyframes roseBloom {
@@ -814,7 +856,10 @@ body {
   text-underline-offset: 10px;
   font-size: 2rem;
   color: #e1bee7;
+  cursor: not-allowed;
 }
+
+
 
 .product-name {
   font-family: "fantasy";
@@ -828,6 +873,9 @@ body {
   color: #ffffff;
   text-shadow: 0 0 15px rgba(225, 190, 231, 0.8);
 }
+.modal-description{
+  color: #c5cae9;
+}
 
 .product-description {
   font-size: 1.3rem;
@@ -836,8 +884,15 @@ body {
   transition: all 0.3s ease;
 }
 
+.sold-out-description {
+  font-size: 1.3rem;
+  color: #c5cae9;
+  line-height: 1.6;
+  cursor: not-allowed;
+}
+
 .product-category {
-  margin-top: 15px;
+  margin-top: 10px;
   font-size: 1rem;
   color: #c5cae9;
   line-height: 1.6;
@@ -855,6 +910,12 @@ body {
   font-size: 1.8rem;
 }
 
+.sold-out-price{
+  color: rgb(181, 0, 181);
+  font-size: 1.8rem;
+  cursor: not-allowed;
+}
+
 .product-quantity-container {
   margin-bottom: 15px;
 }
@@ -863,10 +924,14 @@ body {
   color: rgb(181, 0, 181);
   font-size: 1.2rem;
 }
+.sold-out-quantity {
+  color: rgb(181, 0, 181);
+  font-size: 1.2rem;
+  cursor: not-allowed;
+}
 
 .product-anchor {
   text-decoration: none;
-  cursor: default;
 }
 
 .click {

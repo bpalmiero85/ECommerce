@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import "../styles/AdminPage.css";
 import "../styles/ProductPage.css";
+import "../styles/DescriptionMore.css";
 import ProductPicture from "../components/ProductPicture";
 
 const AdminPage = () => {

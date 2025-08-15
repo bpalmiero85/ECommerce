@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect, useContext } from "react";
 import { CartContext } from "../contexts/CartContext";
-import CheckoutPage from "../pages/CheckoutPage";
+import DescriptionMore from "../components/DescriptionMore.jsx";
 import "../styles/AdminPage.css";
 import "../styles/ProductPage.css";
-import ShoppingCart from "./ShoppingCart";
+import "../styles/DescriptionMore.css";
 
 const Product = ({
   id,
@@ -61,7 +61,7 @@ const Product = ({
       className={
         quantity === 0
           ? "product-card-sold-out"
-          : `product-card ${quantity === 0 ? "sold-out" : ""}`
+          : `product-card ${quantity === 0 ? "-sold-out" : ""}`
       }
     >
       {quantity === 0 && <div className="sold-out-badge">Sold Out</div>}
@@ -105,14 +105,24 @@ const Product = ({
             {name}
           </h3>
         </div>
-        <div className="product-description-container">
-          <p className="product-description">{description}</p>
+     
+        <div className="modal-product-description-container">
+          <DescriptionMore text={description} title={name} quantity={quantity}/>
         </div>
+        
         <div className="product-price-container">
-          <p className="product-price">${price}</p>
+          <p className={quantity === 0 ? "sold-out-price" : "product-price"}>
+            ${price}
+          </p>
         </div>
         <div className="product-quantity-container">
-          <p className="product-quantity">Available qty: {quantity}</p>
+          <p
+            className={
+              quantity === 0 ? "sold-out-quantity" : "product-quantity"
+            }
+          >
+            Available qty: {quantity}
+          </p>
         </div>
       </a>
 
@@ -120,7 +130,13 @@ const Product = ({
         <div className="purchase-buttons">
           <button
             type="button"
-            className={added ? "added-to-cart" : "add-to-cart"}
+            className={
+              added && quantity === 0
+                ? "sold-out-added-to-cart"
+                : added
+                ? "added-to-cart"
+                : "add-to-cart"
+            }
             disabled={isOpen || quantity === 0 || saving}
             onClick={async (e) => {
               e.preventDefault();
@@ -135,7 +151,7 @@ const Product = ({
               );
 
               if (quantity === 1) {
-               showTempMessage("You got the last one!");
+                showTempMessage("You got the last one!");
               }
 
               if (res.ok) {

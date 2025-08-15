@@ -1,0 +1,82 @@
+.description-paragraph.clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  text-align: center;
+  margin: 0;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
+}
+.desc-modal-backdrop {
+  position: relative;
+  background: rgb(17, 0, 25);
+  padding: 15px;
+}
+.description-paragraph {
+  margin: 0;
+  text-align: center;
+  font-size: 1.3rem;
+  color: #c5cae9;
+  line-height: 1.6;
+  transition: all 0.3s ease;
+}
+
+.description-paragraph.open {
+  display: block;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+  overflow: visible;
+  text-align: center;
+  margin: 0;
+}
+
+.more-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.sold-out-more-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  cursor: not-allowed;
+}
+
+.more-link {
+  position: absolute;
+  margin-left: 99%;
+  bottom: 5px;
+  padding-left: 0.7rem;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.604);
+}
+
+.less-link {
+  position: absolute;
+  margin-left: 93%;
+  bottom: 5px;
+  padding-left: 0.7rem;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.604);
+}
+
+.modal-product-description-container {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}

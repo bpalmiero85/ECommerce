@@ -5,6 +5,7 @@ import AdminPage from "./pages/AdminPage.jsx";
 import ProductPage from "./pages/ProductPage.jsx";
 import CheckoutPage from "./pages/CheckoutPage.jsx";
 import FeaturedProductsPage from "./pages/FeaturedProductsPage.jsx";
+import CategoryPage from "./pages/CategoryPage.jsx";
 import { CartProvider } from "./contexts/CartContext.jsx";
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
@@ -16,6 +17,7 @@ function App() {
         <Route path="/products" element={<ProductPage />} />
         <Route path="/cart" element={<CheckoutPage />} />
         <Route path="/featured" element={<FeaturedProductsPage />} />
+        <Route path="/category/:slug" element={<CategoryPage />} />
       </Routes>
     </Elements>
   );

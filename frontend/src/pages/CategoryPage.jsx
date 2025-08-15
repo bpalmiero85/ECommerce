@@ -1,58 +1,131 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
 import ProductPage from "./ProductPage.jsx";
 import "../styles/styles.css";
 import "../styles/ProductPage.css";
+import { CartContext } from "../contexts/CartContext.jsx";
 
-function Category(category) {
+function Category() {
   const [products, setProducts] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const { slug } = useParams();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [retryKey, setRetryKey] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const inFlight = useRef(false);
+  const firstLoad = useRef(true);
+  const prevSig = useRef("");
+  const displayName = (slug ?? "").replace(/-/g, " ");
+
+  function SkeletonGrid({ count = 8 }) {
+    return (
+      <div className="skeleton-grid">
+        {Array.from({ length: count }).map((_, i) => (
+          <div key={i} className="skeleton-card" />
+        ))}
+      </div>
+    );
+  }
+
+  function InlineError({ message, onRetry }) {
+    return (
+      <div className="inline-error">
+        <span>{message}</span>
+        <button className="btn btn-sm" onClick={onRetry}>
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  function EmptyState({ category }) {
+    return (
+      <div className="empty-state">
+        No products in <strong>{category}</strong> yet.
+      </div>
+    );
+  }
+
+  const retry = () => setRetryKey((k) => k + 1);
 
   useEffect(() => {
-    const fetchProducts = async (category) => {
+    if (!slug) {
+      setProducts([]);
+      return;
+    }
+    let alive = true;
+    const fetchProducts = async (showLoader = false) => {
+      if (inFlight.current) return;
+      inFlight.current = true;
+      if (showLoader && firstLoad.current) setLoading(true);
+      setError("");
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/products?category=${encodeURIComponent}`, 
-          category
-        );
-
-        if (!response.ok) throw new Error(`Error: ${response.status}`);
-        const fetched = await response.json();
-
-        setProducts((prev) => {
-          const existingIds = new Set(prev.map((p) => p.id));
-          const onlyNew = fetched.filter((p) => !existingIds.has(p.id));
-          const fetchedMap = new Map(fetched.map((p) => [p.id, p]));
-          const updatedProducts = prev.map((oldProd) =>
-            fetchedMap.has(oldProd.id) ? fetchedMap.get(oldProd.id) : oldProd
-          );
-          return [...updatedProducts, ...onlyNew];
-        });
-      } catch (err) {
-        console.error("Error fetching products:", err);
+        const categoryParam = (slug ?? "").replace(/-/g, " ");
+        const url = `http://localhost:8080/api/products?category=${encodeURIComponent(
+          categoryParam
+        )}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        const sorted = [...data].sort((a, b) => a.name.localeCompare(b.name));
+        const sig = sorted
+          .map(
+            (p) =>
+              `${p.id}:${p.pictureVersion ?? p.updatedAt ?? 0}:${p.quantity}`
+          )
+          .join("|");
+        if (sig !== prevSig.current) {
+          prevSig.current = sig;
+          setProducts(sorted);
+        }
+      } catch (error) {
+        setError("Could not load products");
+        console.error(error);
+      } finally {
+        if (showLoader && firstLoad.current) {
+          setLoading(false);
+          firstLoad.current = false;
+        }
+        inFlight.current = false;
+        setRefreshing(false);
       }
     };
+    fetchProducts(true);
 
-    fetchProducts(category);
-    const interval = setInterval(fetchProducts(category), 5000);
+    const id = setInterval(() => {
+      setRefreshing(true);
+      fetchProducts(false);
+    }, 5000);
+    return () => {
+      clearInterval(id);
+    };
+  }, [slug, retryKey]);
 
-    return () => clearInterval(interval);
-  }, []);
+  const isEmpty = !loading && !error && products.length === 0;
 
   return (
     <section className="products-section">
       <div className="section-header">
         <h2 className="section-title">
           <span className="neon-glow" style={{ color: "var(--neon-pink)" }}>
-            {selectedCategory}
-          </span>{" "}
+            {displayName}
+          </span>
+          {!loading && !error && products.length === 0 && (
+            <span className="result-count"> • {products.length} items</span>
+          )}
         </h2>
-        <label className="category-selector">
-        
-        </label>
       </div>
 
       <div className="products-grid-container">
-        <ProductPage products={products} />
+        {loading ? (
+          <SkeletonGrid count={8} />
+        ) : error ? (
+          <InlineError message={error} onRetry={retry} />
+        ) : isEmpty ? (
+          <EmptyState category={displayName} />
+        ) : (
+          <ProductPage products={products} key={slug} />
+        )}
       </div>
     </section>
   );
@@ -153,7 +226,7 @@ export default function CategoryPage() {
       {/* Footer */}
       <footer className="footer">
         <div>
-          <img className="gglogo" src="./gglogo.svg"></img>
+          <img className="gglogo" src="/gglogo.svg"></img>
         </div>
 
         <p className="footer-text">
