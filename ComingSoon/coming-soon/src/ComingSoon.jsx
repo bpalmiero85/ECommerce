@@ -488,9 +488,7 @@ const ComingSoon = () => {
         </svg>
       </div>
       {/* 2. Animated background */}
-      <div className="animated-bg">
-        <AnimatedBg />
-      </div>
+   
       {/* 3. Main content wrapper */}
       <div className="coming-soon-master-wrapper">
         <div className="coming-soon-desc-container">

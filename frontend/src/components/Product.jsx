@@ -15,7 +15,12 @@ const Product = ({
   pictureVersion,
   onReserved,
 }) => {
-  const { addToCart } = useContext(CartContext);
+  const { addToCart, cartItems: rawItems, setItemQty } = useContext(CartContext);
+  const cartItems = Array.isArray(rawItems) ? rawItems : [];
+  const inCartQty = cartItems.reduce(
+    (sum, item) => (item.id === id ? sum + (item.quantity ?? 1) : sum),
+    0
+  );
   const [subtotal, setSubtotal] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -31,6 +36,46 @@ const Product = ({
     setSubtotal(price);
     setIsOpen(true);
   };
+  async function handleQtyChange(nextQty) {
+    if (Number.isNaN(nextQty)) nextQty = 0;
+    nextQty = Math.max(0, nextQty);
+
+    const max = quantity + inCartQty;
+    if (nextQty > max) nextQty = max;
+
+    if (nextQty === inCartQty) return;
+
+    setSaving(true);
+    try {
+      const delta = nextQty - inCartQty;
+
+      if (delta > 0) {
+        for (let i = 0; i < delta; i++) {
+          const r = await fetch(
+            `http://localhost:8080/api/inventory/${id}/reserve`,
+            { method: "POST" }
+          );
+          if (!r.ok) throw new Error(`reserve failed ${r.status}`);
+        }
+      } else {
+        for (let i = 0; i < -delta; i++) {
+          await fetch(`http://localhost:8080/api/inventory/${id}/release`, {
+            method: "POST",
+          });
+        }
+      }
+
+      // sync global cart and trigger stock refresh
+      setItemQty(id, nextQty, { name, price, imageUrl });
+      onReserved?.(id);
+    } catch (err) {
+      console.error(err);
+      alert("Could not update quantity. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+ 
+  }
 
   const showTempMessage = (text) => {
     setMessage(text);
@@ -105,11 +150,14 @@ const Product = ({
             {name}
           </h3>
         </div>
-     
+
         <div className="modal-product-description-container">
-          <DescriptionMore text={description} title={name} quantity={quantity}/>
+          <DescriptionMore
+            text={typeof description === "string" ? description : String(description ?? "")}
+            quantity={Number.isFinite(quantity) ? quantity : 0}
+          />
         </div>
-        
+
         <div className="product-price-container">
           <p className={quantity === 0 ? "sold-out-price" : "product-price"}>
             ${price}
@@ -128,59 +176,86 @@ const Product = ({
 
       <div className={`purchase-container${isOpen ? " hidden" : ""}`}>
         <div className="purchase-buttons">
-          <button
-            type="button"
-            className={
-              added && quantity === 0
-                ? "sold-out-added-to-cart"
-                : added
-                ? "added-to-cart"
-                : "add-to-cart"
-            }
-            disabled={isOpen || quantity === 0 || saving}
-            onClick={async (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (quantity === 0 || saving) return;
-              setSaving(true);
-              const res = await fetch(
-                `http://localhost:8080/api/inventory/${id}/reserve`,
-                {
-                  method: "POST",
+          {inCartQty === 0 ? (
+            <button
+              type="button"
+              className={
+                added && quantity === 0
+                  ? "sold-out-added-to-cart"
+                  : added
+                  ? "added-to-cart"
+                  : "add-to-cart"
+              }
+              disabled={isOpen || quantity === 0 || saving}
+              onClick={async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (quantity === 0 || saving) return;
+                setSaving(true);
+                try {
+                  const res = await fetch(
+                    `http://localhost:8080/api/inventory/${id}/reserve`,
+                    { method: "POST" }
+                  );
+                  if (quantity === 1) showTempMessage("You got the last one!");
+                  if (res.ok) {
+                    // first one in cart
+                    setItemQty(id, 1, { name, price, imageUrl });
+                    setAdded(true);
+                    onReserved?.(id);
+                    addPriceToCart();
+                  } else if (res.status === 409) {
+                    alert("Sorry, this item just sold out.");
+                  }
+                } finally {
+                  setSaving(false);
                 }
-              );
+              }}
+            >
+              {quantity === 0
+                ? (added ? `${inCartQty} in your cart` : "Sold Out")
+                : saving
+                ? "Adding..."
+                : "Add to cart"}
+            </button>
+          ) : (
+            <div
+              className="qty-inline"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+            >
+              <button
+                type="button"
+                className="qty-btn"
+                aria-label="Decrease quantity"
+                disabled={saving || inCartQty <= 0}
+                onClick={() => handleQtyChange(inCartQty - 1)}
+              >
+                −
+              </button>
 
-              if (quantity === 1) {
-                showTempMessage("You got the last one!");
-              }
+              <span className="qty-count">{inCartQty}</span>
+              <button
+                type="button"
+                className="qty-btn"
+                aria-label="Increase quantity"
+                disabled={saving || quantity <= 0}
+                onClick={() => handleQtyChange(inCartQty + 1)}
+              >
+                +
+              </button>
+              <span className="qty-label">in your cart</span>
+            </div>
+          )}
 
-              if (res.ok) {
-                addToCart({ id, name, price, imageUrl });
-                setAdded(true);
-                onReserved?.(id);
-                addPriceToCart();
-              } else if (res.status === 409) {
-                alert("Sorry, this item just sold out.");
-              }
-
-              setSaving(false);
-            }}
-          >
-            {quantity === 0
-              ? added
-                ? "Item in your cart"
-                : "Sold Out"
-              : saving
-              ? "Adding..."
-              : added
-              ? "Item in your cart"
-              : "Add to cart"}
-          </button>
           {added && (
             <div className="check-mark">
               <h3>✅</h3>
             </div>
           )}
+
           {isLastItemShown && (
             <div className="last-item-message">{message}</div>
           )}

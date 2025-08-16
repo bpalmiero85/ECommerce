@@ -1,112 +1,99 @@
-import { useRef, useEffect } from "react";
+// import { useRef, useEffect } from "react";
 
-/**
- * AnimatedBackground Component
- *
- * Renders a full-screen animated starry background using an HTML5 canvas.
- * The stars gently move, flicker, and wrap around the screen edges.
- *
- * @component
- *
- * @param {Object} [props] - Optional component properties.
- * @param {number} [props.numStars=200] - Number of stars to render in the background.
- * @param {string[]} [props.colors=["rgb(144, 0, 255)", "rgba(0, 255, 0, 0.7)", "rgb(0, 42, 255)", "rgba(255, 217, 0, 0.76)"]]
- *    - Array of star colors, chosen randomly for each star.
- *
- * @returns {JSX.Element} A fixed position canvas element displaying an animated background.
- */
+// const DEFAULT_COLORS = [
+//   "rgb(144, 0, 255)",
+//   "rgba(0,255,0,0.7)",
+//   "rgb(0, 42, 255)",
+//   "rgba(255, 217, 0, 0.76)",
+// ];
 
-export default function AnimatedBackground({
-  numStars = 200,
-  colors = [
-    "rgb(144, 0, 255)",
-    "rgba(0,255,0,0.7)",
-    "rgb(0, 42, 255)",
-    "rgba(255, 217, 0, 0.76)",
-  ],
-}) {
-  const canvasRef = useRef();
+// export default function AnimatedBackground({
+//   numStars = 200,
+//   colors = DEFAULT_COLORS, // stable default
+// }) {
+//   const canvasRef = useRef(null);
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
-    const cx = width / 2;
-    const cy = height / 2;
-    const maxR = Math.max(width, height);
-    const radGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxR);
-    radGrad.addColorStop(0, "rgb(11, 11, 121)");
-    radGrad.addColorStop(1, "rgb(179, 0, 255)");
-    const stars = [];
+//   useEffect(() => {
+//     const canvas = canvasRef.current;
+//     const ctx = canvas.getContext("2d");
 
-    // build starfield
-    for (let i = 0; i < numStars; i++) {
-      stars.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        r: Math.random() * 1.5 + 0.5,
-        dx: (Math.random() - 0.5) * 0.3,
-        dy: (Math.random() - 0.5) * 0.3,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        flicker: Math.random() * 0.05 + 0.02,
-      });
-    }
+//     const resize = () => {
+//       canvas.width = window.innerWidth;
+//       canvas.height = window.innerHeight;
+//     };
+//     resize();
 
-    function draw() {
-      // semi-transparent black to fade trails
-      ctx.fillStyle = "rgba(0,0,0,0.1)";
-      ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = radGrad;
-      ctx.fillRect(0, 0, width, height);
+//     // velocities in pixels-per-second (time based)
+//     const stars = Array.from({ length: numStars }, () => ({
+//       x: Math.random() * canvas.width,
+//       y: Math.random() * canvas.height,
+//       r: Math.random() * 1.5 + 0.5,
+//       dx: (Math.random() - 0.5) * 18, // ~0.3px/frame at 60fps -> 18px/s
+//       dy: (Math.random() - 0.5) * 18,
+//       color: colors[Math.floor(Math.random() * colors.length)],
+//       flickerHz: Math.random() * 2 + 0.5, // 0.5–2.5 cycles per second
+//     }));
 
-      for (const s of stars) {
-        // flicker radius
-        s.r += Math.sin(Date.now() * s.flicker) * 0.03;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, Math.abs(s.r), 0, Math.PI * 2);
-        ctx.fillStyle = s.color;
-        ctx.shadowColor = s.color;
-        ctx.shadowBlur = 8;
-        ctx.fill();
+//     let rafId;
+//     let last = performance.now();
 
-        // move
-        s.x += s.dx;
-        s.y += s.dy;
+//     const draw = (now) => {
+//       const dt = Math.min(0.033, (now - last) / 1000); // seconds; clamp to 33ms
+//       last = now;
 
-        // wrap around
-        if (s.x < 0) s.x = width;
-        if (s.x > width) s.x = 0;
-        if (s.y < 0) s.y = height;
-        if (s.y > height) s.y = 0;
-      }
+//       // background gradient
+//       const cx = canvas.width / 2;
+//       const cy = canvas.height / 2;
+//       const maxR = Math.max(canvas.width, canvas.height);
+//       const radGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxR);
+//       radGrad.addColorStop(0, "rgb(11, 11, 121)");
+//       radGrad.addColorStop(1, "rgb(179, 0, 255)");
 
-      requestAnimationFrame(draw);
-    }
+//       ctx.clearRect(0, 0, canvas.width, canvas.height);
+//       ctx.fillStyle = radGrad;
+//       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    draw();
+//       for (const s of stars) {
+//         // flicker
+//         s.r = Math.max(0.2, s.r + Math.sin(now * 0.001 * s.flickerHz) * 0.03);
 
-    // handle resize
-    const onResize = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    };
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [numStars, colors]);
+//         // move (time-based)
+//         s.x = (s.x + s.dx * dt + canvas.width) % canvas.width;
+//         s.y = (s.y + s.dy * dt + canvas.height) % canvas.height;
 
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        zIndex: -1,
-        pointerEvents: "none",
-      }}
-    />
-  );
-}
+//         ctx.beginPath();
+//         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+//         ctx.fillStyle = s.color;
+//         ctx.shadowColor = s.color;
+//         ctx.shadowBlur = 8;
+//         ctx.fill();
+//       }
+
+//       rafId = requestAnimationFrame(draw);
+//     };
+
+//     rafId = requestAnimationFrame(draw);
+//     window.addEventListener("resize", resize);
+
+//     // IMPORTANT: clean up both the listener and the rAF
+//     return () => {
+//       cancelAnimationFrame(rafId);
+//       window.removeEventListener("resize", resize);
+//     };
+//     // Only recreate when the numeric count or the actual palette changes
+//   }, [numStars, colors.join("|")]);
+
+//   return (
+//     <canvas
+//       ref={canvasRef}
+//       style={{
+//         position: "fixed",
+//         inset: 0,
+//         width: "100vw",
+//         height: "100vh",
+//         zIndex: -1,
+//         pointerEvents: "none",
+//       }}
+//     />
+//   );
+// }

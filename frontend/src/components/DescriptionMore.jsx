@@ -6,7 +6,8 @@ export default function DescriptionMore({
   text = "",
   quantity = 0,
 }) {
-  const needsMore = text.trim().length > 65;
+  const safeText = typeof text === "string" ? text : String(text ?? "");
+  const needsMore = safeText.trim().length > 65;
   const [isOpen, setIsOpen] = useState(false);
   const isSoldOut = Number(quantity) <= 0;
 
@@ -20,7 +21,7 @@ export default function DescriptionMore({
     <>
       <div className={!isSoldOut ? "more-container" : "sold-out-more-container"}>
         <p className={`description-paragraph ${isOpen ? "open" : "clamp"}`}>
-          {text}
+          {safeText}
         </p>
         {!isOpen && needsMore && !isSoldOut && (
           <button type="button" className="more-link" onClick={toggle}>more</button>

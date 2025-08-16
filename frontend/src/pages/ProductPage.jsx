@@ -7,11 +7,13 @@ import ShoppingCart from "../components/ShoppingCart";
 import AnimatedBackground from "../components/AnimatedBackground";
 import CheckoutPage from "./CheckoutPage";
 
-const ProductPage = ({ products: externalProducts }) => {
+const ProductPage = ({ products: externalProducts = [] }) => {
   const [products, setProducts] = useState([]);
   const [availableById, setAvailableById] = useState({});
   const [isCartShown, setIsCartShown] = useState(false);
-  const { cartItems } = useContext(CartContext);
+  const { cartItems: rawCart } = useContext(CartContext);
+  const cartItems = Array.isArray(rawCart) ? rawCart : [];
+   const totalItems = cartItems.reduce((sum, i) => sum + (i?.quantity ?? i?.qty ?? 1), 0);
 
   async function fetchAvailable(id) {
     const resp = await fetch(
@@ -20,6 +22,10 @@ const ProductPage = ({ products: externalProducts }) => {
     const qty = await resp.json();
     setAvailableById((prev) => ({ ...prev, [id]: qty }));
   }
+
+    useEffect(() => {
+    setProducts(Array.isArray(externalProducts) ? externalProducts : []);
+  }, [externalProducts]);
 
   const handleClickCart = () => {
     setIsCartShown((open) => !open);
@@ -45,11 +51,6 @@ const ProductPage = ({ products: externalProducts }) => {
     if (!products.length) return;
   }, [products]);
 
-  useEffect(() => {
-    if (externalProducts?.length > 0) {
-      setProducts(externalProducts);
-    }
-  }, [externalProducts]);
 
   useEffect(() => {
     if (products.length > 0) {
@@ -524,7 +525,8 @@ const ProductPage = ({ products: externalProducts }) => {
                   style={{ color: "white" }}
                 >
                   🛒
-                  <span className="cart-badge">{cartItems.length}</span>
+                 
+                  <span className="cart-badge">{totalItems}</span>
                 </button>
                 <button
                   className="btn btn-sm btn-ghost"
@@ -538,7 +540,7 @@ const ProductPage = ({ products: externalProducts }) => {
         </div>
     
 
-      <AnimatedBackground />
+      {/* <AnimatedBackground /> */}
       <div className="product-body">
         <div className="product-main-container">
           <div className="products-container">
@@ -585,7 +587,7 @@ const ProductPage = ({ products: externalProducts }) => {
                         alt="Cart"
                       ></img>
                     </div>
-                    <span className="cart-badge">{cartItems.length}</span>
+                    <span className="cart-badge">{totalItems}</span>
                   </button>
                 </div>
               )}
