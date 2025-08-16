@@ -1,5 +1,5 @@
 // src/contexts/CartContext.jsx
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, useRef } from "react";
 
 const noop = () => {};
 const defaultValue = {
@@ -8,6 +8,7 @@ const defaultValue = {
   setItemQty: noop,
   removeFromCart: noop,
   clearCart: noop,
+  clearCartAndRelease: noop,
 };
 
 export const CartContext = createContext(defaultValue);
@@ -52,6 +53,33 @@ export function CartProvider({ children }) {
     }
   }, [cartItems]);
 
+  async function releaseQty(id, qty) {
+    const count = Math.max(0, Number(qty) || 0);
+    for (let i = 0; i < count; i++) {
+      try {
+        await fetch(`http://localhost:8080/api/inventory/${id}/release`, {
+          method: "POST",
+        });
+      } catch (e) {
+        console.error("release failed", id, e);
+      }
+    }
+  }
+
+  async function clearCartAndRelease(reason = "manual") {
+    const snapshot = cartItems.map((i) => ({
+      id: i.id,
+      qty: i.qty ?? i.quantity ?? 1,
+    }));
+    setCartItems([]);
+
+    try {
+      for (const it of snapshot) await releaseQty(it.id, it.qty);
+    } catch (e) {
+      console.error("clearCartAndRelease error", e);
+    }
+  }
+
   const addToCart = (item) => {
     setCartItems((prev) => {
       const normalized = migrateItem({ ...item, qty: item.qty ?? 1 });
@@ -75,7 +103,7 @@ export function CartProvider({ children }) {
         // add new entry using fallback data
         const item = migrateItem({ id, qty, ...fallback });
         return item ? [...prev, item] : prev;
-        }
+      }
       if (qty <= 0) {
         // remove item
         const copy = [...prev];
@@ -93,15 +121,75 @@ export function CartProvider({ children }) {
 
   const clearCart = () => setCartItems([]);
 
+  const IDLE_MS = 15 * 60 * 1000;
+  const lastActivity = useRef(null);
+  const idleTimer = useRef(null);
+
+  useEffect(() => {
+    const bump = () => {
+      lastActivity.current = Date.now();
+      resetTimer();
+    };
+    const resetTimer = () => {
+      clearTimeout(idleTimer.current);
+
+      if (cartItems.length > 0) {
+        idleTimer.current = setTimeout(() => {
+          clearCartAndRelease("idle");
+        }, IDLE_MS);
+      }
+    };
+
+    resetTimer();
+
+    const events = ["mousemove", "keydown", "click", "scroll", "focus"];
+    events.forEach((ev) =>
+      window.addEventListener(ev, bump, { passive: true })
+    );
+
+    return () => {
+      clearTimeout(idleTimer.current);
+      events.forEach((ev) => window.removeEventListener(ev, bump));
+    };
+  }, [cartItems.length]);
+
+  useEffect(() => {
+    const onPageHide = () => {
+      if (!cartItems.length) return;
+      // stash what needs releasing; we’ll release next boot
+      sessionStorage.setItem(
+        "pendingRelease",
+        JSON.stringify(
+          cartItems.map((i) => ({ id: i.id, qty: i.qty ?? i.quantity ?? 1 }))
+        )
+      );
+    };
+    window.addEventListener("pagehide", onPageHide);
+    return () => window.removeEventListener("pagehide", onPageHide);
+  }, [cartItems]);
+
+  useEffect(() => {
+    const s = sessionStorage.getItem("pendingRelease");
+    if (s) {
+      sessionStorage.removeItem("pendingRelease");
+      try {
+        const list = JSON.parse(s) || [];
+        (async () => {
+          for (const it of list) await releaseQty(it.id, it.qty);
+        })();
+      } catch {}
+    }
+  }, []);
+
   const value = useMemo(
-    () => ({ cartItems, addToCart, setItemQty, removeFromCart, clearCart }),
+    () => ({ cartItems, addToCart, setItemQty, removeFromCart, clearCart, clearCartAndRelease }),
     [cartItems]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
-// Optional helper to safely consume
+
 export function useCart() {
   return useContext(CartContext);
 }

@@ -6,6 +6,21 @@ body {
   margin: 0;
 }
 
+
+.clear-cart-button-container{
+  display: flex;
+  width: 100%;
+  max-width: 85px;
+  flex-direction: column;
+  left: 90%;
+}
+
+.clear-cart-button-container btn{
+  background-color: rgb(145, 7, 163);
+  color: white;
+}
+
+
 .product-body {
   bottom: 125px;
   font-family: Arial, sans-serif;

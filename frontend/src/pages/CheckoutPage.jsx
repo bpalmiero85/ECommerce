@@ -1,6 +1,7 @@
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useState, useContext } from "react";
 import { CartContext } from "../contexts/CartContext";
+import ClearCartButton from "../components/ClearCartButton";
 import "../styles/CheckoutPage.css";
 import "../styles/ProductPage.css";
 
@@ -277,6 +278,9 @@ export default function CheckoutPage() {
         >
           {processing ? "Processing..." : succeeded ? "Paid!" : "Pay"}
         </button>
+        <div className="clear-cart-button-container">
+          <ClearCartButton />
+        </div>
       </div>
     </form>
   );
