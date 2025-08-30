@@ -6,20 +6,14 @@ body {
   margin: 0;
 }
 
-
-.clear-cart-button-container{
+.clear-cart-button-container {
   display: flex;
   width: 100%;
   max-width: 85px;
   flex-direction: column;
-  left: 90%;
+  top: 100%;
+  margin-left: 200px;
 }
-
-.clear-cart-button-container btn{
-  background-color: rgb(145, 7, 163);
-  color: white;
-}
-
 
 .product-body {
   bottom: 125px;
@@ -30,7 +24,7 @@ body {
   margin: 0;
 }
 
-.product-anchor-is-disabled{
+.product-anchor-is-disabled {
   cursor: not-allowed;
 }
 
@@ -83,7 +77,19 @@ body {
   cursor: pointer;
 }
 
-.check-mark{
+.cancel-cart-x {
+  display: flex;
+  position: absolute;
+  background: transparent;
+  justify-content: center;
+  padding: 2px;
+  font-size: 1rem;
+  width: 25px;
+  margin-bottom: 95%;
+  margin-left: 95%;
+}
+
+.check-mark {
   margin-left: 10px;
 }
 
@@ -153,6 +159,7 @@ body {
 }
 
 .cart-modal-pay-button button:disabled {
+  opacity: 0.6;
   background: lightgray;
   cursor: not-allowed;
 }
@@ -160,6 +167,7 @@ body {
 .checkout-page {
   display: flex;
   flex-direction: column;
+  position: relative;
   width: 100%;
   margin: 0 auto;
   flex-direction: column;
@@ -305,14 +313,15 @@ body {
 }
 
 .product-card img {
-  transition: opacity .2s ease;
+  transition: opacity 0.2s ease;
 }
 
-.qty-count{
-  font-size: 1.2rem;color: rgb(255, 255, 255);
+.qty-count {
+  font-size: 1.2rem;
+  color: rgb(255, 255, 255);
 }
 
-.qty-label{
+.qty-label {
   font-size: 1.2rem;
 }
 
@@ -320,12 +329,11 @@ body {
   background-color: rgb(0, 255, 0);
 }
 
-.qty-btn{
+.qty-btn {
   margin: 5px;
   width: 25px;
   height: 25px;
 }
-
 
 .add-to-cart,
 .added-to-cart,
@@ -356,7 +364,7 @@ body {
   box-sizing: border-box;
 }
 
-.product-card .media{
+.product-card .media {
   aspect-ratio: 1 / 1;
   width: 100%;
   object-fit: cover;
@@ -892,8 +900,6 @@ body {
   cursor: not-allowed;
 }
 
-
-
 .product-name {
   font-family: "fantasy";
   text-decoration: underline;
@@ -906,7 +912,7 @@ body {
   color: #ffffff;
   text-shadow: 0 0 15px rgba(225, 190, 231, 0.8);
 }
-.modal-description{
+.modal-description {
   color: #c5cae9;
 }
 
@@ -943,7 +949,7 @@ body {
   font-size: 1.8rem;
 }
 
-.sold-out-price{
+.sold-out-price {
   color: rgb(181, 0, 181);
   font-size: 1.8rem;
   cursor: not-allowed;

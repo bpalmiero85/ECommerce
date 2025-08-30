@@ -263,7 +263,7 @@ export default function CheckoutPage() {
       {error && <div style={{ color: "red" }}>{error}</div>}
 
       {/* Payment button */}
-      <div className="cart-modal-pay-button">
+      <div className={cartItems.length === 0 ? "cart-modal-pay-button empty" : "cart-modal-pay-button"}>
         <button
           type="submit"
           disabled={

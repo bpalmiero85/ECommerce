@@ -1,5 +1,6 @@
 import { useContext, useState } from "react";
 import { CartContext } from "../contexts/CartContext";
+import "../styles/styles.css";
 
 export default function ClearCartButton() {
   const { cartItems, clearCartAndRelease } = useContext(CartContext);
@@ -14,7 +15,7 @@ export default function ClearCartButton() {
 
   return(
     <button 
-      className="btn"
+      className="clear-cart"
       onClick={handleClear}
       disabled={busy || cartItems.length === 0}
       title="Clear cart and release holds"

@@ -13,7 +13,11 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   const [isCartShown, setIsCartShown] = useState(false);
   const { cartItems: rawCart } = useContext(CartContext);
   const cartItems = Array.isArray(rawCart) ? rawCart : [];
-   const totalItems = cartItems.reduce((sum, i) => sum + (i?.quantity ?? i?.qty ?? 1), 0);
+  const checkoutRef = useRef();
+  const totalItems = cartItems.reduce(
+    (sum, i) => sum + (i?.quantity ?? i?.qty ?? 1),
+    0
+  );
 
   async function fetchAvailable(id) {
     const resp = await fetch(
@@ -23,7 +27,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
     setAvailableById((prev) => ({ ...prev, [id]: qty }));
   }
 
-    useEffect(() => {
+  useEffect(() => {
     setProducts(Array.isArray(externalProducts) ? externalProducts : []);
   }, [externalProducts]);
 
@@ -36,7 +40,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   };
 
   // May use in the future ---
-  
+
   // const decrementProductQty = (productId) => {
   //   setProducts((prev) =>
   //     prev.map((p) =>
@@ -51,13 +55,31 @@ const ProductPage = ({ products: externalProducts = [] }) => {
     if (!products.length) return;
   }, [products]);
 
-
   useEffect(() => {
     if (products.length > 0) {
       addLogoEffects();
     }
     return () => {};
   }, [products]);
+
+  useEffect(() => {
+    if(!isCartShown){
+      return;
+    }
+    function onPointerDown(e){
+      const cartBox = checkoutRef.current;
+      if(!cartBox){
+        return;
+      }
+      if(!cartBox.contains(e.target)){
+        handleCancelCart();
+      }
+    }
+    document.addEventListener("pointerdown", onPointerDown, true);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true);
+    };
+  }, [isCartShown, handleCancelCart])
 
   const addLogoEffects = () => {
     document.querySelectorAll(".product-design").forEach((logo) => {
@@ -108,11 +130,16 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   };
 
   return (
-    <div className="product-page-container">
+    <div className="product-page-container" ref={checkoutRef}>
       {isCartShown && (
         <div className="cart-modal">
           <ShoppingCart />
           <div className="checkout-page">
+            <div>
+              <button onClick={handleCancelCart} className="cancel-cart-x">
+                <strong>X</strong>
+              </button>
+            </div>
             <CheckoutPage />
             <div className="cart-modal-cancel-button">
               <button type="button" onClick={handleCancelCart}>
@@ -492,53 +519,45 @@ const ProductPage = ({ products: externalProducts = [] }) => {
             />
           </circle>
         </svg>
-   
-          <div className="nav-container">
-            <nav className="nav">
-              <a href="#home">Home</a>
-              <a
-                href="#gallery"
-                style={{ "--hover-color": "var(--neon-blue)" }}
+
+        <div className="nav-container">
+          <nav className="nav">
+            <a href="#home">Home</a>
+            <a href="#gallery" style={{ "--hover-color": "var(--neon-blue)" }}>
+              Gallery
+            </a>
+            <a href="#shop" style={{ "--hover-color": "var(--neon-purple)" }}>
+              Shop
+            </a>
+            <a href="#contact" style={{ "--hover-color": "var(--neon-pink)" }}>
+              Contact
+            </a>
+            {/* Right side actions */}
+            <div className="nav-actions">
+              <button
+                className="btn btn-sm btn-ghost"
+                style={{ color: "white" }}
               >
-                Gallery
-              </a>
-              <a href="#shop" style={{ "--hover-color": "var(--neon-purple)" }}>
-                Shop
-              </a>
-              <a
-                href="#contact"
-                style={{ "--hover-color": "var(--neon-pink)" }}
+                🔍
+              </button>
+              <button
+                onClick={handleClickCart}
+                className="btn btn-sm btn-ghost relative"
+                style={{ color: "white" }}
               >
-                Contact
-              </a>
-              {/* Right side actions */}
-              <div className="nav-actions">
-                <button
-                  className="btn btn-sm btn-ghost"
-                  style={{ color: "white" }}
-                >
-                  🔍
-                </button>
-                <button
-                  onClick={handleClickCart}
-                  className="btn btn-sm btn-ghost relative"
-                  style={{ color: "white" }}
-                >
-                  🛒
-                 
-                  <span className="cart-badge">{totalItems}</span>
-                </button>
-                <button
-                  className="btn btn-sm btn-ghost"
-                  style={{ color: "white" }}
-                >
-                  👤
-                </button>
-              </div>
-            </nav>
-          </div>
+                🛒
+                <span className="cart-badge">{totalItems}</span>
+              </button>
+              <button
+                className="btn btn-sm btn-ghost"
+                style={{ color: "white" }}
+              >
+                👤
+              </button>
+            </div>
+          </nav>
         </div>
-    
+      </div>
 
       {/* <AnimatedBackground /> */}
       <div className="product-body">
