@@ -15,7 +15,11 @@ const Product = ({
   pictureVersion,
   onReserved,
 }) => {
-  const { addToCart, cartItems: rawItems, setItemQty } = useContext(CartContext);
+  const {
+    addToCart,
+    cartItems: rawItems,
+    setItemQty,
+  } = useContext(CartContext);
   const cartItems = Array.isArray(rawItems) ? rawItems : [];
   const inCartQty = cartItems.reduce(
     (sum, item) => (item.id === id ? sum + (item.quantity ?? 1) : sum),
@@ -74,7 +78,6 @@ const Product = ({
     } finally {
       setSaving(false);
     }
- 
   }
 
   const showTempMessage = (text) => {
@@ -153,7 +156,11 @@ const Product = ({
 
         <div className="modal-product-description-container">
           <DescriptionMore
-            text={typeof description === "string" ? description : String(description ?? "")}
+            text={
+              typeof description === "string"
+                ? description
+                : String(description ?? "")
+            }
             quantity={Number.isFinite(quantity) ? quantity : 0}
           />
         </div>
@@ -213,7 +220,9 @@ const Product = ({
               }}
             >
               {quantity === 0
-                ? (added ? `${inCartQty} in your cart` : "Sold Out")
+                ? added
+                  ? `${inCartQty} in your cart`
+                  : "Sold Out"
                 : saving
                 ? "Adding..."
                 : "Add to cart"}

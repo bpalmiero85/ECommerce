@@ -16,6 +16,19 @@ function Category() {
   const firstLoad = useRef(true);
   const prevSig = useRef("");
   const displayName = (slug ?? "").replace(/-/g, " ");
+  const normalizedCategory = displayName.toLowerCase().trim();
+  const categoryObject = {
+    "fidgets sensory": "Wiggly, spinny, and endlessly distracting — our fidgets are made for restless hands. Small spooky toys that add a little chaos to your downtime.",
+    "jewelry": "Statement pieces with a spooky twist. Bold shapes, fun designs, and gothic flair you can wear every day.",
+    "figurines": "Creepy-cute characters ready to haunt your shelves. From little monsters to strange critters, these figurines bring personality to any corner.",
+    "accessories": "Odd little extras to tag along wherever you go. Keychains, charms, and small gothic add-ons that bring a spark of spooky style.",
+    "home decor": "Spooky accents for everyday spaces. Bowls, holders, and decorations that turn your home into a cozy haunted hideaway.",
+    "custom orders": "Got something unusual in mind? Tell us, and we’ll whip up a custom print made just for you — unique, personal, and full of character.t",
+    "garbage ghouls": "Our original creatures of chaos. Sludge monsters and other ghastly ghouls, born from imagination and perfect for anyone who loves weird collectibles.",
+  };
+  const categoryDescription =
+    categoryObject[normalizedCategory] ??
+    "Discover our enchanting collection of 3D printed cute but spooky items. From adorable ghosts to mystical creatures, bring magic to your world.";
 
   function SkeletonGrid({ count = 8 }) {
     return (
@@ -41,7 +54,7 @@ function Category() {
   function EmptyState({ category }) {
     return (
       <div className="empty-state">
-        No products in <strong>{category}</strong> yet.
+        No products currently listed in <strong>{category}</strong> category.
       </div>
     );
   }
@@ -105,6 +118,7 @@ function Category() {
 
   return (
     <section className="products-section">
+      <HeroSection categoryDescription={categoryDescription}/>
       <div className="section-header">
         <h2 className="section-title">
           <span className="neon-glow" style={{ color: "var(--neon-pink)" }}>
@@ -132,68 +146,21 @@ function Category() {
 }
 
 // Hero Section Component
-function HeroSection() {
+function HeroSection({ categoryDescription }) {
   return (
-    <section className="hero">
-      {/* Left content */}
-      <div className="hero-content">
-        <h1 className="hero-title">
-          CONJURE YOUR{" "}
-          <span className="neon-glow" style={{ color: "var(--neon-green)" }}>
-            SPOOKY
-          </span>{" "}
-          PRINTS NOW.
-        </h1>
+    <div className="hero-content">
+      <h2>{categoryDescription}</h2>
+      <section className="hero">
+        {/* Right side - Hero image area */}
+        <div className="hero-visual">
+          <div className="relative">
+        
 
-        <p className="hero-description">
-          Discover our enchanting collection of 3D printed cute but spooky
-          items. From adorable ghosts to mystical creatures, bring magic to your
-          world.
-        </p>
-
-        <button className="btn btn-lg btn-gradient bold">Shop Now</button>
-      </div>
-
-      {/* Right side - Hero image area */}
-      <div className="hero-visual">
-        <div className="relative">
-          {/* Floating elements */}
-          <div className="floating-element floating-1"></div>
-          <div className="floating-element floating-2"></div>
-
-          {/* Main hero illustration */}
-          <div className="hero-circle">
-            <div className="hero-inner-circle">
-              <div className="hero-ghost">👻</div>
-            </div>
-
-            {/* Decorative elements */}
-            <div
-              className="absolute"
-              style={{
-                top: "1rem",
-                right: "1rem",
-                animation: "spin 2s linear infinite",
-              }}
-            >
-              ⭐
-            </div>
-          </div>
-
-          {/* Dashed orbit lines */}
-          <div className="orbit-line orbit-1"></div>
-          <div className="orbit-line orbit-2"></div>
-        </div>
-
-        {/* Floating promotion card */}
-        <div className="promo-card gothic-card">
-          <div className="promo-title">GET UP TO 30% OFF</div>
-          <div className="promo-text">
-            You can get 30% off this product if you are buying now
+           
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }
 
@@ -219,7 +186,6 @@ export default function CategoryPage() {
 
       {/* Main content */}
       <div className="relative z-10">
-        <HeroSection />
         <Category />
       </div>
 

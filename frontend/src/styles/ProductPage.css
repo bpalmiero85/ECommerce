@@ -255,8 +255,19 @@ body {
   transition: color 0.3s ease;
 }
 
+.empty-state {
+  text-align: center;
+}
 .footer-links a:hover {
   color: var(--neon-green);
+}
+
+.section-header {
+  display: flex;
+  position: relative;
+  bottom: 125px;
+  justify-self: center;
+
 }
 
 .products-container {
@@ -408,6 +419,9 @@ body {
 }
 
 .purchase-buttons {
+  min-height: 60px;
+  align-items: center;
+  justify-content: center;
   display: flex;
   margin: 0 auto;
 }
@@ -447,6 +461,7 @@ body {
 .product-card::before {
   content: "";
   position: absolute;
+  pointer-events: none;
   top: -50%;
   left: -50%;
   width: 200%;
