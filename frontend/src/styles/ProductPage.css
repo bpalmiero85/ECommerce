@@ -15,6 +15,10 @@ body {
   margin-left: 200px;
 }
 
+.hero-section {
+  margin-top: 155px;
+}
+
 .product-body {
   bottom: 125px;
   font-family: Arial, sans-serif;
@@ -265,9 +269,7 @@ body {
 .section-header {
   display: flex;
   position: relative;
-  bottom: 125px;
   justify-self: center;
-
 }
 
 .products-container {
@@ -301,15 +303,21 @@ body {
 
 .product-grid {
   display: grid;
+  top: 0;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-rows: auto;
   column-gap: 1.3rem;
   row-gap: 1rem;
   width: 100%;
   max-width: 1200px;
   justify-content: center;
   justify-items: center;
-  margin: 175px auto;
+  align-items: center;
   max-height: fit-content;
+}
+
+.category-page {
+  margin: 32px auto;
 }
 
 .credit-card-window {
@@ -1041,4 +1049,15 @@ body {
 .copy-button:hover {
   background: #7b1fa2;
   transform: translateY(-2px);
+}
+
+@media (max-width: 480px){
+  .product-grid{
+    grid-template-columns: 1fr;
+  }
+  .product-card{
+    min-width: 0;
+    width: 100%;
+    max-width: 420px;
+  }
 }

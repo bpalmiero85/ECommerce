@@ -689,10 +689,21 @@ p {
   font-size: 1.125rem;
 }
 
+.product-page {
+  width: 100%;
+  display: flex;
+  position: relative;
+  margin: 0 auto;
+  justify-content: center;
+  align-items: center;
+}
+
 .products-grid-container {
-  margin-top: -200px;
+  margin-top: 50px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .wishlist-btn {
@@ -850,6 +861,10 @@ p {
 
 @media (max-width: 785px) {
   .nav-actions {
+    position: static;
+    margin-left: 0;
+    width: auto;
+    justify-content: center;
     margin-top: 15px;
   }
 

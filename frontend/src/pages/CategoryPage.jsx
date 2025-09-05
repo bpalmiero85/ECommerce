@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import ProductPage from "./ProductPage.jsx";
 import "../styles/styles.css";
 import "../styles/ProductPage.css";
-import { CartContext } from "../contexts/CartContext.jsx";
+
 
 function Category() {
   const [products, setProducts] = useState([]);
@@ -18,13 +18,13 @@ function Category() {
   const displayName = (slug ?? "").replace(/-/g, " ");
   const normalizedCategory = displayName.toLowerCase().trim();
   const categoryObject = {
-    "fidgets sensory": "Wiggly, spinny, and endlessly distracting — our fidgets are made for restless hands. Small spooky toys that add a little chaos to your downtime.",
-    "jewelry": "Statement pieces with a spooky twist. Bold shapes, fun designs, and gothic flair you can wear every day.",
+    "fidgets sensory": "Restless spirits deserve restless toys. Spin, squish, and click your way through the shadows with fidgets that keep haunted hands busy.",
+    "jewelry": "Tiny charms of the night. From moons to monsters, our gothic jewelry adds a touch of eerie sparkle to your everyday ritual.",
     "figurines": "Creepy-cute characters ready to haunt your shelves. From little monsters to strange critters, these figurines bring personality to any corner.",
     "accessories": "Odd little extras to tag along wherever you go. Keychains, charms, and small gothic add-ons that bring a spark of spooky style.",
-    "home decor": "Spooky accents for everyday spaces. Bowls, holders, and decorations that turn your home into a cozy haunted hideaway.",
-    "custom orders": "Got something unusual in mind? Tell us, and we’ll whip up a custom print made just for you — unique, personal, and full of character.t",
-    "garbage ghouls": "Our original creatures of chaos. Sludge monsters and other ghastly ghouls, born from imagination and perfect for anyone who loves weird collectibles.",
+    "home decor": "Spooky accents for everyday spaces. Turn your lair into a haunted haven. Bowls, holders, and decorations that turn your home into a cozy haunted hideaway.",
+    "custom orders": "Got something unusual in mind? Tell us, and we’ll whip up a custom print made just for you — unique, personal, and full of character.",
+    "garbage ghouls": "Our original creatures of chaos. Born of slime and shadows, the Garbage Ghouls crawl from the crypt to be collected. Strange, silly, and a little grotesque — they’re impossible not to love.",
   };
   const categoryDescription =
     categoryObject[normalizedCategory] ??
@@ -118,7 +118,9 @@ function Category() {
 
   return (
     <section className="products-section">
+    <div className="hero-section">
       <HeroSection categoryDescription={categoryDescription}/>
+      </div>
       <div className="section-header">
         <h2 className="section-title">
           <span className="neon-glow" style={{ color: "var(--neon-pink)" }}>
@@ -138,7 +140,9 @@ function Category() {
         ) : isEmpty ? (
           <EmptyState category={displayName} />
         ) : (
+          <div className="product-page">
           <ProductPage products={products} key={slug} />
+          </div>
         )}
       </div>
     </section>
@@ -150,16 +154,6 @@ function HeroSection({ categoryDescription }) {
   return (
     <div className="hero-content">
       <h2>{categoryDescription}</h2>
-      <section className="hero">
-        {/* Right side - Hero image area */}
-        <div className="hero-visual">
-          <div className="relative">
-        
-
-           
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
@@ -185,7 +179,7 @@ export default function CategoryPage() {
       </div>
 
       {/* Main content */}
-      <div className="relative z-10">
+      <div className="category-page">
         <Category />
       </div>
 
