@@ -13,8 +13,13 @@ import com.example.demo.model.Product;
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
   List<Product> findByCategoryIgnoreCaseOrderByNameAsc(String category);
+  List<Product> findByFeaturedTrueOrderByNameAsc();
+  List<Product> findByCategoryIgnoreCaseAndFeaturedTrueOrderByNameAsc(String category);
 
   @Query("select distinct p.category from Product p order by p.category asc")
   List<String> findAllDistinctCategories();
+
+
+ 
 
 }

@@ -12,6 +12,7 @@ const Product = ({
   quantity,
   description,
   category,
+  featured,
   pictureVersion,
   onReserved,
 }) => {
@@ -139,11 +140,13 @@ const Product = ({
       >
         <div className="product-design">
           <div className="animated-item-container">
+              {featured && <span className="badge-purple">Featured</span>}
             <div
               className={
                 quantity === 0 ? "animated-item-sold-out" : "animated-item"
               }
             >
+         
               <img className="product-image" src={imageUrl} alt={name}></img>
             </div>
           </div>

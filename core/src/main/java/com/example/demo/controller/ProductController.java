@@ -47,7 +47,7 @@ public class ProductController {
 
   @PostMapping(value = "/product/{productId}/uploadPicture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Product> uploadProductPicture(@PathVariable Long productId,
-      @RequestParam("file") MultipartFile file) throws IOException {
+    @RequestParam("file") MultipartFile file) throws IOException {
     Product product = productService.getProductById(productId).orElseThrow();
     product.setProductPictureFile(file.getBytes());
     product.setPictureType(file.getContentType());
@@ -58,11 +58,25 @@ public class ProductController {
 
   @CrossOrigin(origins = "http://localhost:3000")
   @GetMapping("/products")
-  public List<Product> getAllProducts(@RequestParam(value = "category", required = false) String category) {
-    if (category != null && !category.isBlank()) {
+  public List<Product> getAllProducts(
+    @RequestParam(value = "category", required = false) String category,
+    @RequestParam(value = "featured", required = false) Boolean featured
+    ) {
+    if (Boolean.TRUE.equals(featured) && category != null && !category.isBlank()) {
+      return productService.getFeaturedProductsByCategory(category);
+    }
+    if(Boolean.TRUE.equals(featured)) {
+      return productService.getFeaturedProducts();
+    }
+    if(category != null && !category.isBlank()){
       return productService.getProductCategory(category);
     }
     return productService.getAllProducts();
+  }
+
+  @GetMapping("/products/featured")
+  public List<Product> getFeatured() {
+    return productService.getFeaturedProducts();
   }
 
   @GetMapping("/products/category/{category}")

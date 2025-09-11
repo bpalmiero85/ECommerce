@@ -277,6 +277,18 @@ body {
   margin: 0 auto;
 }
 
+.badge-purple{
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  top: 0;
+  background: rgb(208, 0, 255);
+  color: white;
+  z-index: 100;
+
+}
+
 .section-title {
   width: 100%;
   justify-content: center;

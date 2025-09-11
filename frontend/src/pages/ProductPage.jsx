@@ -580,6 +580,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                       quantity={availableById[product.id] ?? product.quantity}
                       pictureVersion={product.pictureVersion}
                       pictureType={product.pictureType}
+                      featured={product.featured}
                       onReserved={fetchAvailable}
                     />
                   </div>

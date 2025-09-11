@@ -17,6 +17,7 @@ const AdminPage = () => {
   const [isPictureUploaded, setIsPictureUploaded] = useState(false);
   const [croppingStatus, setCroppingStatus] = useState(false);
   const [category, setCategory] = useState("");
+  const [isFeatured, setIsFeatured] = useState(false);
   const formRef = useRef(null);
   const mainFileRef = useRef(null);
   const editFileRef = useRef(null);
@@ -73,6 +74,7 @@ const AdminPage = () => {
           price: parseFloat(price),
           quantity: parseInt(quantity, 10),
           category,
+          featured: isFeatured,
         }),
       });
 
@@ -85,6 +87,7 @@ const AdminPage = () => {
       setPrice("");
       setQuantity("");
       setSelectedFile(null);
+      setIsFeatured(false);
       if (mainFileRef.current) mainFileRef.current.value = "";
 
       if (selectedFile) {
@@ -301,6 +304,19 @@ const AdminPage = () => {
                 </option>
               ))}
             </select>
+            <div className="featured-select">
+              <label
+                className="featured-flag"
+                style={{ display: "flex", gap: 8, alignItems: "center" }}
+              >
+                <input
+                  type="checkbox"
+                  checked={isFeatured}
+                  onChange={(e) => setIsFeatured(e.target.checked)}
+                />
+                Featured
+              </label>
+            </div>
           </div>
 
           <label className="custom-file-upload">
@@ -328,6 +344,7 @@ const AdminPage = () => {
         {products.length > 0 ? (
           products.map((product) => (
             <div key={product.id} className="product-card">
+             {product.featured && <span className="badge-purple">Featured</span>}
               <div id={`${product.id}`} className="product-item">
                 <div className="product-buttons">
                   <ProductPicture
@@ -336,6 +353,7 @@ const AdminPage = () => {
                     setIsPictureUploaded={setIsPictureUploaded}
                     setCroppingStatus={setCroppingStatus}
                   />
+                   
                   <div className="product-edit-button">
                     <button
                       onClick={() => {
@@ -346,6 +364,7 @@ const AdminPage = () => {
                         setQuantity(product.quantity);
                         setCategory(product.category);
                         setProductPicture(product.productPicture);
+                        setIsFeatured(!!product.featured); // note: property name from API is 'featured'
 
                         document
                           .getElementById(`${product.id}`)
@@ -440,6 +459,7 @@ const AdminPage = () => {
                           setDescription("");
                           setPrice("");
                           setQuantity("");
+                          setIsFeatured(false);
                         }}
                       >
                         Cancel

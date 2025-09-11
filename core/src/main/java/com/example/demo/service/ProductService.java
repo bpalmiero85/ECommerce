@@ -20,8 +20,8 @@ public class ProductService {
   private final InventoryMemory inventory;
 
   public Product saveProduct(Product product) {
-    if(product.getCategory() == null || product.getCategory().isBlank()){
-      throw new  ResponseStatusException(HttpStatus.BAD_REQUEST, "Category is required when posting a product.");
+    if (product.getCategory() == null || product.getCategory().isBlank()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category is required when posting a product.");
     }
     Product saved = productRepository.save(product);
     inventory.setStock(saved.getId(), saved.getQuantity());
@@ -53,12 +53,11 @@ public class ProductService {
 
   }
 
-  public List<Product> getProductCategory(String category){
+  public List<Product> getProductCategory(String category) {
     List<Product> list = productRepository.findByCategoryIgnoreCaseOrderByNameAsc(category);
     list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
     return list;
-  } 
-
+  }
 
   public Product updateProduct(Long id, Product updatedProduct) {
     Optional<Product> existingProduct = productRepository.findById(id);
@@ -69,6 +68,7 @@ public class ProductService {
       product.setPrice(updatedProduct.getPrice());
       product.setQuantity(updatedProduct.getQuantity());
       product.setCategory(updatedProduct.getCategory());
+      product.setFeatured(updatedProduct.isFeatured());
       product.setPictureVersion(System.currentTimeMillis());
       Product saved = productRepository.save(product);
 
@@ -77,6 +77,19 @@ public class ProductService {
     } else {
       throw new RuntimeException("Product not found");
     }
+  }
+
+  public List<Product> getFeaturedProducts() {
+      List<Product> list = productRepository.findByFeaturedTrueOrderByNameAsc();
+      list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
+      return list;
+    
+  }
+
+  public List<Product> getFeaturedProductsByCategory(String category) {
+    List<Product> list = productRepository.findByCategoryIgnoreCaseAndFeaturedTrueOrderByNameAsc(category);
+    list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
+    return list;
   }
 
   public void deleteProduct(Long id) {
