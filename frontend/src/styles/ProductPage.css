@@ -266,10 +266,39 @@ body {
   color: var(--neon-green);
 }
 
+.section-subtitle {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  top: 15px;
+  color: #d1d5db;
+  font-size: 1.5rem;
+  margin: 0 auto;
+}
+
+.section-title {
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+  font-size: 2.25rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 1rem;
+  margin: 0 auto;
+}
+
 .section-header {
   display: flex;
+  flex-direction: column;
   position: relative;
+  width: 100%;
   justify-self: center;
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+  margin: 0 auto;
 }
 
 .products-container {
