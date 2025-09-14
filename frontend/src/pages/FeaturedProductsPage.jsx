@@ -9,22 +9,19 @@ function FeaturedProducts() {
   useEffect(() => {
     const fetchProducts = async (category) => {
       try {
-        const url = category
-          ? `http://localhost:8080/api/products?category=${encodeURIComponent}`
-          : "http://localhost:8080/api/products";
+        const url = "http://localhost:8080/api/products?featured=true";
         const response = await fetch(url);
 
         if (!response.ok) throw new Error(`Error: ${response.status}`);
         const fetched = await response.json();
 
         setProducts((prev) => {
-          const existingIds = new Set(prev.map((p) => p.id));
-          const onlyNew = fetched.filter((p) => !existingIds.has(p.id));
           const fetchedMap = new Map(fetched.map((p) => [p.id, p]));
-          const updatedProducts = prev.map((oldProd) =>
-            fetchedMap.has(oldProd.id) ? fetchedMap.get(oldProd.id) : oldProd
-          );
-          return [...updatedProducts, ...onlyNew];
+          const keptUpdated = prev.filter((p) => fetchedMap.has(p.id))
+                              .map((p) => fetchedMap.get(p.id));
+          const keptIds = new Set(keptUpdated.map((p) => p.id));
+          const onlyNew = fetched.filter((p) => !keptIds.has(p.id));
+          return [...keptUpdated, ...onlyNew];
         });
       } catch (err) {
         console.error("Error fetching products:", err);
@@ -32,7 +29,7 @@ function FeaturedProducts() {
     };
 
     fetchProducts();
-    const interval = setInterval(fetchProducts, 5000);
+    const interval = setInterval(() => fetchProducts(), 5000);
 
     return () => clearInterval(interval);
   }, []);
@@ -106,10 +103,6 @@ function HeroSection() {
               ⭐
             </div>
           </div>
-
-          {/* Dashed orbit lines */}
-          <div className="orbit-line orbit-1"></div>
-          <div className="orbit-line orbit-2"></div>
         </div>
 
         {/* Floating promotion card */}

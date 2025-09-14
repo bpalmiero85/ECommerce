@@ -183,6 +183,7 @@ const AdminPage = () => {
       price,
       quantity,
       category,
+      featured: isFeatured,
     });
     const id = isEditingId;
     const updated = {
@@ -191,6 +192,7 @@ const AdminPage = () => {
       price: +price,
       quantity: +quantity,
       category: category,
+      featured: isFeatured,
     };
     try {
       const response = await fetch(`http://localhost:8080/api/products/${id}`, {
@@ -411,30 +413,35 @@ const AdminPage = () => {
                         className="product-input-field"
                         onChange={(e) => handleFileChange(e)}
                       ></input>
+
                       <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required
                       />
+
                       <input
                         type="text"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         required
                       />
+
                       <input
                         type="number"
                         value={price}
                         onChange={(e) => setPrice(e.target.value)}
                         required
                       />
+
                       <input
                         type="number"
                         value={quantity}
                         onChange={(e) => setQuantity(e.target.value)}
                         required
                       />
+
                       <label>Category: </label>
                       <select
                         value={category}
@@ -446,6 +453,14 @@ const AdminPage = () => {
                           </option>
                         ))}
                       </select>
+                        <label>
+                        Featured
+                      <input
+                        type="checkbox"
+                        checked={isFeatured}
+                        onChange={(e) => setIsFeatured(e.target.checked)}
+                      ></input>
+                      </label>
 
                       <button className="edit-button" type="submit">
                         Save
