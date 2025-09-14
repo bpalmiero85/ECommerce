@@ -17,6 +17,7 @@ const AdminPage = () => {
   const [isPictureUploaded, setIsPictureUploaded] = useState(false);
   const [croppingStatus, setCroppingStatus] = useState(false);
   const [category, setCategory] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
   const formRef = useRef(null);
   const mainFileRef = useRef(null);
@@ -32,16 +33,15 @@ const AdminPage = () => {
     "Garbage Ghouls",
   ];
 
-  const fetchProducts = async (category) => {
+  const fetchProducts = async () => {
     try {
-      const url =
-        category && category.trim()
-          ? `http://localhost:8080/api/products?category=${encodeURIComponent(
-              category.trim()
-            )}`
-          : `http://localhost:8080/api/products`;
+      const base = "http://localhost:8080/api/products";
+      const qs = filterCategory && filterCategory.trim()
+        ? `?category=${encodeURIComponent(filterCategory.trim())}&_=${Date.now()}`
+        : `?_=${Date.now()}`;
+        const url = `${base}${qs}`;
 
-      const response = await fetch(url, { method: "GET" });
+      const response = await fetch(url, { method: "GET", cache: "no-store" });
       if (!response.ok) throw new Error(`Error: ${response.status}`);
 
       const data = await response.json();
@@ -53,7 +53,7 @@ const AdminPage = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, [category]);
+  }, [filterCategory]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -191,9 +191,10 @@ const AdminPage = () => {
       description,
       price: +price,
       quantity: +quantity,
-      category: category,
+      category,
       featured: isFeatured,
     };
+  
     try {
       const response = await fetch(`http://localhost:8080/api/products/${id}`, {
         method: "PUT",
@@ -204,6 +205,8 @@ const AdminPage = () => {
       if (!response.ok) {
         throw new Error(`Failed to update: ${response.statusText}`);
       }
+      const saved = await response.json();
+      setProducts(prev => prev.map(p => p.id === id ? saved : p));
       if (selectedFile) {
         console.log("Uploading picture...");
         const formData = new FormData();
@@ -403,6 +406,7 @@ const AdminPage = () => {
                   {isEditingId === product.id ? (
                     // Inline edit form
                     <form
+                    key={isEditingId || 'none'}
                       onSubmit={handleUpdateProduct}
                       className="inline-edit-form"
                     >
@@ -474,7 +478,12 @@ const AdminPage = () => {
                           setDescription("");
                           setPrice("");
                           setQuantity("");
+                          setCategory("");
+                          setSelectedFile(null);
                           setIsFeatured(false);
+                          if(editFileRef.current){
+                            editFileRef.current.value = "";
+                          }
                         }}
                       >
                         Cancel
