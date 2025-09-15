@@ -3,13 +3,13 @@ import ProductPage from "../pages/ProductPage.jsx";
 import "../styles/styles.css";
 import "../styles/ProductPage.css";
 
-function FeaturedProducts() {
+const Home = () => {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
     const fetchProducts = async (category) => {
       try {
-        const url = "http://localhost:8080/api/products?featured=true";
+        const url = `http://localhost:8080/api/products?category${category}`;
         const response = await fetch(url);
 
         if (!response.ok) throw new Error(`Error: ${response.status}`);
@@ -17,8 +17,9 @@ function FeaturedProducts() {
 
         setProducts((prev) => {
           const fetchedMap = new Map(fetched.map((p) => [p.id, p]));
-          const keptUpdated = prev.filter((p) => fetchedMap.has(p.id))
-                              .map((p) => fetchedMap.get(p.id));
+          const keptUpdated = prev
+            .filter((p) => fetchedMap.has(p.id))
+            .map((p) => fetchedMap.get(p.id));
           const keptIds = new Set(keptUpdated.map((p) => p.id));
           const onlyNew = fetched.filter((p) => !keptIds.has(p.id));
           return [...keptUpdated, ...onlyNew];
@@ -39,12 +40,12 @@ function FeaturedProducts() {
       <div className="section-header">
         <h2 className="section-title">
           <span className="neon-glow" style={{ color: "var(--neon-pink)" }}>
-            POPULAR
+            OUR
           </span>{" "}
-          CREATIONS
+          COLLECTION
         </h2>
         <p className="section-subtitle">
-          Discover our most beloved spooky-cute 3D prints
+          All the spooky, all the sparkly—every creation in one place.
         </p>
       </div>
 
@@ -53,7 +54,7 @@ function FeaturedProducts() {
       </div>
     </section>
   );
-}
+};
 
 // Hero Section Component
 function HeroSection() {
@@ -62,15 +63,17 @@ function HeroSection() {
       {/* Left content */}
       <div className="hero-content">
         <h1 className="hero-title">
-          FEATURED{" "}
+          CONJURE YOUR{" "}
           <span className="neon-glow" style={{ color: "var(--neon-green)" }}>
-            PRODUCTS.
+            SPOOKY
           </span>{" "}
-     
+          PRINTS NOW.
         </h1>
 
         <p className="hero-description">
-          Hand-picked fan favorites—spooky-cute treasures our coven loves most.
+          Discover our enchanting collection of 3D printed cute but spooky
+          items. From adorable ghosts to mystical creatures, bring magic to your
+          world.
         </p>
 
       </div>
@@ -85,7 +88,9 @@ function HeroSection() {
           {/* Main hero illustration */}
           <div className="hero-circle">
             <div className="hero-inner-circle">
-              <div className="hero-ghost">👻</div>
+              <div>
+                <img style={{display: "flex", width: "150px"}}src="/sludgy.jpg"></img>
+              </div>
             </div>
 
             {/* Decorative elements */}
@@ -120,7 +125,7 @@ function Nav() {
 }
 
 // Main App Component
-export default function FeaturedProductsPage() {
+export default function HomePage() {
   return (
     <div
       style={{ minHeight: "100vh", position: "relative", overflow: "hidden" }}
@@ -137,7 +142,7 @@ export default function FeaturedProductsPage() {
       {/* Main content */}
       <div className="relative z-10">
         <HeroSection />
-        <FeaturedProducts />
+        <Home />
       </div>
 
       {/* Footer */}

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import AdminPage from "./pages/AdminPage.jsx";
+import HomePage from "./pages/HomePage.jsx";
 import ProductPage from "./pages/ProductPage.jsx";
 import CheckoutPage from "./pages/CheckoutPage.jsx";
 import FeaturedProductsPage from "./pages/FeaturedProductsPage.jsx";
@@ -14,6 +15,7 @@ function App() {
     <Elements stripe={stripePromise}>
       <Routes>
         <Route path="/" element={<AdminPage />} />
+        <Route path="/home" element={<HomePage />} />
         <Route path="/products" element={<ProductPage />} />
         <Route path="/cart" element={<CheckoutPage />} />
         <Route path="/featured" element={<FeaturedProductsPage />} />
