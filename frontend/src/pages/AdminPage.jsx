@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import "../styles/AdminPage.css";
 import "../styles/ProductPage.css";
 import "../styles/DescriptionMore.css";
@@ -23,7 +23,8 @@ const AdminPage = () => {
   const mainFileRef = useRef(null);
   const editFileRef = useRef(null);
   const cardFileRefs = useRef({});
-  const productDescriptionRef = useRef("");
+  const createDescriptionRef = useRef(null);
+  const editDescriptionRef = useRef(null);
   const CATEGORIES = [
     "Fidgets & Sensory",
     "Jewelry",
@@ -34,13 +35,16 @@ const AdminPage = () => {
     "Garbage Ghouls",
   ];
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const base = "http://localhost:8080/api/products";
-      const qs = filterCategory && filterCategory.trim()
-        ? `?category=${encodeURIComponent(filterCategory.trim())}&_=${Date.now()}`
-        : `?_=${Date.now()}`;
-        const url = `${base}${qs}`;
+      const qs =
+        filterCategory && filterCategory.trim()
+          ? `?category=${encodeURIComponent(
+              filterCategory.trim()
+            )}&_=${Date.now()}`
+          : `?_=${Date.now()}`;
+      const url = `${base}${qs}`;
 
       const response = await fetch(url, { method: "GET", cache: "no-store" });
       if (!response.ok) throw new Error(`Error: ${response.status}`);
@@ -50,15 +54,23 @@ const AdminPage = () => {
     } catch (error) {
       console.error("Error fetching products", error);
     }
-  };
+  }, [filterCategory]);
 
   useEffect(() => {
-    productDescriptionRef.current.style.height = productDescriptionRef.current.scrollHeight + "px";
-  }, [description]);
+    if (!editDescriptionRef.current) return;
+    if (editDescriptionRef.current) {
+      const id = requestAnimationFrame(() => {
+        editDescriptionRef.current.style.height = "auto";
+        editDescriptionRef.current.style.height =
+          editDescriptionRef.current.scrollHeight + "px";
+      });
+      return () => cancelAnimationFrame(id);
+    }
+  }, [isEditingId, description]);
 
   useEffect(() => {
     fetchProducts();
-  }, [filterCategory]);
+  }, [fetchProducts]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -199,7 +211,7 @@ const AdminPage = () => {
       category,
       featured: isFeatured,
     };
-  
+
     try {
       const response = await fetch(`http://localhost:8080/api/products/${id}`, {
         method: "PUT",
@@ -211,7 +223,7 @@ const AdminPage = () => {
         throw new Error(`Failed to update: ${response.statusText}`);
       }
       const saved = await response.json();
-      setProducts(prev => prev.map(p => p.id === id ? saved : p));
+      setProducts((prev) => prev.map((p) => (p.id === id ? saved : p)));
       if (selectedFile) {
         console.log("Uploading picture...");
         const formData = new FormData();
@@ -275,14 +287,16 @@ const AdminPage = () => {
           <textarea
             placeholder="Description"
             className="product-input-field-description"
-            ref={productDescriptionRef}
+            ref={createDescriptionRef}
             value={description}
             onChange={(e) => {
-              productDescriptionRef.current.style.height = "auto";
-              productDescriptionRef.current.style.height = productDescriptionRef.current.scrollHeight + "px";
-              setDescription(e.target.value)
+              if (createDescriptionRef.current) {
+                createDescriptionRef.current.style.height = "auto";
+                createDescriptionRef.current.style.height =
+                  createDescriptionRef.current.scrollHeight + "px";
               }
-            }
+              setDescription(e.target.value);
+            }}
             required
           />
 
@@ -359,7 +373,9 @@ const AdminPage = () => {
         {products.length > 0 ? (
           products.map((product) => (
             <div key={product.id} className="product-card">
-             {product.featured && <span className="badge-purple">Featured</span>}
+              {product.featured && (
+                <span className="badge-purple">Featured</span>
+              )}
               <div id={`${product.id}`} className="product-item">
                 <div className="product-buttons">
                   <ProductPicture
@@ -368,7 +384,7 @@ const AdminPage = () => {
                     setIsPictureUploaded={setIsPictureUploaded}
                     setCroppingStatus={setCroppingStatus}
                   />
-                   
+
                   <div className="product-edit-button">
                     <button
                       onClick={() => {
@@ -416,7 +432,7 @@ const AdminPage = () => {
                   {isEditingId === product.id ? (
                     // Inline edit form
                     <form
-                    key={isEditingId || 'none'}
+                      key={isEditingId || "none"}
                       onSubmit={handleUpdateProduct}
                       className="inline-edit-form"
                     >
@@ -435,8 +451,8 @@ const AdminPage = () => {
                         required
                       />
 
-                      <input
-                        type="text"
+                      <textarea
+                        ref={editDescriptionRef}
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         required
@@ -467,13 +483,13 @@ const AdminPage = () => {
                           </option>
                         ))}
                       </select>
-                        <label>
+                      <label>
                         Featured
-                      <input
-                        type="checkbox"
-                        checked={isFeatured}
-                        onChange={(e) => setIsFeatured(e.target.checked)}
-                      ></input>
+                        <input
+                          type="checkbox"
+                          checked={isFeatured}
+                          onChange={(e) => setIsFeatured(e.target.checked)}
+                        ></input>
                       </label>
 
                       <button className="edit-button" type="submit">
@@ -491,7 +507,7 @@ const AdminPage = () => {
                           setCategory("");
                           setSelectedFile(null);
                           setIsFeatured(false);
-                          if(editFileRef.current){
+                          if (editFileRef.current) {
                             editFileRef.current.value = "";
                           }
                         }}
