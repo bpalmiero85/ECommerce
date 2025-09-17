@@ -117,7 +117,7 @@ const Product = ({
       <a
         className={`product-anchor ${quantity === 0 ? "is-disabled" : ""}`}
         tabIndex={quantity === 0 ? -1 : 0}
-        href={quantity === 0 ? undefined : `/product/${id}`}
+        href={quantity === 0 ? undefined : `/product/${name}`}
         aria-disabled={quantity === 0}
         onClick={
           quantity === 0

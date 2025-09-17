@@ -185,6 +185,21 @@
   box-shadow: 2px 2px 4px rgb(0, 0, 0, 0.3);
 }
 
+.product-input-field-description {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  justify-content: center;
+  width: 250px;
+  max-width: 250px;
+  margin: 0 auto;
+  align-items: center;
+  margin-bottom: 10px;
+  border: 1px solid;
+  box-shadow: 2px 2px 4px rgb(0, 0, 0, 0.3);
+  overflow-y: hidden;
+}
+
 .upload-product-picture-button {
   display: flex;
   position: relative;

@@ -23,6 +23,7 @@ const AdminPage = () => {
   const mainFileRef = useRef(null);
   const editFileRef = useRef(null);
   const cardFileRefs = useRef({});
+  const productDescriptionRef = useRef("");
   const CATEGORIES = [
     "Fidgets & Sensory",
     "Jewelry",
@@ -267,12 +268,17 @@ const AdminPage = () => {
             required
           />
 
-          <input
-            type="text"
+          <textarea
             placeholder="Description"
-            className="product-input-field"
+            className="product-input-field-description"
+            ref={productDescriptionRef}
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => {
+              productDescriptionRef.current.style.height = "auto";
+              productDescriptionRef.current.style.height = productDescriptionRef.current.scrollHeight + "px";
+              setDescription(e.target.value)
+              }
+            }
             required
           />
 
