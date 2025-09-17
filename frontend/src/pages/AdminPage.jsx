@@ -53,6 +53,10 @@ const AdminPage = () => {
   };
 
   useEffect(() => {
+    productDescriptionRef.current.style.height = productDescriptionRef.current.scrollHeight + "px";
+  }, [description]);
+
+  useEffect(() => {
     fetchProducts();
   }, [filterCategory]);
 
