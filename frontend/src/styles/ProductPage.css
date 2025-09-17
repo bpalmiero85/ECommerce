@@ -386,6 +386,7 @@ body {
 }
 
 .quantity-inline {
+  width: 100%;
   background-color: rgb(0, 255, 0);
 }
 
@@ -413,14 +414,16 @@ body {
   border-radius: 20px;
   padding: 40px 40px 10px 40px;
   text-align: center;
-  justify-content: center;
+  justify-content: space-evenly;
   align-items: center;
   backdrop-filter: blur(15px);
   transition: all 0.4s ease;
   position: relative;
   overflow: hidden;
   height: fit-content;
-  min-width: 300px;
+  min-height: 550px;
+  width: 300px;
+  width: 300px;
   box-sizing: border-box;
 }
 
@@ -532,8 +535,13 @@ body {
 }
 
 .product-item-container {
+  display: flex;
+  width: 100%;
   max-width: 400px;
   height: fit-content;
+  justify-content: space-evenly;
+  align-items: center;
+  text-align: center;
   margin-top: 0;
   margin-bottom: 0;
   padding: 1rem;
