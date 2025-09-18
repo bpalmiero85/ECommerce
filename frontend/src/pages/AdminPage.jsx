@@ -270,99 +270,97 @@ const AdminPage = () => {
       <div className="product-form">
         <h1>Home</h1>
         <h1>List an item:</h1>
-        <form
-          onSubmit={isEditingId ? handleUpdateProduct : handleSubmit}
-          id="productForm"
-          ref={formRef}
-        >
-          <input
-            type="text"
-            placeholder="Name"
-            className="product-input-field"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-
-          <textarea
-            placeholder="Description"
-            className="product-input-field-description"
-            ref={createDescriptionRef}
-            value={description}
-            onChange={(e) => {
-              if (createDescriptionRef.current) {
-                createDescriptionRef.current.style.height = "auto";
-                createDescriptionRef.current.style.height =
-                  createDescriptionRef.current.scrollHeight + "px";
-              }
-              setDescription(e.target.value);
-            }}
-            required
-          />
-
-          <input
-            type="number"
-            placeholder="$Price"
-            className="product-input-field"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            required
-          />
-
-          <input
-            type="number"
-            placeholder="Quantity on hand"
-            className="product-input-field"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            required
-          />
-          <div className="category-select">
-            <label>Category: </label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              required
-            >
-              <option value="" disabled>
-                -- Select a category --
-              </option>
-              {CATEGORIES.filter((category) => category).map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-            <div className="featured-select">
-              <label
-                className="featured-flag"
-                style={{ display: "flex", gap: 8, alignItems: "center" }}
-              >
-                <input
-                  type="checkbox"
-                  checked={isFeatured}
-                  onChange={(e) => setIsFeatured(e.target.checked)}
-                />
-                Featured
-              </label>
-            </div>
-          </div>
-
-          <label className="custom-file-upload">
-            Upload picture
+        {isEditingId === null && (
+          <form onSubmit={handleSubmit} id="productForm" ref={formRef}>
             <input
-              ref={mainFileRef}
-              type="file"
-              accept="image/*, .jpg, .jpeg, .png"
+              type="text"
+              placeholder="Name"
               className="product-input-field"
-              onChange={(e) => handleFileChange(e)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
             />
-          </label>
 
-          <button className="submit" type="submit">
-            {isEditingId ? "Save Changes" : "Post"}
-          </button>
-        </form>
+            <textarea
+              placeholder="Description"
+              className="product-input-field-description"
+              ref={createDescriptionRef}
+              value={description}
+              onChange={(e) => {
+                if (createDescriptionRef.current) {
+                  createDescriptionRef.current.style.height = "auto";
+                  createDescriptionRef.current.style.height =
+                    createDescriptionRef.current.scrollHeight + "px";
+                }
+                setDescription(e.target.value);
+              }}
+              required
+            />
+
+            <input
+              type="number"
+              placeholder="$Price"
+              className="product-input-field"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              required
+            />
+
+            <input
+              type="number"
+              placeholder="Quantity on hand"
+              className="product-input-field"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              required
+            />
+            <div className="category-select">
+              <label>Category: </label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                required
+              >
+                <option value="" disabled>
+                  -- Select a category --
+                </option>
+                {CATEGORIES.filter((category) => category).map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+              <div className="featured-select">
+                <label
+                  className="featured-flag"
+                  style={{ display: "flex", gap: 8, alignItems: "center" }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isFeatured}
+                    onChange={(e) => setIsFeatured(e.target.checked)}
+                  />
+                  Featured
+                </label>
+              </div>
+            </div>
+
+            <label className="custom-file-upload">
+              Upload picture
+              <input
+                ref={mainFileRef}
+                type="file"
+                accept="image/*, .jpg, .jpeg, .png"
+                className="product-input-field"
+                onChange={(e) => handleFileChange(e)}
+              />
+            </label>
+
+            <button className="submit" type="submit">
+              {isEditingId ? "Save Changes" : "Post"}
+            </button>
+          </form>
+        )}
 
         {products.length > 0 && (
           <h1 className="items-for-sale-header">Items for sale: </h1>
