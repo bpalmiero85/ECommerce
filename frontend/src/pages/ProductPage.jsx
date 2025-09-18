@@ -63,15 +63,15 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   }, [products]);
 
   useEffect(() => {
-    if(!isCartShown){
+    if (!isCartShown) {
       return;
     }
-    function onPointerDown(e){
+    function onPointerDown(e) {
       const cartBox = checkoutRef.current;
-      if(!cartBox){
+      if (!cartBox) {
         return;
       }
-      if(!cartBox.contains(e.target)){
+      if (!cartBox.contains(e.target)) {
         handleCancelCart();
       }
     }
@@ -79,7 +79,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
     return () => {
       document.removeEventListener("pointerdown", onPointerDown, true);
     };
-  }, [isCartShown, handleCancelCart])
+  }, [isCartShown, handleCancelCart]);
 
   const addLogoEffects = () => {
     document.querySelectorAll(".product-design").forEach((logo) => {
@@ -588,29 +588,35 @@ const ProductPage = ({ products: externalProducts = [] }) => {
               ) : (
                 <p>No products available.</p>
               )}
-              {cartItems.length > 0 && (
-                <div className="second-cart-container">
-                  <button
-                    onClick={handleClickCart}
-                    className="btn btn-lg btn-ghost anchored"
-                    style={{ color: "white" }}
-                  >
-                    <div className="second-cart-container"></div>
-                    <div className="cart-header">
-                      <p className="cart-header-text">Your Cart</p>
-                    </div>
+              <div
+                className={`second-cart-container ${
+                  cartItems.length ? "show" : ""
+                }`}
+              >
+                {cartItems.length > 0 && (
+                  <div className="second-cart-container">
+                    <button
+                      onClick={handleClickCart}
+                      className="btn btn-lg anchored"
+                      style={{ color: "white" }}
+                    >
+                  
+                      <div className="cart-header">
+                        <p className="cart-header-text">Your Cart</p>
+                      </div>
 
-                    <div className="cart-container">
-                      <img
-                        className="shopping-cart"
-                        src="/shopping-cart.png"
-                        alt="Cart"
-                      ></img>
-                    </div>
-                    <span className="cart-badge">{totalItems}</span>
-                  </button>
-                </div>
-              )}
+                      <div className="cart-container">
+                        <img
+                          className="shopping-cart"
+                          src="/shopping-cart.png"
+                          alt="Cart"
+                        ></img>
+                      </div>
+                      <span className="cart-badge">{totalItems}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

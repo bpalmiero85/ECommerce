@@ -396,6 +396,15 @@ body {
   height: 25px;
 }
 
+.second-cart-container{
+  position: fixed;
+  z-index: 1000;
+}
+.second-cart-container:hover{
+  opacity: 0.9;
+}
+
+
 .add-to-cart,
 .added-to-cart,
 .sold-out-added-to-cart {
