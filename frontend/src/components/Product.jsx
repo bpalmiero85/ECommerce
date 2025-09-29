@@ -32,6 +32,7 @@ const Product = ({
   const [isLastItemShown, setIsLastItemShown] = useState(false);
   const cardRef = useRef(null);
   const [added, setAdded] = useState(false);
+  const prevQtyRef = useRef(quantity);
 
   const imageUrl = `http://localhost:8080/api/product/${id}/picture?version=${pictureVersion}`;
 
@@ -58,15 +59,6 @@ const Product = ({
           );
           if (!r.ok) throw new Error(`reserve failed ${r.status}`);
         }
-        const availableAfter = quantity - take;
-        if (availableAfter === 0) {
-          showTempMessage(
-            take === 1 ? "You got the last one!" : "You got the last ones!"
-          );
-        }
-        window.dispatchEvent(
-          new CustomEvent("inventory:changed", { detail: [id] })
-        );
       } else {
         for (let i = 0; i < -delta; i++) {
           const r = await fetch(
@@ -106,24 +98,28 @@ const Product = ({
   };
 
   useEffect(() => {
-  function onStorage(e) {
-    if (e.storageArea !== localStorage) return;
-    if (e.key !== "inventory:broadcast") return;
+    function onStorage(e) {
+      if (e.storageArea !== localStorage) return;
+      if (e.key !== "inventory:broadcast") return;
 
-    let payload = null;
-    try { payload = JSON.parse(e.newValue || "null"); } catch { /* ignore */ }
+      let payload = null;
+      try {
+        payload = JSON.parse(e.newValue || "null");
+      } catch {
+        /* ignore */
+      }
 
-    const ids = Array.isArray(payload?.ids) ? payload.ids : [];
-    // Coerce to strings to avoid number/string mismatches
-    const hit = ids.map(String).includes(String(id));
-    if (hit) onReserved?.(id);
-  }
+      const ids = Array.isArray(payload?.ids) ? payload.ids : [];
+      // Coerce to strings to avoid number/string mismatches
+      const hit = ids.map(String).includes(String(id));
+      if (hit) onReserved?.(id);
+    }
 
-  window.addEventListener("storage", onStorage);
-  return () => window.removeEventListener("storage", onStorage);
-}, [id, onReserved]);
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [id, onReserved]);
 
-    useEffect(() => {
+  useEffect(() => {
     function onInventoryChanged(e) {
       const ids = Array.isArray(e?.detail) ? e.detail : [];
       if (ids.includes(id)) {
@@ -132,7 +128,8 @@ const Product = ({
       }
     }
     window.addEventListener("inventory:changed", onInventoryChanged);
-    return () => window.removeEventListener("inventory:changed", onInventoryChanged);
+    return () =>
+      window.removeEventListener("inventory:changed", onInventoryChanged);
   }, [id, onReserved]);
 
   useEffect(() => {
@@ -145,11 +142,21 @@ const Product = ({
   }, [isOpen]);
 
   useEffect(() => {
-    if(quantity > 0 && isLastItemShown){
+    const prev = prevQtyRef.current;
+
+    if (prev > 0 && quantity === 0) {
+      showTempMessage(
+        prev === 1 ? "You got the last one!" : "You got the last ones!"
+      );
+    }
+
+    if (prev === 0 && quantity > 0) {
       setIsLastItemShown(false);
       setMessage("");
     }
-  }, [quantity, isLastItemShown]);
+
+    prevQtyRef.current = quantity;
+  }, [quantity]);
 
   useEffect(() => {
     setAdded(inCartQty > 0);
@@ -239,9 +246,7 @@ const Product = ({
             <button
               type="button"
               className={
-                quantity === 0
-                  ? "sold-out-added-to-cart"
-                  : "add-to-cart"
+                quantity === 0 ? "sold-out-added-to-cart" : "add-to-cart"
               }
               disabled={isOpen || quantity === 0 || saving}
               onClick={async (e) => {
@@ -291,7 +296,7 @@ const Product = ({
             </div>
           )}
 
-          {added && (
+          {added && quantity !== 0 && (
             <div className="check-mark">
               <h3>✅</h3>
             </div>
