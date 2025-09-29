@@ -76,7 +76,7 @@ const Product = ({
               credentials: "include",
             }
           );
-          if (!r.ok) throw new Error(`release failed ${r.status}`);
+          if (!r.ok) throw new Error(`unreserve failed ${r.status}`);
         }
         window.dispatchEvent(
           new CustomEvent("inventory:changed", { detail: [id] })
@@ -106,6 +106,36 @@ const Product = ({
   };
 
   useEffect(() => {
+  function onStorage(e) {
+    if (e.storageArea !== localStorage) return;
+    if (e.key !== "inventory:broadcast") return;
+
+    let payload = null;
+    try { payload = JSON.parse(e.newValue || "null"); } catch { /* ignore */ }
+
+    const ids = Array.isArray(payload?.ids) ? payload.ids : [];
+    // Coerce to strings to avoid number/string mismatches
+    const hit = ids.map(String).includes(String(id));
+    if (hit) onReserved?.(id);
+  }
+
+  window.addEventListener("storage", onStorage);
+  return () => window.removeEventListener("storage", onStorage);
+}, [id, onReserved]);
+
+    useEffect(() => {
+    function onInventoryChanged(e) {
+      const ids = Array.isArray(e?.detail) ? e.detail : [];
+      if (ids.includes(id)) {
+        // ask parent to refresh this product's available qty
+        onReserved?.(id);
+      }
+    }
+    window.addEventListener("inventory:changed", onInventoryChanged);
+    return () => window.removeEventListener("inventory:changed", onInventoryChanged);
+  }, [id, onReserved]);
+
+  useEffect(() => {
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
       return () => {
@@ -113,6 +143,17 @@ const Product = ({
       };
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if(quantity > 0 && isLastItemShown){
+      setIsLastItemShown(false);
+      setMessage("");
+    }
+  }, [quantity, isLastItemShown]);
+
+  useEffect(() => {
+    setAdded(inCartQty > 0);
+  }, [inCartQty]);
 
   return (
     <div
@@ -198,10 +239,8 @@ const Product = ({
             <button
               type="button"
               className={
-                added && quantity === 0
+                quantity === 0
                   ? "sold-out-added-to-cart"
-                  : added
-                  ? "added-to-cart"
                   : "add-to-cart"
               }
               disabled={isOpen || quantity === 0 || saving}
@@ -209,7 +248,6 @@ const Product = ({
                 e.preventDefault();
                 e.stopPropagation();
                 if (quantity === 0 || saving) return;
-                setAdded(true);
                 handleQtyChange(1);
               }}
             >

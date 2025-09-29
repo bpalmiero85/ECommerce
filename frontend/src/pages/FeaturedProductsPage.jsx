@@ -6,6 +6,7 @@ import "../styles/ProductPage.css";
 function FeaturedProducts() {
   const [products, setProducts] = useState([]);
 
+
   useEffect(() => {
     const fetchProducts = async (category) => {
       try {

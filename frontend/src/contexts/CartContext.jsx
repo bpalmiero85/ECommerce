@@ -55,6 +55,24 @@ export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState(() => loadInitial());
 
   useEffect(() => {
+    function onStorage(e) {
+      if (e.key !== "cart") return;
+      try {
+        const next = e.newValue ? JSON.parse(e.newValue) : [];
+        // migrate to ensure shape is correct
+        const normalized = Array.isArray(next)
+          ? next.map(migrateItem).filter(Boolean)
+          : [];
+        setCartItems(normalized);
+      } catch {
+        // ignore parse errors
+      }
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  useEffect(() => {
     try {
       localStorage.setItem("cart", JSON.stringify(cartItems));
     } catch {
@@ -85,10 +103,18 @@ export function CartProvider({ children }) {
     setCartItems([]);
 
     try {
-    await Promise.all(snapshot.map(it => releaseQty(it.id, it.qty)))
-    const ids = snapshot.map((it) => it.id);
-    window.dispatchEvent(new CustomEvent("inventory:changed", { detail: ids }));
-      
+      await Promise.allSettled(snapshot.map((it) => releaseQty(it.id, it.qty)));
+      const ids = snapshot.map((it) => it.id);
+      window.dispatchEvent(
+        new CustomEvent("inventory:changed", { detail: ids })
+      );
+
+      try {
+        localStorage.setItem(
+          "inventory:broadcast",
+          JSON.stringify({ ids, ts: Date.now() })
+        );
+      } catch {}
     } catch (e) {
       console.error("clearCartAndRelease error", e);
     }
@@ -168,19 +194,25 @@ export function CartProvider({ children }) {
   }, [cartItems.length]);
 
   useEffect(() => {
-    const onPageHide = () => {
-      if (!cartItems.length) return;
-      sessionStorage.setItem(
-        "pendingRelease",
-        JSON.stringify(
-          cartItems.map((i) => ({ id: i.id, qty: i.qty ?? i.quantity ?? 1 }))
-        )
-      );
-    };
+  const s = sessionStorage.getItem("pendingRelease");
+  if (!s) return;
+  sessionStorage.removeItem("pendingRelease");
 
-    window.addEventListener("pagehide", onPageHide);
-    return () => window.removeEventListener("pagehide", onPageHide);
-  }, [cartItems]);
+  try {
+    const payload = JSON.parse(s) || {};
+    const list = Array.isArray(payload.list) ? payload.list : [];
+    const ts = Number(payload.ts) || 0;
+    const AGE_MS = Date.now() - ts;
+
+    if (AGE_MS > 30_000 && list.length) {
+      (async () => {
+        for (const it of list) await releaseQty(it.id, it.qty);
+      })();
+    }
+  } catch {
+    // ignore
+  }
+}, []);
 
   useEffect(() => {
     const s = sessionStorage.getItem("pendingRelease");

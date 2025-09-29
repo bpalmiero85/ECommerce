@@ -62,6 +62,15 @@ function Category() {
   const retry = () => setRetryKey((k) => k + 1);
 
   useEffect(() => {
+  function onInventoryChanged() {
+    // trigger a refetch using your existing [slug, retryKey] effect
+    setRetryKey((k) => k + 1);
+  }
+  window.addEventListener("inventory:changed", onInventoryChanged);
+  return () => window.removeEventListener("inventory:changed", onInventoryChanged);
+}, []);
+
+  useEffect(() => {
     if (!slug) {
       setProducts([]);
       return;
