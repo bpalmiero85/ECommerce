@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import ProductPage from "../pages/ProductPage.jsx";
+import ProductPage from "./ProductPage.jsx";
 import "../styles/styles.css";
 import "../styles/ProductPage.css";
 
-const Home = () => {
+const Shop = () => {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
@@ -125,7 +125,7 @@ function Nav() {
 }
 
 // Main App Component
-export default function HomePage() {
+export default function ShopPage() {
   return (
     <div
       style={{ minHeight: "100vh", position: "relative", overflow: "hidden" }}
@@ -142,7 +142,7 @@ export default function HomePage() {
       {/* Main content */}
       <div className="relative z-10">
         <HeroSection />
-        <Home />
+        <Shop />
       </div>
 
       {/* Footer */}

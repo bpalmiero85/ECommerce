@@ -23,10 +23,9 @@ const Product = ({
   } = useContext(CartContext);
   const cartItems = Array.isArray(rawItems) ? rawItems : [];
   const inCartQty = cartItems.reduce(
-    (sum, item) => (item.id === id ? sum + (item.quantity ?? 1) : sum),
+    (sum, item) => (item.id === id ? sum + (item.qty ?? 1) : sum),
     0
   );
-  const [subtotal, setSubtotal] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -36,11 +35,6 @@ const Product = ({
 
   const imageUrl = `http://localhost:8080/api/product/${id}/picture?version=${pictureVersion}`;
 
-  const openPurchase = (e) => {
-    e.preventDefault();
-    setSubtotal(price);
-    setIsOpen(true);
-  };
   async function handleQtyChange(nextQty) {
     if (Number.isNaN(nextQty)) nextQty = 0;
     nextQty = Math.max(0, nextQty);
@@ -55,19 +49,38 @@ const Product = ({
       const delta = nextQty - inCartQty;
 
       if (delta > 0) {
-        for (let i = 0; i < delta; i++) {
+        const take = Math.min(delta, quantity);
+
+        for (let i = 0; i < take; i++) {
           const r = await fetch(
             `http://localhost:8080/api/inventory/${id}/reserve`,
-            { method: "POST" }
+            { method: "POST", credentials: "include" }
           );
           if (!r.ok) throw new Error(`reserve failed ${r.status}`);
         }
+        const availableAfter = quantity - take;
+        if (availableAfter === 0) {
+          showTempMessage(
+            take === 1 ? "You got the last one!" : "You got the last ones!"
+          );
+        }
+        window.dispatchEvent(
+          new CustomEvent("inventory:changed", { detail: [id] })
+        );
       } else {
         for (let i = 0; i < -delta; i++) {
-          await fetch(`http://localhost:8080/api/inventory/${id}/release`, {
-            method: "POST",
-          });
+          const r = await fetch(
+            `http://localhost:8080/api/inventory/${id}/unreserve`,
+            {
+              method: "POST",
+              credentials: "include",
+            }
+          );
+          if (!r.ok) throw new Error(`release failed ${r.status}`);
         }
+        window.dispatchEvent(
+          new CustomEvent("inventory:changed", { detail: [id] })
+        );
       }
 
       // sync global cart and trigger stock refresh
@@ -90,10 +103,6 @@ const Product = ({
     if (cardRef.current && !cardRef.current.contains(e.target)) {
       setIsOpen(false);
     }
-  };
-
-  const addPriceToCart = () => {
-    setSubtotal((prev) => prev + price);
   };
 
   useEffect(() => {
@@ -140,13 +149,12 @@ const Product = ({
       >
         <div className="product-design">
           <div className="animated-item-container">
-              {featured && <span className="badge-purple">Featured</span>}
+            {featured && <span className="badge-purple">Featured</span>}
             <div
               className={
                 quantity === 0 ? "animated-item-sold-out" : "animated-item"
               }
             >
-         
               <img className="product-image" src={imageUrl} alt={name}></img>
             </div>
           </div>
@@ -201,25 +209,8 @@ const Product = ({
                 e.preventDefault();
                 e.stopPropagation();
                 if (quantity === 0 || saving) return;
-                setSaving(true);
-                try {
-                  const res = await fetch(
-                    `http://localhost:8080/api/inventory/${id}/reserve`,
-                    { method: "POST" }
-                  );
-                  if (quantity === 1) showTempMessage("You got the last one!");
-                  if (res.ok) {
-                    // first one in cart
-                    setItemQty(id, 1, { name, price, imageUrl });
-                    setAdded(true);
-                    onReserved?.(id);
-                    addPriceToCart();
-                  } else if (res.status === 409) {
-                    alert("Sorry, this item just sold out.");
-                  }
-                } finally {
-                  setSaving(false);
-                }
+                setAdded(true);
+                handleQtyChange(1);
               }}
             >
               {quantity === 0

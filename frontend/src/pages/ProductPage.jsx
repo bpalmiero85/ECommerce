@@ -14,21 +14,42 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   const { cartItems: rawCart } = useContext(CartContext);
   const cartItems = Array.isArray(rawCart) ? rawCart : [];
   const checkoutRef = useRef();
-  const totalItems = cartItems.reduce(
-    (sum, i) => sum + (i?.quantity ?? i?.qty ?? 1),
+  const totalItems = cartItems.reduce((sum, i) => sum + (i?.qty ?? 1), 0);
+  const subtotal = cartItems.reduce(
+    (sum, i) =>
+      sum + (Number(i.price) || 0) * (Number(i.qty ?? i.quantity ?? 1) || 0),
     0
   );
 
   async function fetchAvailable(id) {
     const resp = await fetch(
-      `http://localhost:8080/api/inventory/${id}/available`
+      `http://localhost:8080/api/inventory/${id}/available?_=${Date.now()}`,
+      { cache: "no-store", credentials: "include" }
     );
+    if(!resp.ok) return;
     const qty = await resp.json();
     setAvailableById((prev) => ({ ...prev, [id]: qty }));
   }
 
+
+useEffect(() => {
+  function onInventoryChanged(e) {
+    const ids = Array.isArray(e?.detail) ? e.detail : [];
+    if (!ids.length) return;
+    ids.forEach((id) => {
+     
+      fetchAvailable(id);
+    });
+  }
+  window.addEventListener("inventory:changed", onInventoryChanged);
+  return () =>
+    window.removeEventListener("inventory:changed", onInventoryChanged);
+}, []);
+
   useEffect(() => {
-    setProducts(Array.isArray(externalProducts) ? externalProducts : []);
+    const list = Array.isArray(externalProducts) ? externalProducts : [];
+    setProducts(list);
+    list.forEach((p) => fetchAvailable(p.id));
   }, [externalProducts]);
 
   const handleClickCart = () => {
@@ -134,6 +155,9 @@ const ProductPage = ({ products: externalProducts = [] }) => {
       {isCartShown && (
         <div className="cart-modal">
           <ShoppingCart />
+          <div className="cart-subtotal" style={{ padding: "12px 16px" }}>
+            <strong>Subtotal:</strong> ${subtotal.toFixed(2)}
+          </div>
           <div className="checkout-page">
             <div>
               <button onClick={handleCancelCart} className="cancel-cart-x">
@@ -522,16 +546,13 @@ const ProductPage = ({ products: externalProducts = [] }) => {
 
         <div className="nav-container">
           <nav className="nav">
-            <a href="#home">Home</a>
-            <a href="#gallery" style={{ "--hover-color": "var(--neon-blue)" }}>
-              Gallery
-            </a>
-            <a href="#shop" style={{ "--hover-color": "var(--neon-purple)" }}>
+            <a href="/shop" style={{ "--hover-color": "var(--neon-purple)" }}>
               Shop
             </a>
-            <a href="#contact" style={{ "--hover-color": "var(--neon-pink)" }}>
+            <a href="/contact" style={{ "--hover-color": "var(--neon-pink)" }}>
               Contact
             </a>
+
             {/* Right side actions */}
             <div className="nav-actions">
               <button
@@ -547,12 +568,6 @@ const ProductPage = ({ products: externalProducts = [] }) => {
               >
                 🛒
                 <span className="cart-badge">{totalItems}</span>
-              </button>
-              <button
-                className="btn btn-sm btn-ghost"
-                style={{ color: "white" }}
-              >
-                👤
               </button>
             </div>
           </nav>
@@ -600,7 +615,6 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                       className="btn btn-lg anchored"
                       style={{ color: "white" }}
                     >
-                  
                       <div className="cart-header">
                         <p className="cart-header-text">Your Cart</p>
                       </div>

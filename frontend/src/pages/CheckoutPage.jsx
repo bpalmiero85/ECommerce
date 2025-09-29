@@ -42,7 +42,12 @@ export default function CheckoutPage() {
 
   // Access the shopping cart context to calculate subtotal.
   const { cartItems } = useContext(CartContext);
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price, 0);
+  const subtotal = cartItems.reduce(
+    (sum, item) =>
+      sum +
+      (Number(item.price) || 0) * (Number(item.qty ?? item.quantity ?? 1) || 0),
+    0
+  );
 
   // Stripe hooks
   const stripe = useStripe();
@@ -263,7 +268,13 @@ export default function CheckoutPage() {
       {error && <div style={{ color: "red" }}>{error}</div>}
 
       {/* Payment button */}
-      <div className={cartItems.length === 0 ? "cart-modal-pay-button empty" : "cart-modal-pay-button"}>
+      <div
+        className={
+          cartItems.length === 0
+            ? "cart-modal-pay-button empty"
+            : "cart-modal-pay-button"
+        }
+      >
         <button
           type="submit"
           disabled={

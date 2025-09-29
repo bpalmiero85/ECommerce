@@ -9,18 +9,18 @@ export default function ClearCartButton() {
   const handleClear = async () => {
     if (!cartItems.length) return;
     setBusy(true);
-    await fetch(clearCartAndRelease());
+    await clearCartAndRelease();
     setBusy(false);
   };
 
-  return(
-    <button 
+  return (
+    <button
       className="clear-cart"
       onClick={handleClear}
       disabled={busy || cartItems.length === 0}
       title="Clear cart and release holds"
-      >
-        {busy ? "Clearing..." : "Clear cart"}
-      </button>
+    >
+      {busy ? "Clearing..." : "Clear cart"}
+    </button>
   );
 }

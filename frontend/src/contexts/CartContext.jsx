@@ -1,5 +1,12 @@
 // src/contexts/CartContext.jsx
-import { createContext, useContext, useEffect, useMemo, useState, useRef } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+} from "react";
 
 const noop = () => {};
 const defaultValue = {
@@ -19,13 +26,15 @@ function migrateItem(raw) {
   if (id == null) return null;
 
   // normalize field names; prefer `qty`, fall back to `quantity`
-  const qty = Number(raw.qty ?? raw.quantity ?? 1);
+  const qtyNum = Number(raw.qty ?? raw.quantity ?? 1);
+  const priceNum = Number(raw.price ?? 0);
+
   return {
     id,
     name: raw.name ?? "",
-    price: Number(raw.price ?? 0),
+    price: Number.isFinite(priceNum) ? priceNum : 0,
     imageUrl: raw.imageUrl ?? "",
-    qty: Number.isFinite(qty) && qty > 0 ? qty : 1,
+    qty: Number.isFinite(qtyNum) && qtyNum > 0 ? qtyNum : 1,
   };
 }
 
@@ -57,8 +66,10 @@ export function CartProvider({ children }) {
     const count = Math.max(0, Number(qty) || 0);
     for (let i = 0; i < count; i++) {
       try {
-        await fetch(`http://localhost:8080/api/inventory/${id}/release`, {
+        await fetch(`http://localhost:8080/api/inventory/${id}/unreserve`, {
           method: "POST",
+          credentials: "include",
+          cache: "no-store",
         });
       } catch (e) {
         console.error("release failed", id, e);
@@ -69,12 +80,15 @@ export function CartProvider({ children }) {
   async function clearCartAndRelease(reason = "manual") {
     const snapshot = cartItems.map((i) => ({
       id: i.id,
-      qty: i.qty ?? i.quantity ?? 1,
+      qty: i.qty ?? 1,
     }));
     setCartItems([]);
 
     try {
-      for (const it of snapshot) await releaseQty(it.id, it.qty);
+    await Promise.all(snapshot.map(it => releaseQty(it.id, it.qty)))
+    const ids = snapshot.map((it) => it.id);
+    window.dispatchEvent(new CustomEvent("inventory:changed", { detail: ids }));
+      
     } catch (e) {
       console.error("clearCartAndRelease error", e);
     }
@@ -156,7 +170,6 @@ export function CartProvider({ children }) {
   useEffect(() => {
     const onPageHide = () => {
       if (!cartItems.length) return;
-      // stash what needs releasing; we’ll release next boot
       sessionStorage.setItem(
         "pendingRelease",
         JSON.stringify(
@@ -164,6 +177,7 @@ export function CartProvider({ children }) {
         )
       );
     };
+
     window.addEventListener("pagehide", onPageHide);
     return () => window.removeEventListener("pagehide", onPageHide);
   }, [cartItems]);
@@ -182,13 +196,19 @@ export function CartProvider({ children }) {
   }, []);
 
   const value = useMemo(
-    () => ({ cartItems, addToCart, setItemQty, removeFromCart, clearCart, clearCartAndRelease }),
+    () => ({
+      cartItems,
+      addToCart,
+      setItemQty,
+      removeFromCart,
+      clearCart,
+      clearCartAndRelease,
+    }),
     [cartItems]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
-
 
 export function useCart() {
   return useContext(CartContext);
