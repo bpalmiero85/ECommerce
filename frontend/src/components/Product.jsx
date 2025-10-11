@@ -70,6 +70,8 @@ const Product = ({
           );
           if (!r.ok) throw new Error(`unreserve failed ${r.status}`);
         }
+        setIsLastItemShown(false);
+        setMessage("");
         window.dispatchEvent(
           new CustomEvent("inventory:changed", { detail: [id] })
         );
@@ -146,7 +148,7 @@ const Product = ({
 
     if (prev > 0 && quantity === 0) {
       showTempMessage(
-        prev === 1 ? "You got the last one!" : "You got the last ones!"
+        inCartQty === 1 ? "You got the last one!" : "You got the last ones!"
       );
     }
 
