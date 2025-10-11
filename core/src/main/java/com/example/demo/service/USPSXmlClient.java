@@ -1,105 +1,139 @@
 package com.example.demo.service;
 
-import java.math.BigDecimal;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import com.example.demo.config.UspsXmlProperties;
-import org.springframework.util.Assert;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 
-/**
- * Minimal USPS WebTools XML client (RateV4 domestic).
- * Returns the first available <Rate> or <CommercialRate>.
- */
-public class USPSXmlClient {
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
-  private final UspsXmlProperties props;
-  private final RestTemplate rest;
+import org.w3c.dom.*;
 
-  public USPSXmlClient(UspsXmlProperties props, RestTemplate rest) {
-    this.props = props;
-    this.rest = rest;
+public class UspsXmlClient {
+
+  private final String baseUrl;
+  private final RestTemplate http;
+
+  public UspsXmlClient(UspsXmlProperties props) {
+    this.baseUrl = props.getBaseUrl(); // e.g. https://secure.shippingapis.com/ShippingAPI.dll
+    this.http = new RestTemplate();
+    // ensure UTF-8 for XML strings in/out
+    this.http.getMessageConverters().add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
   }
 
-  /**
-   * Query a simple domestic package rate using RateV4 API.
-   *
-   * @param originZip      5-digit ZIP, e.g. "43001"
-   * @param destinationZip 5-digit ZIP
-   * @param pounds         integer pounds (0–70)
-   * @param ounces         decimal ounces (0–15.999)
-   * @param container      "", "RECTANGULAR", "NONRECTANGULAR", etc.
-   * @param size           "REGULAR" or "LARGE"
-   * @return BigDecimal price, or null if not found
-   */
-  public BigDecimal getRateV4(
+  /** Build a USPS RateV4 XML payload. */
+  public String buildRateV4Request(
+      String userId,
       String originZip,
       String destinationZip,
       int pounds,
-      BigDecimal ounces,
-      String container,
-      String size
+      double ounces,
+      double lengthInches,
+      double widthInches,
+      double heightInches,
+      boolean machinable
   ) {
-    Assert.hasText(props.getUserId(), "usps.xml.user-id must be set");
-    Assert.hasText(props.getBaseUrl(), "usps.xml.base-url must be set");
+    // Service PRIORITY gets you Priority Mail retail quotes; you can experiment with others.
+    // Size is REGULAR unless length>12 || width>12 || height>12 (then LARGE).
+    String size = (lengthInches > 12 || widthInches > 12 || heightInches > 12) ? "LARGE" : "REGULAR";
 
-    String xml =
-        "<RateV4Request USERID=\"" + escape(props.getUserId()) + "\">" +
-          "<Revision>2</Revision>" +
-          "<Package ID=\"1ST\">" +
-            "<Service>ALL</Service>" +
-            "<ZipOrigination>" + escape(originZip) + "</ZipOrigination>" +
-            "<ZipDestination>" + escape(destinationZip) + "</ZipDestination>" +
-            "<Pounds>" + pounds + "</Pounds>" +
-            "<Ounces>" + (ounces == null ? "0" : ounces) + "</Ounces>" +
-            "<Container>" + escape(container == null ? "" : container) + "</Container>" +
-            "<Size>" + escape(size == null ? "REGULAR" : size) + "</Size>" +
-            "<Machinable>true</Machinable>" +
-          "</Package>" +
-        "</RateV4Request>";
+    return
+      "<RateV4Request USERID=\"" + escape(userId) + "\">" +
+        "<Revision>2</Revision>" +
+        "<Package ID=\"1ST\">" +
+          "<Service>PRIORITY</Service>" +
+          "<ZipOrigination>" + escape(originZip) + "</ZipOrigination>" +
+          "<ZipDestination>" + escape(destinationZip) + "</ZipDestination>" +
+          "<Pounds>" + pounds + "</Pounds>" +
+          "<Ounces>" + String.format(java.util.Locale.US, "%.2f", ounces) + "</Ounces>" +
+          "<Container>RECTANGULAR</Container>" +
+          "<Size>" + size + "</Size>" +
+          "<Width>" + String.format(java.util.Locale.US, "%.2f", widthInches) + "</Width>" +
+          "<Length>" + String.format(java.util.Locale.US, "%.2f", lengthInches) + "</Length>" +
+          "<Height>" + String.format(java.util.Locale.US, "%.2f", heightInches) + "</Height>" +
+          "<Machinable>" + (machinable ? "true" : "false") + "</Machinable>" +
+        "</Package>" +
+      "</RateV4Request>";
+  }
 
-    URI uri = UriComponentsBuilder
-        .fromHttpUrl(props.getBaseUrl())
-        .queryParam("API", "RateV4")
-        .queryParam("XML", xml)
-        .build(true)
-        .toUri();
-
-    String body = rest.getForObject(uri, String.class);
-    if (body == null || body.isBlank()) return null;
-
+  /** Call the USPS endpoint using GET ?API=RateV4&XML=... and return the raw XML string. */
+  public String rateV4RequestXml(String xmlPayload) {
     try {
-      Document doc = DocumentBuilderFactory.newInstance()
-          .newDocumentBuilder()
-          .parse(new java.io.ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8)));
-
-      // Prefer CommercialRate; fallback to Rate
-      NodeList commercial = doc.getElementsByTagName("CommercialRate");
-      if (commercial.getLength() > 0) {
-        String v = commercial.item(0).getTextContent().trim();
-        return new BigDecimal(v);
-      }
-      NodeList retail = doc.getElementsByTagName("Rate");
-      if (retail.getLength() > 0) {
-        String v = retail.item(0).getTextContent().trim();
-        return new BigDecimal(v);
-      }
-      return null;
-    } catch (Exception ex) {
-      throw new RuntimeException("Failed to parse USPS RateV4 response", ex);
+      String encodedXml = URLEncoder.encode(xmlPayload, StandardCharsets.UTF_8);
+      String url = baseUrl + "?API=RateV4&XML=" + encodedXml;
+      return http.getForObject(url, String.class);
+    } catch (Exception e) {
+      throw new IllegalStateException("USPS WebTools call failed", e);
     }
   }
 
+  /** Parse <Postage> entries from a RateV4Response. */
+  public List<UspsPostage> parsePostages(String responseXml) {
+    List<UspsPostage> out = new ArrayList<>();
+    try {
+      Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+          .parse(new java.io.ByteArrayInputStream(responseXml.getBytes(StandardCharsets.UTF_8)));
+      doc.getDocumentElement().normalize();
+
+      // Error check (WebTools returns <Error>… sometimes)
+      NodeList err = doc.getElementsByTagName("Error");
+      if (err != null && err.getLength() > 0) {
+        String msg = textContent(doc, "Description");
+        if (msg == null || msg.isBlank()) msg = "Unknown USPS error";
+        throw new IllegalStateException("USPS WebTools error: " + msg);
+      }
+
+      // <Postage> entries live under <RateV4Response>/<Package>/<Postage>
+      NodeList postageNodes = doc.getElementsByTagName("Postage");
+      for (int i = 0; i < postageNodes.getLength(); i++) {
+        Element p = (Element) postageNodes.item(i);
+        String service = textContent(p, "MailService");
+        String rateStr = textContent(p, "Rate"); // Retail rate
+        if (rateStr == null || rateStr.isBlank()) {
+          rateStr = textContent(p, "CommercialRate"); // fallback
+        }
+        if (service != null && rateStr != null) {
+          // strip any HTML entities the API sometimes embeds in MailService
+          service = service.replaceAll("<[^>]+>", "").replace("&amp;", "&");
+          BigDecimal rate = new BigDecimal(rateStr.trim());
+          out.add(new UspsPostage(service, rate));
+        }
+      }
+      return out;
+    } catch (Exception e) {
+      throw new IllegalStateException("Failed to parse USPS RateV4Response XML", e);
+    }
+  }
+
+  private static String textContent(Element parent, String tag) {
+    NodeList nl = parent.getElementsByTagName(tag);
+    if (nl == null || nl.getLength() == 0) return null;
+    return nl.item(0).getTextContent();
+  }
+
+  private static String textContent(Document doc, String tag) {
+    NodeList nl = doc.getElementsByTagName(tag);
+    if (nl == null || nl.getLength() == 0) return null;
+    return nl.item(0).getTextContent();
+  }
+
   private static String escape(String s) {
-    return s.replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace("\"", "&quot;")
-            .replace("'", "&apos;");
+    if (s == null) return "";
+    return s.replace("&", "&amp;").replace("<", "&lt;").replace("\"", "&quot;");
+  }
+
+  /** Simple value holder for parsed postage lines. */
+  public static class UspsPostage {
+    public final String service;
+    public final BigDecimal rate;
+    public UspsPostage(String service, BigDecimal rate) {
+      this.service = service;
+      this.rate = rate;
+    }
   }
 }
