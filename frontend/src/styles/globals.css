@@ -2,6 +2,7 @@
 
 :root {
   --font-size: 14px;
+  --banner-green: #39FF14;
   --background: #0a0a0a;
   --foreground: #e0e0e0;
   --card: rgba(20, 20, 30, 0.8);
@@ -41,7 +42,7 @@
   --sidebar-ring: #00ff88;
   
   /* Custom gothic neon variables */
-  --neon-green: #00ff88;
+  --neon-green: #39FF14;
   --neon-blue: #0088ff;
   --neon-purple: #8a2be2;
   --neon-pink: #ff00ff;

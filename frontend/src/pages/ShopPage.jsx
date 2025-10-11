@@ -140,7 +140,7 @@ export default function ShopPage() {
       </div>
 
       {/* Main content */}
-      <div className="relative z-10">
+      <div className="relative">
         <HeroSection />
         <Shop />
       </div>

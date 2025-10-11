@@ -26,25 +26,23 @@ const ProductPage = ({ products: externalProducts = [] }) => {
       `http://localhost:8080/api/inventory/${id}/available?_=${Date.now()}`,
       { cache: "no-store", credentials: "include" }
     );
-    if(!resp.ok) return;
+    if (!resp.ok) return;
     const qty = await resp.json();
     setAvailableById((prev) => ({ ...prev, [id]: qty }));
   }
 
-
-useEffect(() => {
-  function onInventoryChanged(e) {
-    const ids = Array.isArray(e?.detail) ? e.detail : [];
-    if (!ids.length) return;
-    ids.forEach((id) => {
-     
-      fetchAvailable(id);
-    });
-  }
-  window.addEventListener("inventory:changed", onInventoryChanged);
-  return () =>
-    window.removeEventListener("inventory:changed", onInventoryChanged);
-}, []);
+  useEffect(() => {
+    function onInventoryChanged(e) {
+      const ids = Array.isArray(e?.detail) ? e.detail : [];
+      if (!ids.length) return;
+      ids.forEach((id) => {
+        fetchAvailable(id);
+      });
+    }
+    window.addEventListener("inventory:changed", onInventoryChanged);
+    return () =>
+      window.removeEventListener("inventory:changed", onInventoryChanged);
+  }, []);
 
   useEffect(() => {
     const list = Array.isArray(externalProducts) ? externalProducts : [];
@@ -549,22 +547,39 @@ useEffect(() => {
             <a href="/shop" style={{ "--hover-color": "var(--neon-purple)" }}>
               Shop
             </a>
+            <div className="dropdown">
+              <button className="dropdown-button">Categories ▼</button>
+              <div className="dropdown-content">
+                <a href="/category/new">New Arrivals</a>
+                <a href="/category/figurines">Figurines</a>
+                <a href="/category/jewelry">Jewelry</a>
+                <a href="/category/accessories">Accessories</a>
+                <a href="/category/fidgets">Fidgets & Sensory</a>
+                <a href="/category/garbage-ghouls">Garbage Ghouls</a>
+                <a href="/category/home-decor">Home Decor</a>
+                <a href="/category/custom">Customizable Items</a>
+                <a href="/category/clearance">Clearance Graveyard</a>
+              </div>
+            </div>
             <a href="/contact" style={{ "--hover-color": "var(--neon-pink)" }}>
               Contact
             </a>
 
             {/* Right side actions */}
             <div className="nav-actions">
-              <button
+              {/* Search button to be implemented at future date */}
+              {/* <button
                 className="btn btn-sm btn-ghost"
                 style={{ color: "white" }}
               >
                 🔍
-              </button>
+              </button> */}
+              {/* End of search button */}
+
               <button
                 onClick={handleClickCart}
                 className="btn btn-sm btn-ghost relative"
-                style={{ color: "white" }}
+                style={{ color: "white", left: "150px" }}
               >
                 🛒
                 <span className="cart-badge">{totalItems}</span>

@@ -31,7 +31,7 @@
   --ring: #00ff88;
 
   /* Custom gothic neon variables */
-  --neon-green: #00ff88;
+  --neon-green: #39FF14;
   --neon-blue: #0088ff;
   --neon-purple: #8a2be2;
   --neon-pink: #ff00ff;
@@ -488,6 +488,8 @@ p {
 
 .nav a {
   color: white;
+  padding-left: 75px;
+  padding-right: 75px;
   text-decoration: none;
   transition: color 0.3s ease;
 }
@@ -789,6 +791,53 @@ p {
 
 .add-to-cart {
   width: 100%;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-button{
+  background: none;
+  border: none;
+  color: white;
+  font-size: clamp(1rem, 3vw, 1.6rem);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.dropdown-button:hover {
+  color: var(--neon-green);
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #111;
+  border: 1px solid var(--neon-green);
+  border-radius: 6px;
+  min-width: 180px;
+  white-space: nowrap;
+  font-size: clamp(0.9rem, 2.5vw, 1.4rem);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: white;
+  padding: 10px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {
+  background-color: var(--neon-green);
+  opacity: 0.6;
+  color: black;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
 }
 
 .bg-dots {
