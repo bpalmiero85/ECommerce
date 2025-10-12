@@ -352,14 +352,14 @@ const AdminPage = () => {
                 <label
                   className="featured-flag"
                   style={{ display: "flex", gap: 8, alignItems: "center" }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isNewArrival}
-                      onChange={(e) => setIsNewArrival(e.target.checked)}
-                      />
-                      New Arrival
-                  </label>
+                >
+                  <input
+                    type="checkbox"
+                    checked={isNewArrival}
+                    onChange={(e) => setIsNewArrival(e.target.checked)}
+                  />
+                  New Arrival
+                </label>
               </div>
             </div>
 
@@ -395,7 +395,7 @@ const AdminPage = () => {
               {product.newArrival && (
                 <span className="badge-purple">New Arrival!</span>
               )}
-              
+
               <div id={`${product.id}`} className="product-item">
                 <div className="product-buttons">
                   <ProductPicture
@@ -415,7 +415,7 @@ const AdminPage = () => {
                         setQuantity(product.quantity);
                         setCategory(product.category);
                         setProductPicture(product.productPicture);
-                        setIsFeatured(!!product.featured); 
+                        setIsFeatured(!!product.featured);
                         setIsNewArrival(!!product.newArrival);
 
                         document
@@ -511,6 +511,14 @@ const AdminPage = () => {
                           checked={isFeatured}
                           onChange={(e) => setIsFeatured(e.target.checked)}
                         ></input>
+                      </label>
+                      <label>
+                        New Arrivals
+                        <input
+                          type="checkbox"
+                          checked={isNewArrival}
+                          onChange={(e) => setIsNewArrival(e.target.checked)}
+                        />
                       </label>
 
                       <button className="edit-button" type="submit">
