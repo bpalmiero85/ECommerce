@@ -35,6 +35,7 @@ function migrateItem(raw) {
     price: Number.isFinite(priceNum) ? priceNum : 0,
     imageUrl: raw.imageUrl ?? "",
     qty: Number.isFinite(qtyNum) && qtyNum > 0 ? qtyNum : 1,
+    available: Number(raw.available ?? raw.inventory ?? raw.quantityAvailable ?? raw.quantity ?? Number.POSITIVE_INFINITY),
   };
 }
 

@@ -623,7 +623,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                   cartItems.length ? "show" : ""
                 }`}
               >
-                {cartItems.length > 0 && (
+                {cartItems.length > 0 && !isCartShown && (
                   <div className="second-cart-container">
                     <button
                       onClick={handleClickCart}

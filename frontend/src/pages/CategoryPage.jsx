@@ -83,9 +83,8 @@ function Category() {
       setError("");
       try {
         const categoryParam = (slug ?? "").replace(/-/g, " ");
-        const url = `http://localhost:8080/api/products?category=${encodeURIComponent(
-          categoryParam
-        )}`;
+        const url = `http://localhost:8080/api/products?category=${encodeURIComponent(categoryParam)}` 
+
         const response = await fetch(url);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();

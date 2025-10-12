@@ -11,12 +11,16 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class ShippingRateService {
 
   private final UspsXmlClient xmlClient;
   private final UspsXmlProperties xmlProps;
+
+  @Value("${usps.origin-zip:43001}")
+  private String originZip;
 
   public ShippingRateService(UspsXmlClient xmlClient, UspsXmlProperties xmlProps) {
     this.xmlClient = xmlClient;
@@ -83,12 +87,7 @@ public class ShippingRateService {
 
   // helper to pull the shared origin ZIP you configured
   private String getOriginZipFromCommon() {
-    // You put it in application.properties as: usps.origin-zip=43001
-    // We can read it via System.getProperty or env if you later bind another @ConfigurationProperties.
-    String v = System.getProperty("usps.origin-zip");
-    if (v == null || v.isBlank()) v = System.getenv("USPS_ORIGIN_ZIP");
-    if (v == null || v.isBlank()) v = "43001";
-    return v;
+    return originZip;
   }
 
   private double round2(double v) {

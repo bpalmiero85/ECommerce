@@ -53,21 +53,14 @@ const Product = ({
         const take = Math.min(delta, quantity);
 
         for (let i = 0; i < take; i++) {
-          const r = await fetch(
-            `http://localhost:8080/api/inventory/${id}/reserve`,
-            { method: "POST", credentials: "include" }
-          );
+          const r = await fetch(`http://localhost:8080/api/cart/${id}/add?qty=1`, 
+            { method: "POST", credentials: "include" });
           if (!r.ok) throw new Error(`reserve failed ${r.status}`);
         }
       } else {
         for (let i = 0; i < -delta; i++) {
-          const r = await fetch(
-            `http://localhost:8080/api/inventory/${id}/unreserve`,
-            {
-              method: "POST",
-              credentials: "include",
-            }
-          );
+         const r = await fetch(`http://localhost:8080/api/cart/${id}/remove?qty=1`, 
+          { method: "POST", credentials: "include" });
           if (!r.ok) throw new Error(`unreserve failed ${r.status}`);
         }
         setIsLastItemShown(false);
@@ -78,7 +71,7 @@ const Product = ({
       }
 
       // sync global cart and trigger stock refresh
-      setItemQty(id, nextQty, { name, price, imageUrl });
+      setItemQty(id, nextQty, { name, price, imageUrl, available: quantity });
       onReserved?.(id);
     } catch (err) {
       console.error(err);
