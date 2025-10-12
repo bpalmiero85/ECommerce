@@ -19,6 +19,7 @@ const AdminPage = () => {
   const [category, setCategory] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
+  const [isNewArrival, setIsNewArrival] = useState(false);
   const formRef = useRef(null);
   const mainFileRef = useRef(null);
   const editFileRef = useRef(null);
@@ -92,6 +93,7 @@ const AdminPage = () => {
           quantity: parseInt(quantity, 10),
           category,
           featured: isFeatured,
+          newArrival: isNewArrival,
         }),
       });
 
@@ -105,6 +107,7 @@ const AdminPage = () => {
       setQuantity("");
       setSelectedFile(null);
       setIsFeatured(false);
+      setIsNewArrival(false);
       if (mainFileRef.current) mainFileRef.current.value = "";
 
       if (selectedFile) {
@@ -201,6 +204,7 @@ const AdminPage = () => {
       quantity,
       category,
       featured: isFeatured,
+      newArrival: isNewArrival,
     });
     const id = isEditingId;
     const updated = {
@@ -210,6 +214,7 @@ const AdminPage = () => {
       quantity: +quantity,
       category,
       featured: isFeatured,
+      newArrival: isNewArrival,
     };
 
     try {
@@ -343,6 +348,19 @@ const AdminPage = () => {
                   Featured
                 </label>
               </div>
+              <div className="new-select">
+                <label
+                  className="featured-flag"
+                  style={{ display: "flex", gap: 8, alignItems: "center" }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isNewArrival}
+                      onChange={(e) => setIsNewArrival(e.target.checked)}
+                      />
+                      New Arrival
+                  </label>
+              </div>
             </div>
 
             <label className="custom-file-upload">
@@ -374,6 +392,10 @@ const AdminPage = () => {
               {product.featured && (
                 <span className="badge-purple">Featured</span>
               )}
+              {product.newArrival && (
+                <span className="badge-purple">New Arrival!</span>
+              )}
+              
               <div id={`${product.id}`} className="product-item">
                 <div className="product-buttons">
                   <ProductPicture
@@ -393,7 +415,8 @@ const AdminPage = () => {
                         setQuantity(product.quantity);
                         setCategory(product.category);
                         setProductPicture(product.productPicture);
-                        setIsFeatured(!!product.featured); // note: property name from API is 'featured'
+                        setIsFeatured(!!product.featured); 
+                        setIsNewArrival(!!product.newArrival);
 
                         document
                           .getElementById(`${product.id}`)
@@ -505,6 +528,7 @@ const AdminPage = () => {
                           setCategory("");
                           setSelectedFile(null);
                           setIsFeatured(false);
+                          setIsNewArrival(false);
                           if (editFileRef.current) {
                             editFileRef.current.value = "";
                           }

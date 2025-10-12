@@ -69,6 +69,7 @@ public class ProductService {
       product.setQuantity(updatedProduct.getQuantity());
       product.setCategory(updatedProduct.getCategory());
       product.setFeatured(updatedProduct.isFeatured());
+      product.setNewArrival(updatedProduct.isNewArrival());
       product.setPictureVersion(System.currentTimeMillis());
       Product saved = productRepository.save(product);
 
@@ -91,6 +92,20 @@ public class ProductService {
     list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
     return list;
   }
+
+  public List<Product> getNewArrivals() {
+  List<Product> list = productRepository.findByNewArrivalTrueOrderByNameAsc();
+  list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
+  return list;
+}
+
+public List<Product> getNewArrivalsByCategory(String category) {
+  List<Product> list = productRepository.findByCategoryIgnoreCaseAndNewArrivalTrueOrderByNameAsc(category);
+  list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
+  return list;
+}
+
+
 
   public void deleteProduct(Long id) {
     if (productRepository.existsById(id)) {

@@ -550,7 +550,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
             <div className="dropdown">
               <button className="dropdown-button">Categories ▼</button>
               <div className="dropdown-content">
-                <a href="/category/new">New Arrivals</a>
+                <a href="/category/new-arrivals">New Arrivals</a>
                 <a href="/category/figurines">Figurines</a>
                 <a href="/category/jewelry">Jewelry</a>
                 <a href="/category/accessories">Accessories</a>
@@ -611,6 +611,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                       pictureVersion={product.pictureVersion}
                       pictureType={product.pictureType}
                       featured={product.featured}
+                      newArrival={product.newArrival}
                       onReserved={fetchAvailable}
                     />
                   </div>

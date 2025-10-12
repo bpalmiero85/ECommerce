@@ -13,6 +13,7 @@ const Product = ({
   description,
   category,
   featured,
+  newArrival,
   pictureVersion,
   onReserved,
 }) => {
@@ -193,6 +194,7 @@ const Product = ({
         <div className="product-design">
           <div className="animated-item-container">
             {featured && <span className="badge-purple">Featured</span>}
+            {newArrival && <span className="badge-purple">New Arrival!</span>}
             <div
               className={
                 quantity === 0 ? "animated-item-sold-out" : "animated-item"

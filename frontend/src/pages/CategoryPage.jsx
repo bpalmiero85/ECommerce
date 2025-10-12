@@ -4,6 +4,16 @@ import ProductPage from "./ProductPage.jsx";
 import "../styles/styles.css";
 import "../styles/ProductPage.css";
 
+const SLUG_TO_CATEGORY = {
+  "fidgets-sensory": "Fidgets & Sensory",
+  "home-decor": "Home Decor",
+  "custom-orders": "Custom Orders",
+  "garbage-ghouls": "Garbage Ghouls",
+  jewelry: "Jewelry",
+  figurines: "Figurines",
+  accessories: "Accessories",
+  "new-arrivals": "New Arrivals", // sentinel for the special route
+};
 
 function Category() {
   const [products, setProducts] = useState([]);
@@ -15,16 +25,27 @@ function Category() {
   const inFlight = useRef(false);
   const firstLoad = useRef(true);
   const prevSig = useRef("");
-  const displayName = (slug ?? "").replace(/-/g, " ");
+  const slugKey = String(slug ?? "")
+    .trim()
+    .toLowerCase();
+  const displayName =
+    SLUG_TO_CATEGORY[slugKey] ?? (slug ?? "").replace(/-/g, " ");
   const normalizedCategory = displayName.toLowerCase().trim();
   const categoryObject = {
-    "fidgets sensory": "Restless spirits deserve restless toys. Spin, squish, and click your way through the shadows with fidgets that keep haunted hands busy.",
-    "jewelry": "Tiny charms of the night. From moons to monsters, our gothic jewelry adds a touch of eerie sparkle to your everyday ritual.",
-    "figurines": "Creepy-cute characters ready to haunt your shelves. From little monsters to strange critters, these figurines bring personality to any corner.",
-    "accessories": "Odd little extras to tag along wherever you go. Keychains, charms, and small gothic add-ons that bring a spark of spooky style.",
-    "home decor": "Spooky accents for everyday spaces. Turn your lair into a haunted haven. Bowls, holders, and decorations that turn your home into a cozy haunted hideaway.",
-    "custom orders": "Got something unusual in mind? Tell us, and we’ll whip up a custom print made just for you — unique, personal, and full of character.",
-    "garbage ghouls": "Our original creatures of chaos. Born of slime and shadows, the Garbage Ghouls crawl from the crypt to be collected. Strange, silly, and a little grotesque — they’re impossible not to love.",
+    "fidgets sensory":
+      "Restless spirits deserve restless toys. Spin, squish, and click your way through the shadows with fidgets that keep haunted hands busy.",
+    jewelry:
+      "Tiny charms of the night. From moons to monsters, our gothic jewelry adds a touch of eerie sparkle to your everyday ritual.",
+    figurines:
+      "Creepy-cute characters ready to haunt your shelves. From little monsters to strange critters, these figurines bring personality to any corner.",
+    accessories:
+      "Odd little extras to tag along wherever you go. Keychains, charms, and small gothic add-ons that bring a spark of spooky style.",
+    "home decor":
+      "Spooky accents for everyday spaces. Turn your lair into a haunted haven. Bowls, holders, and decorations that turn your home into a cozy haunted hideaway.",
+    "custom orders":
+      "Got something unusual in mind? Tell us, and we’ll whip up a custom print made just for you — unique, personal, and full of character.",
+    "garbage ghouls":
+      "Our original creatures of chaos. Born of slime and shadows, the Garbage Ghouls crawl from the crypt to be collected. Strange, silly, and a little grotesque — they’re impossible not to love.",
   };
   const categoryDescription =
     categoryObject[normalizedCategory] ??
@@ -62,13 +83,14 @@ function Category() {
   const retry = () => setRetryKey((k) => k + 1);
 
   useEffect(() => {
-  function onInventoryChanged() {
-    // trigger a refetch using your existing [slug, retryKey] effect
-    setRetryKey((k) => k + 1);
-  }
-  window.addEventListener("inventory:changed", onInventoryChanged);
-  return () => window.removeEventListener("inventory:changed", onInventoryChanged);
-}, []);
+    function onInventoryChanged() {
+      // trigger a refetch using your existing [slug, retryKey] effect
+      setRetryKey((k) => k + 1);
+    }
+    window.addEventListener("inventory:changed", onInventoryChanged);
+    return () =>
+      window.removeEventListener("inventory:changed", onInventoryChanged);
+  }, []);
 
   useEffect(() => {
     if (!slug) {
@@ -82,9 +104,17 @@ function Category() {
       if (showLoader && firstLoad.current) setLoading(true);
       setError("");
       try {
-        const categoryParam = (slug ?? "").replace(/-/g, " ");
-        const url = `http://localhost:8080/api/products?category=${encodeURIComponent(categoryParam)}` 
-
+        const slugValue = String(slug ?? "")
+          .trim()
+          .toLowerCase();
+        const mappedCategory =
+          SLUG_TO_CATEGORY[slugValue] ?? slugValue.replace(/-/g, " ");
+        const url =
+          slugValue === "new-arrivals"
+            ? "http://localhost:8080/api/products?newArrival=true"
+            : `http://localhost:8080/api/products?category=${encodeURIComponent(
+                mappedCategory
+              )}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
@@ -126,8 +156,8 @@ function Category() {
 
   return (
     <section className="products-section">
-    <div className="hero-section">
-      <HeroSection categoryDescription={categoryDescription}/>
+      <div className="hero-section">
+        <HeroSection categoryDescription={categoryDescription} />
       </div>
       <div className="section-header">
         <h2 className="section-title">
@@ -149,7 +179,7 @@ function Category() {
           <EmptyState category={displayName} />
         ) : (
           <div className="product-page">
-          <ProductPage products={products} key={slug} />
+            <ProductPage products={products} key={slug} />
           </div>
         )}
       </div>

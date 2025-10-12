@@ -49,6 +49,9 @@ public class Product {
   @Column(nullable = false)
   private boolean featured;
 
+  @Column(nullable = false)
+  private boolean newArrival;
+
   @Lob
   @Column(name = "product_picture_file")
   private byte[] productPictureFile;

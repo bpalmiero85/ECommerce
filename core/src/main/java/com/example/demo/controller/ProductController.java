@@ -3,8 +3,6 @@ package com.example.demo.controller;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,7 +45,7 @@ public class ProductController {
 
   @PostMapping(value = "/product/{productId}/uploadPicture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<Product> uploadProductPicture(@PathVariable Long productId,
-    @RequestParam("file") MultipartFile file) throws IOException {
+      @RequestParam("file") MultipartFile file) throws IOException {
     Product product = productService.getProductById(productId).orElseThrow();
     product.setProductPictureFile(file.getBytes());
     product.setPictureType(file.getContentType());
@@ -59,16 +57,22 @@ public class ProductController {
   @CrossOrigin(origins = "http://localhost:3000")
   @GetMapping("/products")
   public List<Product> getAllProducts(
-    @RequestParam(value = "category", required = false) String category,
-    @RequestParam(value = "featured", required = false) Boolean featured
-    ) {
+      @RequestParam(value = "category", required = false) String category,
+      @RequestParam(value = "featured", required = false) Boolean featured,
+      @RequestParam(value = "newArrival", required = false) Boolean newArrival) {
     if (Boolean.TRUE.equals(featured) && category != null && !category.isBlank()) {
       return productService.getFeaturedProductsByCategory(category);
     }
-    if(Boolean.TRUE.equals(featured)) {
+    if (Boolean.TRUE.equals(featured)) {
       return productService.getFeaturedProducts();
     }
-    if(category != null && !category.isBlank()){
+    if (Boolean.TRUE.equals(newArrival) && category != null && !category.isBlank()) {
+      return productService.getNewArrivalsByCategory(category);
+    }
+    if (Boolean.TRUE.equals(newArrival)) {
+      return productService.getNewArrivals();
+    }
+    if (category != null && !category.isBlank()) {
       return productService.getProductCategory(category);
     }
     return productService.getAllProducts();
@@ -79,10 +83,15 @@ public class ProductController {
     return productService.getFeaturedProducts();
   }
 
+  @GetMapping("/products/new-arrivals")
+  public List<Product> getNewArrivals() {
+    return productService.getNewArrivals();
+  }
+
   @GetMapping("/products/category/{category}")
   public ResponseEntity<List<Product>> getProductByCategory(@PathVariable String category) {
     List<Product> products = productService.getProductCategory(category);
-    
+
     return ResponseEntity.ok(products);
   }
 
