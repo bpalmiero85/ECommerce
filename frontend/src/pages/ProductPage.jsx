@@ -7,13 +7,25 @@ import ShoppingCart from "../components/ShoppingCart";
 import AnimatedBackground from "../components/AnimatedBackground";
 import CheckoutPage from "./CheckoutPage";
 
+const toSlug = (name) => {
+  if (!name) return "";
+  let slug = name.toLowerCase().trim();
+  slug = slug.replace(/&/g, " ");
+  slug = slug.replace(/\s+/g, "-");
+  slug = slug.replace(/\-+/g, "-");
+
+  return slug;
+};
+
 const ProductPage = ({ products: externalProducts = [] }) => {
   const [products, setProducts] = useState([]);
   const [availableById, setAvailableById] = useState({});
+  const [navCategories, setNavCategories] = useState([]);
   const [isCartShown, setIsCartShown] = useState(false);
   const { cartItems: rawCart } = useContext(CartContext);
   const cartItems = Array.isArray(rawCart) ? rawCart : [];
   const checkoutRef = useRef();
+  const [activeCategories, setActiveCategories] = useState([]);
   const totalItems = cartItems.reduce((sum, i) => sum + (i?.qty ?? 1), 0);
   const subtotal = cartItems.reduce(
     (sum, i) =>
@@ -30,6 +42,34 @@ const ProductPage = ({ products: externalProducts = [] }) => {
     const qty = await resp.json();
     setAvailableById((prev) => ({ ...prev, [id]: qty }));
   }
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/api/products");
+        if (!response.ok) {
+          throw new Error("error fetching products");
+        }
+        const product = await response.json();
+        const hasNew = product.some((p) => p?.newArrival === true);
+        const categoriesSet = new Set(
+          product.map((p) => String(p.category).trim()).filter(Boolean)
+        );
+        const categoriesArray = [...categoriesSet];
+        const sorted = categoriesArray.sort((a, b) =>
+          a.localeCompare(b, undefined, { sensitivity: "base" })
+        );
+
+        // put "New Arrivals" at the front only if any exist
+        const finalCategories = hasNew ? ["New Arrivals", ...sorted] : sorted;
+        setActiveCategories(finalCategories);
+        console.log("Present categories:", finalCategories);
+      } catch (e) {
+        console.error("failed to load products: ", e);
+      }
+    };
+    load();
+  }, []);
 
   useEffect(() => {
     function onInventoryChanged(e) {
@@ -57,18 +97,6 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   const handleCancelCart = () => {
     setIsCartShown(false);
   };
-
-  // May use in the future ---
-
-  // const decrementProductQty = (productId) => {
-  //   setProducts((prev) =>
-  //     prev.map((p) =>
-  //       p.id === productId && p.quantity > 0
-  //         ? { ...p, quantity: p.quantity - 1 }
-  //         : p
-  //     )
-  //   );
-  // };
 
   useEffect(() => {
     if (!products.length) return;
@@ -550,15 +578,11 @@ const ProductPage = ({ products: externalProducts = [] }) => {
             <div className="dropdown">
               <button className="dropdown-button">Categories ▼</button>
               <div className="dropdown-content">
-                <a href="/category/new-arrivals">New Arrivals</a>
-                <a href="/category/figurines">Figurines</a>
-                <a href="/category/jewelry">Jewelry</a>
-                <a href="/category/accessories">Accessories</a>
-                <a href="/category/fidgets">Fidgets & Sensory</a>
-                <a href="/category/garbage-ghouls">Garbage Ghouls</a>
-                <a href="/category/home-decor">Home Decor</a>
-                <a href="/category/custom">Customizable Items</a>
-                <a href="/category/clearance">Clearance Graveyard</a>
+                {activeCategories.map((category) => (
+                  <a key={category} href={`/category/${toSlug(category)}`}>
+                    {category}
+                  </a>
+                ))}
               </div>
             </div>
             <a href="/contact" style={{ "--hover-color": "var(--neon-pink)" }}>
