@@ -34,8 +34,9 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   );
 
   async function fetchAvailable(id) {
+    const API = process.env.REACT_APP_BASE || "";
     const resp = await fetch(
-      `http://localhost:8080/api/inventory/${id}/available?_=${Date.now()}`,
+      `${API}/api/inventory/${id}/available?_=${Date.now()}`,
       { cache: "no-store", credentials: "include" }
     );
     if (!resp.ok) return;
@@ -69,6 +70,16 @@ const ProductPage = ({ products: externalProducts = [] }) => {
       }
     };
     load();
+
+    const onProductsChanged = (e) => {
+      console.log("Detected products:changed event", e.detail);
+      load();
+    };
+    window.addEventListener("products:changed", onProductsChanged);
+
+    return () => {
+      window.removeEventListener("products:changed", onProductsChanged);
+    };
   }, []);
 
   useEffect(() => {

@@ -40,7 +40,7 @@ public ResponseEntity<?> getRates(@RequestBody ShippingRateRequest req) {
         req.getHeightInches()
     );
     return ResponseEntity.ok(option);
-  } catch (com.example.demo.service.UspsXmlClient.UpstreamException e) {
+  } catch (com.example.demo.service.UspsV3Client.UpstreamException e) {
     // USPS returned an error (XML <Error> or HTTP failure) — surface as 502
     log.error("USPS upstream error: {}", e.getMessage(), e);
     return ResponseEntity.status(502).body(

@@ -2,7 +2,7 @@ package com.example.demo.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "usps")
+@ConfigurationProperties(prefix = "usps.api")
 public class UspsCommonProperties {
   private String originZip;
 

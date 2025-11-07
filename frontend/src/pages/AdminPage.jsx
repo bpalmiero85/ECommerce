@@ -36,6 +36,16 @@ const AdminPage = () => {
     "Garbage Ghouls",
   ];
 
+  const notifyProductsChanged = useCallback((payload) => {
+    try {
+      window.dispatchEvent(
+        new CustomEvent("products:changed", { detail: payload })
+      );
+    } catch (e) {
+      console.error("products:changed dispatch failed", e);
+    }
+  }, []);
+
   const fetchProducts = useCallback(async () => {
     try {
       const base = "http://localhost:8080/api/products";
@@ -116,6 +126,14 @@ const AdminPage = () => {
       } else {
         fetchProducts();
       }
+
+      notifyProductsChanged({
+        type: "create",
+        id: newProduct.id,
+        category: newProduct.category,
+        newArrival: !!newProduct.newArrival,
+        featured: !!newProduct.featured,
+      });
     } catch (error) {
       console.error("Error submitting product", error);
     }
@@ -164,6 +182,11 @@ const AdminPage = () => {
       const data = await response.json();
       console.log("Picture uploaded successfully:", data);
       fetchProducts();
+
+      notifyProductsChanged({
+        type: "picture-upload",
+        id: productId,
+      });
     } catch (error) {
       console.error("Error uploading product picture:", error);
     }
@@ -185,6 +208,11 @@ const AdminPage = () => {
       }
 
       fetchProducts();
+
+      notifyProductsChanged({
+        type: "delete",
+        id
+      });
     } catch (error) {
       console.error("Error deleting product: ", error);
     }
@@ -263,6 +291,14 @@ const AdminPage = () => {
       if (editFileRef.current) editFileRef.current.value = "";
 
       await fetchProducts();
+
+      notifyProductsChanged({
+        type: "update",
+        id,
+        category: updated.category,
+        newArrival: !!updated.newArrival,
+        featured: !!updated.featured,
+      });
     } catch (error) {
       console.error(error);
     } finally {
