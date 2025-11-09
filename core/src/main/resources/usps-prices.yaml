@@ -3,7 +3,7 @@ info:
   title: USPS Base-Rates Only
   version: 3.4.17
 servers:
-  - url: https://api.usps.com/prices/v3
+  - url: https://apis.usps.com/prices/v3
 paths:
   /base-rates/search:
     post:

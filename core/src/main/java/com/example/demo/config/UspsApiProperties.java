@@ -6,12 +6,22 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class UspsApiProperties {
   private boolean enabled = true;
 
-  private String baseUrl = "https://apis-tem.usps.com";
-  private String tokenUrl = "https://apis.usps.com/oauth2/v3/token";
+  private String baseUrl = "https://apis.usps.com/prices/v3";
+ private String tokenUrl = "https://apis.usps.com/oauth2/v3/token";
 
-  private String clientId;
+  private String clientId; 
   private String clientSecret;
+  private String scope;
 
+  private String originZip = "43065";
+
+
+  public String getScope() {
+    return scope;
+  }
+  public void setScope(String scope) {
+    this.scope = scope;
+  }
   public boolean isEnabled() {
     return enabled;
   }
@@ -27,7 +37,7 @@ public class UspsApiProperties {
     this.baseUrl = baseUrl;
   }
 
-  public String getTokenUrl(String tokenUrl) {
+  public String getTokenUrl() {
     return tokenUrl;
   }
 
@@ -49,6 +59,14 @@ public class UspsApiProperties {
 
   public void setClientSecret(String clientSecret) {
     this.clientSecret = clientSecret;
+  }
+
+  public String getOriginZip() {
+    return originZip;
+  }
+
+  public void setOriginZip(String originZip) {
+    this.originZip = originZip;
   }
 
 

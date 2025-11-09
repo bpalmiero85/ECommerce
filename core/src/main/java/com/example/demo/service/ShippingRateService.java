@@ -2,7 +2,6 @@ package com.example.demo.service;
 
 import com.example.demo.model.BaseRateOption;
 import com.example.demo.model.BaseRateOptionRatesInner;
-import com.example.demo.model.BaseRatesQuery;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
