@@ -5,6 +5,8 @@ import ClearCartButton from "../components/ClearCartButton";
 import "../styles/CheckoutPage.css";
 import "../styles/ProductPage.css";
 
+const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8080";
+
 /**
  * CheckoutPage Component
  *
@@ -49,6 +51,13 @@ export default function CheckoutPage() {
     0
   );
 
+  // TODO: replace this with real product weights later.
+
+  const totalWeightOunces = cartItems.reduce(
+    (sum, item) => sum + 8 * (Number(item.qty ?? item.quantity ?? 1) || 0),
+    0
+  );
+
   // Stripe hooks
   const stripe = useStripe();
   const elements = useElements();
@@ -82,6 +91,13 @@ export default function CheckoutPage() {
 
   // Sales tax ($0 for any state but local)
   const [salesTax, setSalesTax] = useState(0);
+
+  // Shipping address / rates
+  const [destinationZip, setDestinationZip] = useState("");
+  const [shippingRate, setShippingRate] = useState(null);
+  const [shipping, setShipping] = useState(null);
+  const [shippingLoading, setShippingLoading] = useState(false);
+  const [shippingError, setShippingError] = useState(null);
 
   // List of US States
   const STATES = [
@@ -152,7 +168,8 @@ export default function CheckoutPage() {
     try {
       // 1) Hit backend to create a PaymentIntent
       const tax = shippingState === "OH" ? subtotal * 0.0725 : 0;
-      const total = subtotal + tax;
+      const shipping = shippingRate || 0;
+      const total = subtotal + tax + shipping;
 
       const { clientSecret } = await fetch("/api/create-payment-intent", {
         method: "POST",
@@ -160,6 +177,7 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           amount: Math.round(total * 100),
           state: shippingState,
+          shipping,
         }),
       }).then((r) => r.json());
 
@@ -191,6 +209,73 @@ export default function CheckoutPage() {
     }
   };
 
+  const handleCalculateShipping = async () => {
+    setShippingError(null);
+
+    if (!destinationZip || !/^\d{5}(-\d{4})?$/.test(destinationZip)) {
+      setShippingError("Please enter a valid ZIP code.");
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      setShippingError("Your cart is empty.");
+      return;
+    }
+
+    setShippingLoading(true);
+
+    try {
+      // For now: use a fixed box + weight assumption.
+      // This matches what you've been testing against USPS.
+      const body = {
+        destinationZip: destinationZip,
+        weightOunces: 16, // TODO: later: derive from cart items
+        lengthInches: 10,
+        widthInches: 6,
+        heightInches: 4,
+      };
+
+      const res = await fetch(`${API_BASE}/api/shipping/rates`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(
+          data?.error ||
+            data?.details ||
+            `Shipping lookup failed (${res.status})`
+        );
+      }
+
+      // Your backend currently returns:
+      // {
+      //   "totalBasePrice": 16.6,
+      //   "rates": [...]
+      // }
+      const amount =
+        typeof data.totalBasePrice === "number"
+          ? data.totalBasePrice
+          : Number(data.totalBasePrice);
+
+      if (!amount || Number.isNaN(amount)) {
+        throw new Error("No valid shipping rate returned.");
+      }
+
+      setShippingRate(amount);
+    } catch (err) {
+      console.error("Shipping error:", err);
+      setShippingRate(null);
+      setShippingError(err.message || "Unable to calculate shipping.");
+    } finally {
+      setShippingLoading(false);
+    }
+  };
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -199,12 +284,58 @@ export default function CheckoutPage() {
     >
       <h2>Checkout</h2>
 
-      {/* Display subtotal and collect customer details */}
-      <form className="payment-form">
+      {/* Display subtotal */}
+      <div className="payment-form">
         <h3>Subtotal: ${subtotal.toFixed(2)}</h3>
         {shippingState === "OH" && (
           <h3>Ohio sales tax: ${(subtotal * 0.0725).toFixed(2)}</h3>
         )}
+
+        {/* Collect customer details */}
+        <label>
+          ZIP code:
+          <br />
+          <input
+            name="destinationZip"
+            value={destinationZip}
+            onChange={(e) => setDestinationZip(e.target.value)}
+            required
+          ></input>
+        </label>
+
+        {/* Calculate shipping */}
+        <button
+          type="button"
+          className="calculate-shipping-button"
+          onClick={handleCalculateShipping}
+          disabled={shippingLoading || !destinationZip}
+          style={{ marginTop: "10px" }}
+        >
+          {shippingLoading ? "Calculating..." : "Calculate Shipping"}
+        </button>
+
+        {shippingError && (
+          <div className="inline-card-error" style={{ marginTop: "6px" }}>
+            {shippingError}
+          </div>
+        )}
+
+        {shippingRate != null && (
+          <div className="shipping-summary" style={{ marginTop: "10px" }}>
+            <div>Shipping: ${shippingRate.toFixed(2)}</div>
+            <div>
+              <strong>
+                Estimated Total: $
+                {(
+                  subtotal +
+                  (shippingState === "OH" ? subtotal * 0.0725 : 0) +
+                  shippingRate
+                ).toFixed(2)}
+              </strong>
+            </div>
+          </div>
+        )}
+
         <label className="payment-form-input">
           Name:
           <br />
@@ -248,7 +379,7 @@ export default function CheckoutPage() {
             </option>
           ))}
         </select>
-      </form>
+      </div>
 
       {/* Stripe CardElement for secure card input */}
       <div className="card-element">
@@ -284,7 +415,8 @@ export default function CheckoutPage() {
             succeeded ||
             !name.trim() ||
             !email.trim() ||
-            !isEmailValid
+            !isEmailValid ||
+            shippingRate == null
           }
         >
           {processing ? "Processing..." : succeeded ? "Paid!" : "Pay"}
