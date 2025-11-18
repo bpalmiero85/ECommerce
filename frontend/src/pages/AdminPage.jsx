@@ -115,6 +115,7 @@ const AdminPage = () => {
       setDescription("");
       setPrice("");
       setQuantity("");
+      setCategory("");
       setSelectedFile(null);
       setIsFeatured(false);
       setIsNewArrival(false);
