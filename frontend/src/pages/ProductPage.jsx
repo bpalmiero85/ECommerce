@@ -34,7 +34,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   );
 
   async function fetchAvailable(id) {
-    const API = process.env.REACT_APP_BASE || "";
+    const API = process.env.REACT_APP_BASE || "http://localhost:8080";
     const resp = await fetch(
       `${API}/api/inventory/${id}/available?_=${Date.now()}`,
       { cache: "no-store", credentials: "include" }
@@ -45,9 +45,10 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   }
 
   useEffect(() => {
+    const API = process.env.REACT_APP_BASE || "http://localhost:8080";
     const load = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/products");
+        const response = await fetch(`${API}/api/products`);
         if (!response.ok) {
           throw new Error("error fetching products");
         }
