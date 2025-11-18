@@ -72,7 +72,7 @@ export default function CheckoutPage() {
   const [email, setEmail] = useState("");
 
   // Empty cart state
-  const [isEmpty, setIsEmpty] = useState(true);
+ // const [isEmpty, setIsEmpty] = useState(true);
 
   // Stripe card state
   const [isCardComplete, setIsCardComplete] = useState(false);
@@ -87,71 +87,31 @@ export default function CheckoutPage() {
   const [shippingState, setShippingState] = useState("");
 
   // Charge local state's sales tax if shipping locally
-  const [isLocal, setIsLocal] = useState(false);
+ // const [isLocal, setIsLocal] = useState(false);
 
   // Sales tax ($0 for any state but local)
-  const [salesTax, setSalesTax] = useState(0);
+ // const [salesTax, setSalesTax] = useState(0);
 
   // Shipping address / rates
   const [destinationZip, setDestinationZip] = useState("");
   const [shippingRate, setShippingRate] = useState(null);
-  const [shipping, setShipping] = useState(null);
+ // const [shipping, setShipping] = useState(null);
   const [shippingLoading, setShippingLoading] = useState(false);
   const [shippingError, setShippingError] = useState(null);
 
-  // List of US States
-  const STATES = [
-    "AL",
-    "AK",
-    "AZ",
-    "AR",
-    "CA",
-    "CO",
-    "CT",
-    "DE",
-    "FL",
-    "GA",
-    "HI",
-    "ID",
-    "IL",
-    "IN",
-    "IA",
-    "KS",
-    "KY",
-    "LA",
-    "ME",
-    "MD",
-    "MA",
-    "MI",
-    "MN",
-    "MS",
-    "MO",
-    "MT",
-    "NE",
-    "NV",
-    "NH",
-    "NJ",
-    "NM",
-    "NY",
-    "NC",
-    "ND",
-    "OH",
-    "OK",
-    "OR",
-    "PA",
-    "RI",
-    "SC",
-    "SD",
-    "TN",
-    "TX",
-    "UT",
-    "VT",
-    "VA",
-    "WA",
-    "WV",
-    "WI",
-    "WY",
-  ];
+  const inferStateFromZip = (zip) => {
+    if (!/^\d{5}(-\d{4})?$/.test(zip)) {
+      return "";
+    }
+
+    const num = parseInt(zip.slice(0, 5), 10);
+
+    if (num >= 43001 && num <= 45999) {
+      return "OH";
+    }
+
+    return "";
+  };
 
   /**
    * Handles the form submission to process the payment.
@@ -171,7 +131,7 @@ export default function CheckoutPage() {
       const shipping = shippingRate || 0;
       const total = subtotal + tax + shipping;
 
-      const { clientSecret } = await fetch("/api/create-payment-intent", {
+      const { clientSecret } = await fetch("${API_BASE}/api/create-payment-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -221,7 +181,7 @@ export default function CheckoutPage() {
       setShippingError("Your cart is empty.");
       return;
     }
-
+    setShippingState(inferStateFromZip(destinationZip));
     setShippingLoading(true);
 
     try {
@@ -229,7 +189,7 @@ export default function CheckoutPage() {
       // This matches what you've been testing against USPS.
       const body = {
         destinationZip: destinationZip,
-        weightOunces: 16, // TODO: later: derive from cart items
+        weightOunces: totalWeightOunces || 16, // TODO: later: derive from cart items
         lengthInches: 10,
         widthInches: 6,
         heightInches: 4,
@@ -368,17 +328,6 @@ export default function CheckoutPage() {
           </div>
         )}
         <br />
-        <label htmlFor="state-select">State:</label>
-        <select
-          value={shippingState}
-          onChange={(e) => setShippingState(e.target.value)}
-        >
-          {STATES.map((state) => (
-            <option key={state} value={state}>
-              {state}
-            </option>
-          ))}
-        </select>
       </div>
 
       {/* Stripe CardElement for secure card input */}
