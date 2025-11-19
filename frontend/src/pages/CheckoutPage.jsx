@@ -1,5 +1,5 @@
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { CartContext } from "../contexts/CartContext";
 import ClearCartButton from "../components/ClearCartButton";
 import "../styles/CheckoutPage.css";
@@ -70,9 +70,12 @@ export default function CheckoutPage() {
   // Form input state
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [addressLine1, setAddressLine1] = useState("");
+  const [addressLine2, setAddressLine2] = useState("");
+  const [city, setCity] = useState("");
 
   // Empty cart state
- // const [isEmpty, setIsEmpty] = useState(true);
+  // const [isEmpty, setIsEmpty] = useState(true);
 
   // Stripe card state
   const [isCardComplete, setIsCardComplete] = useState(false);
@@ -87,17 +90,40 @@ export default function CheckoutPage() {
   const [shippingState, setShippingState] = useState("");
 
   // Charge local state's sales tax if shipping locally
- // const [isLocal, setIsLocal] = useState(false);
+  // const [isLocal, setIsLocal] = useState(false);
 
   // Sales tax ($0 for any state but local)
- // const [salesTax, setSalesTax] = useState(0);
+  // const [salesTax, setSalesTax] = useState(0);
 
   // Shipping address / rates
   const [destinationZip, setDestinationZip] = useState("");
   const [shippingRate, setShippingRate] = useState(null);
- // const [shipping, setShipping] = useState(null);
+  // const [shipping, setShipping] = useState(null);
   const [shippingLoading, setShippingLoading] = useState(false);
   const [shippingError, setShippingError] = useState(null);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const trimmed = destinationZip.trim();
+    if (!trimmed) {
+      setShippingRate(null);
+      setShippingError(null);
+      return;
+    } else if (trimmed === null) {
+      setShippingRate(null);
+      setShippingError(null);
+    } else if (!/^\d{5}(-\d{4})?$/.test(trimmed)) {
+      setShippingRate(null);
+      setShippingError(null);
+      return;
+    } else if (cartItems.length === 0) {
+      setShippingRate(null);
+      setShippingError("Your cart is empty.");
+      return;
+    }
+    handleCalculateShipping();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [destinationZip, cartItems.length]);
 
   const inferStateFromZip = (zip) => {
     if (!/^\d{5}(-\d{4})?$/.test(zip)) {
@@ -131,15 +157,18 @@ export default function CheckoutPage() {
       const shipping = shippingRate || 0;
       const total = subtotal + tax + shipping;
 
-      const { clientSecret } = await fetch("${API_BASE}/api/create-payment-intent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: Math.round(total * 100),
-          state: shippingState,
-          shipping,
-        }),
-      }).then((r) => r.json());
+      const { clientSecret } = await fetch(
+        `${API_BASE}/api/create-payment-intent`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: Math.round(total * 100),
+            state: shippingState,
+            shipping,
+          }),
+        }
+      ).then((r) => r.json());
 
       // 2) Confirm the payment using Stripe
       const result = await stripe.confirmCardPayment(clientSecret, {
@@ -251,29 +280,6 @@ export default function CheckoutPage() {
           <h3>Ohio sales tax: ${(subtotal * 0.0725).toFixed(2)}</h3>
         )}
 
-        {/* Collect customer details */}
-        <label>
-          ZIP code:
-          <br />
-          <input
-            name="destinationZip"
-            value={destinationZip}
-            onChange={(e) => setDestinationZip(e.target.value)}
-            required
-          ></input>
-        </label>
-
-        {/* Calculate shipping */}
-        <button
-          type="button"
-          className="calculate-shipping-button"
-          onClick={handleCalculateShipping}
-          disabled={shippingLoading || !destinationZip}
-          style={{ marginTop: "10px" }}
-        >
-          {shippingLoading ? "Calculating..." : "Calculate Shipping"}
-        </button>
-
         {shippingError && (
           <div className="inline-card-error" style={{ marginTop: "6px" }}>
             {shippingError}
@@ -328,6 +334,48 @@ export default function CheckoutPage() {
           </div>
         )}
         <br />
+        {/* Collect customer details */}
+        <label>
+          Address line 1:
+          <br />
+          <input
+            name="addressLine1"
+            value={addressLine1}
+            onChange={(e) => setAddressLine1(e.target.value)}
+            required
+          ></input>
+        </label>
+        <br />
+        <label>
+          Address line 2 (optional):
+          <br />
+          <input
+            name="addressLine2"
+            value={addressLine2}
+            onChange={(e) => setAddressLine2(e.target.value)}
+          ></input>
+        </label>
+        <br />
+        <label>
+          City:
+          <br />
+          <input
+            name="city"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            required
+          ></input>
+        </label>
+        <label>
+          ZIP code:
+          <br />
+          <input
+            name="destinationZip"
+            value={destinationZip}
+            onChange={(e) => setDestinationZip(e.target.value)}
+            required
+          ></input>
+        </label>
       </div>
 
       {/* Stripe CardElement for secure card input */}
@@ -365,6 +413,9 @@ export default function CheckoutPage() {
             !name.trim() ||
             !email.trim() ||
             !isEmailValid ||
+            !addressLine1.trim() ||
+            !city.trim() ||
+            !destinationZip.trim() ||
             shippingRate == null
           }
         >
