@@ -6,6 +6,13 @@
   z-index: 3000;
 }
 
+.empty-cart-message {
+  display: flex;
+  font-size: 2rem;
+  color: black;
+  margin: 0 auto;
+}
+
 .payment-form {
   display: flex;
   flex-direction: column;

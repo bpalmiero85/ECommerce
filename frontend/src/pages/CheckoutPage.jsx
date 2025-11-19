@@ -265,14 +265,15 @@ export default function CheckoutPage() {
     }
   };
 
-  return (
+  return cartItems.length === 0 ?(
+    <div className="empty-cart-message">Your cart is empty.</div>
+  ) : (
     <form
       onSubmit={handleSubmit}
       style={{ maxWidth: 400, margin: "0 auto" }}
       className="checkout-form"
     >
-      <h2>Checkout</h2>
-
+  
       {/* Display subtotal */}
       <div className="payment-form">
         <h3>Subtotal: ${subtotal.toFixed(2)}</h3>
@@ -377,6 +378,7 @@ export default function CheckoutPage() {
           ></input>
         </label>
       </div>
+  
 
       {/* Stripe CardElement for secure card input */}
       <div className="card-element">
