@@ -1,21 +1,34 @@
-// server.mjs
-import 'dotenv/config';          // loads STRIPE_SECRET_KEY from .env
+import 'dotenv/config';
 import express from 'express';
 import Stripe from 'stripe';
+import cors from 'cors';
+
+console.log("STRIPE_SECRET_KEY from env:", process.env.STRIPE_SECRET_KEY);
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
 const app = express();
+
+// 🔓 Allow requests from React dev server
+app.use(
+  cors({
+    origin: "http://localhost:3000", // React app origin
+  })
+);
+
 app.use(express.json());
 
-app.post('/api/create-payment-intent', async (req, res) => {
+app.post("/api/create-payment-intent", async (req, res) => {
   try {
-    const { amount, currency = 'usd' } = req.body;
+    const { amount, currency = "usd" } = req.body;
     const paymentIntent = await stripe.paymentIntents.create({ amount, currency });
     res.json({ clientSecret: paymentIntent.client_secret });
   } catch (err) {
-    console.error(err);
+    console.error("Stripe error:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-app.listen(3001, () => console.log('✅ Payment endpoint listening on port 3001'));
+app.listen(3001, () =>
+  console.log("✅ Payment endpoint listening on port 3001")
+);

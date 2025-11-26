@@ -24,7 +24,7 @@
   margin-top: 10px;
 }
 
-/* the outer wrapper you gave via className */
+/* Stripe wrapper */
 .StripeElement {
   display: flex;
   flex-direction: column;

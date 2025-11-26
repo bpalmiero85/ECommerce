@@ -6,6 +6,7 @@ import "../styles/CheckoutPage.css";
 import "../styles/ProductPage.css";
 
 const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8080";
+const PAYMENT_API_BASE = process.env.REACT_APP_PAYMENT_API_BASE || "http://localhost:3001";
 
 /**
  * CheckoutPage Component
@@ -43,7 +44,7 @@ export default function CheckoutPage() {
   };
 
   // Access the shopping cart context to calculate subtotal.
-  const { cartItems } = useContext(CartContext);
+  const { cartItems, clearCartAfterPayment } = useContext(CartContext);
   const subtotal = cartItems.reduce(
     (sum, item) =>
       sum +
@@ -158,7 +159,7 @@ export default function CheckoutPage() {
       const total = subtotal + tax + shipping;
 
       const { clientSecret } = await fetch(
-        `${API_BASE}/api/create-payment-intent`,
+        `${PAYMENT_API_BASE}/api/create-payment-intent`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -190,10 +191,13 @@ export default function CheckoutPage() {
         setError(null);
         setProcessing(false);
         setSucceeded(true);
+
+        clearCartAfterPayment();
       }
     } catch (err) {
       // Catch network or unexpected errors
-      setError("Payment failed. Please try again.");
+      console.error("Checkout error:", err);
+      setError(err.message || "Payment failed. Please try again.");
       setProcessing(false);
     }
   };

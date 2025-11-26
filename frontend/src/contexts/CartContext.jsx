@@ -16,6 +16,7 @@ const defaultValue = {
   removeFromCart: noop,
   clearCart: noop,
   clearCartAndRelease: noop,
+  clearCartAfterPayment: noop,
 };
 
 export const CartContext = createContext(defaultValue);
@@ -120,6 +121,10 @@ export function CartProvider({ children }) {
       console.error("clearCartAndRelease error", e);
     }
   }
+
+  function clearCartAfterPayment() {
+    setCartItems([]);
+  };
 
   const addToCart = (item) => {
     setCartItems((prev) => {
@@ -236,6 +241,7 @@ export function CartProvider({ children }) {
       removeFromCart,
       clearCart,
       clearCartAndRelease,
+      clearCartAfterPayment,
     }),
     [cartItems]
   );
