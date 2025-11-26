@@ -19,7 +19,7 @@ const PAYMENT_API_BASE = process.env.REACT_APP_PAYMENT_API_BASE || "http://local
  * @returns {JSX.Element} A checkout form with card input, subtotal display, and payment button.
  */
 
-export default function CheckoutPage() {
+export default function CheckoutPage({ onSuccess }) {
   /**
    * Options for styling the Stripe CardElement.
    * - Hides postal code field.
@@ -193,6 +193,10 @@ export default function CheckoutPage() {
         setSucceeded(true);
 
         clearCartAfterPayment();
+
+        if (onSuccess) {
+          onSuccess();
+        }
       }
     } catch (err) {
       // Catch network or unexpected errors
@@ -269,8 +273,8 @@ export default function CheckoutPage() {
     }
   };
 
-  return cartItems.length === 0 ?(
-    <div className="empty-cart-message">Your cart is empty.</div>
+  return cartItems.length === 0 ? (
+    <div className="empty-cart-message">{succeeded ? "Thank you for your order!" : "Your cart is empty."}</div>
   ) : (
     <form
       onSubmit={handleSubmit}

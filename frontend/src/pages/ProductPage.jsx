@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useContext } from "react";
+import { useState, useEffect, useRef, useContext, useCallback } from "react";
 import { CartContext } from "../contexts/CartContext";
 import "../styles/AdminPage.css";
 import "../styles/ProductPage.css";
@@ -18,6 +18,7 @@ const toSlug = (name) => {
 };
 
 const ProductPage = ({ products: externalProducts = [] }) => {
+  const [checkoutSucceeded, setCheckoutSucceeded] = useState(false);
   const [products, setProducts] = useState([]);
   const [availableById, setAvailableById] = useState({});
   const [navCategories, setNavCategories] = useState([]);
@@ -106,9 +107,10 @@ const ProductPage = ({ products: externalProducts = [] }) => {
     setIsCartShown((open) => !open);
   };
 
-  const handleCancelCart = () => {
+  const handleCancelCart = useCallback(() => {
+    setCheckoutSucceeded(false);
     setIsCartShown(false);
-  };
+  }, [setCheckoutSucceeded, setIsCartShown]);
 
   useEffect(() => {
     if (!products.length) return;
@@ -202,10 +204,10 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                 <strong>X</strong>
               </button>
             </div>
-            <CheckoutPage />
+            <CheckoutPage onSuccess={() => setCheckoutSucceeded(true)}/>
             <div className="cart-modal-cancel-button">
               <button type="button" onClick={handleCancelCart}>
-                Cancel
+                {checkoutSucceeded ? "Ok" : "Cancel"}
               </button>
             </div>
           </div>
