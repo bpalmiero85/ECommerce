@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.demo.model.Product;
 import com.example.demo.service.InventoryMemory;
 import com.example.demo.service.ProductService;
 
