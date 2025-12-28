@@ -2,19 +2,33 @@ package com.example.demo.config;
 
 import java.util.List;
 
-import org.springframework.context.annotation.Bean;
+import javax.annotation.PostConstruct;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-
+@Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+  @Value("${admin.username}")
+  private String adminUsername;
+
+  @Value("${admin.password}")
+  private String adminPassword;
+  
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     http
@@ -22,7 +36,32 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
       .and()
       .csrf().disable()     // optional, depending on your needs
       .authorizeRequests()
-        .anyRequest().permitAll();  // or your existing rules
+      .antMatchers("/api/admin/**").hasRole("ADMIN")
+        .anyRequest().permitAll()  // or your existing rules
+        .and()
+        .httpBasic();
+  }
+
+  @PostConstruct
+  public void debugEnv() {
+    System.out.println("Admin user: " + adminUsername);
+    System.out.println("Admin pass loaded: " + (adminPassword != null));
+  }
+
+  @Bean
+  @Override
+  public UserDetailsService userDetailsService() {
+    UserDetails admin = User.withUsername(adminUsername)
+      .password(adminPassword)
+      .roles("ADMIN")
+      .build();
+
+      return new InMemoryUserDetailsManager(admin);
+  }
+
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return NoOpPasswordEncoder.getInstance();
   }
 
   @Bean

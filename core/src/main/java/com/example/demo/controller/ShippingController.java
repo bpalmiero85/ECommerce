@@ -47,7 +47,7 @@ public class ShippingController {
     } catch (UspsV3Client.UpstreamException e) {
       log.error("USPS upstream error: {}", e.getMessage(), e);
       return ResponseEntity.status(502).body(
-          Map.of("error", "USPS upstream error", "details", e.getMessage()));
+          Map.of("error", "USPS upstream error. Please re-enter ZIP code", "details", e.getMessage()));
     } catch (IllegalArgumentException e) {
       log.warn("Bad request: {}", e.getMessage());
       return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

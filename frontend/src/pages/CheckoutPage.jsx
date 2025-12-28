@@ -78,6 +78,8 @@ export default function CheckoutPage({ onSuccess }) {
   // Empty cart state
   // const [isEmpty, setIsEmpty] = useState(true);
 
+  const [attemptedPay, setAttemptedPay] = useState(false);
+
   // Stripe card state
   const [isCardComplete, setIsCardComplete] = useState(false);
 
@@ -273,6 +275,19 @@ export default function CheckoutPage({ onSuccess }) {
     }
   };
 
+  const payDisabled =
+    !stripe ||
+            !isCardComplete ||
+            processing ||
+            succeeded ||
+            !name.trim() ||
+            !email.trim() ||
+            !isEmailValid ||
+            !addressLine1.trim() ||
+            !city.trim() ||
+            !destinationZip.trim() ||
+            shippingRate == null
+
   return cartItems.length === 0 ? (
     <div className="empty-cart-message">{succeeded ? "Thank you for your order!" : "Your cart is empty."}</div>
   ) : (
@@ -412,25 +427,39 @@ export default function CheckoutPage({ onSuccess }) {
             ? "cart-modal-pay-button empty"
             : "cart-modal-pay-button"
         }
+        onClick={() => setAttemptedPay(true)}
       >
         <button
           type="submit"
-          disabled={
-            !stripe ||
-            !isCardComplete ||
-            processing ||
-            succeeded ||
-            !name.trim() ||
-            !email.trim() ||
-            !isEmailValid ||
-            !addressLine1.trim() ||
-            !city.trim() ||
-            !destinationZip.trim() ||
-            shippingRate == null
-          }
+          disabled={payDisabled}
         >
           {processing ? "Processing..." : succeeded ? "Paid!" : "Pay"}
         </button>
+
+        {attemptedPay && payDisabled && (
+          <div className="inline-card-error" style={{ marginTop: "8px"}}>
+            {!email.trim() ? (
+              "Email is required."
+              ) : !isEmailValid ? (
+                "Please enter a valid email address."
+              ) : !name.trim() ? (
+                "Name is required."
+              ) : !addressLine1 ? (
+                "Address line 1 is required"
+              ) : !city.trim() ? (
+                "City is required."
+              ) : !destinationZip.trim() ? (
+                "ZIP code is required."
+              ) : shippingRate == null ? (
+                "Please enter a valid ZIP code to calculate shipping."
+              ) : !isCardComplete ? (
+                "Please complete your card details."
+              ) : (
+                "Please complete the form above."
+              )}
+          </div>
+        )}
+
         <div className="clear-cart-button-container">
           <ClearCartButton />
         </div>

@@ -36,6 +36,51 @@ const AdminPage = () => {
     "Garbage Ghouls",
   ];
 
+  const [auth, setAuth] = useState(null);
+
+  const promptForAuth = useCallback(() => {
+    const username = window.prompt("Admin username:");
+    if (!username) return null;
+    const password = window.prompt("Admin password:");
+    if (!password) return null;
+    return btoa(`${username}:${password}`);
+    }, []);
+
+  useEffect(() => {
+   if (auth) return;
+   const token = promptForAuth();
+   if (token) setAuth(token);
+  }, [auth, promptForAuth]);
+
+  const authedFetch = useCallback(
+    async (url, options = {}) => {
+      if (!auth) throw new Error("Missing admin authorization");
+
+      const headers = new Headers(options.headers || {});
+      headers.set("Authorization", `Basic ${auth}`);
+
+      const res = await fetch(url, {
+        ...options,
+        headers,
+        credentials: "include",
+      });
+
+      if (res.status === 401) {
+        const token = promptForAuth();
+        if (token) {
+          setAuth(token);
+          const retryHeaders = new Headers(options.headers || {});
+          retryHeaders.set("Authorization", `Basic ${token}`);
+          return fetch(url, {
+            ...options,
+            headers: retryHeaders,
+            credentials: "include",
+          });
+        }
+      }
+      return res;
+    }, [auth, promptForAuth]);
+
   const notifyProductsChanged = useCallback((payload) => {
     try {
       window.dispatchEvent(
@@ -91,21 +136,19 @@ const AdminPage = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:8080/api/product", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: name,
-          description: description,
-          price: parseFloat(price),
-          quantity: parseInt(quantity, 10),
-          category,
-          featured: isFeatured,
-          newArrival: isNewArrival,
-        }),
-      });
+      const response = await authedFetch("http://localhost:8080/api/admin/product", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+      name,
+      description,
+      price: parseFloat(price),
+      quantity: parseInt(quantity, 10),
+      category,
+      featured: isFeatured,
+      newArrival: isNewArrival,
+  }),
+});
 
       if (!response.ok) throw new Error(`Error: ${response.status}`);
 
@@ -116,14 +159,15 @@ const AdminPage = () => {
       setPrice("");
       setQuantity("");
       setCategory("");
-      setSelectedFile(null);
       setIsFeatured(false);
       setIsNewArrival(false);
       if (mainFileRef.current) mainFileRef.current.value = "";
 
-      if (selectedFile) {
-        await handleUploadProductPicture(newProduct.id);
-        setSelectedFile(null);
+      const fileToUpload = selectedFile; 
+      setSelectedFile(null);
+
+      if (fileToUpload) {
+        await handleUploadProductPicture(newProduct.id, fileToUpload);
       } else {
         fetchProducts();
       }
@@ -150,48 +194,29 @@ const AdminPage = () => {
     }
   };
 
-  const handleUploadProductPicture = async (productId) => {
-    if (!productId) {
-      console.error("Product ID is required to upload a picture");
-      return;
-    }
+  const handleUploadProductPicture = async (productId, file) => {
+  if (!productId) return console.error("Product ID is required to upload a picture");
+  if (!file) return console.error("No file selected for upload");
 
-    if (!selectedFile) {
-      console.error("No file selected for upload");
-      return;
-    }
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
 
-    console.log("Selected file for upload:", selectedFile);
+    const response = await authedFetch(
+      `http://localhost:8080/api/admin/product/${productId}/uploadPicture`,
+      { method: "POST", body: formData }
+    );
 
-    try {
-      const formData = new FormData();
-      formData.append("file", selectedFile);
+    if (!response.ok) throw new Error(`Error: ${response.status}`);
 
-      const response = await fetch(
-        `http://localhost:8080/api/product/${productId}/uploadPicture`,
-        {
-          method: "POST",
-          body: formData,
-          credentials: "include",
-        }
-      );
+    await response.json();
+    fetchProducts();
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("Picture uploaded successfully:", data);
-      fetchProducts();
-
-      notifyProductsChanged({
-        type: "picture-upload",
-        id: productId,
-      });
-    } catch (error) {
-      console.error("Error uploading product picture:", error);
-    }
-  };
+    notifyProductsChanged({ type: "picture-upload", id: productId });
+  } catch (error) {
+    console.error("Error uploading product picture:", error);
+  }
+};
 
   const handleDeleteProduct = async (id) => {
     const ok = window.confirm(
@@ -200,9 +225,9 @@ const AdminPage = () => {
     if (!ok) return;
 
     try {
-      const response = await fetch(`http://localhost:8080/api/products/${id}`, {
-        method: "DELETE",
-      });
+      const response = await authedFetch(`http://localhost:8080/api/admin/products/${id}`, {
+      method: "DELETE",
+    });
 
       if (!response.ok) {
         throw new Error(`Failed to delete (status ${response.status})`);
@@ -220,92 +245,70 @@ const AdminPage = () => {
   };
 
   const handleUpdateProduct = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!isEditingId) {
-      console.error("No product selected to edit");
-      return;
-    }
-    console.log("Saving product: ", isEditingId, {
-      name,
-      description,
-      price,
-      quantity,
-      category,
-      featured: isFeatured,
-      newArrival: isNewArrival,
-    });
-    const id = isEditingId;
-    const updated = {
-      name,
-      description,
-      price: +price,
-      quantity: +quantity,
-      category,
-      featured: isFeatured,
-      newArrival: isNewArrival,
-    };
+  if (!isEditingId) {
+    console.error("No product selected to edit");
+    return;
+  }
 
-    try {
-      const response = await fetch(`http://localhost:8080/api/products/${id}`, {
+  const id = isEditingId;
+
+  const updated = {
+    name,
+    description,
+    price: +price,
+    quantity: +quantity,
+    category,
+    featured: isFeatured,
+    newArrival: isNewArrival,
+  };
+
+  try {
+    const response = await authedFetch(
+      `http://localhost:8080/api/admin/products/${id}`,
+      {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updated),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to update: ${response.statusText}`);
       }
-      const saved = await response.json();
-      setProducts((prev) => prev.map((p) => (p.id === id ? saved : p)));
-      if (selectedFile) {
-        console.log("Uploading picture...");
-        const formData = new FormData();
-        formData.append("file", selectedFile);
+    );
 
-        const picRes = await fetch(
-          `http://localhost:8080/api/product/${id}/uploadPicture`,
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
-        console.log("<- Pic upload status: ", picRes.status, picRes.statusText);
-        const picText = await picRes.text();
-        console.log("<- Pic upload body: ", picText);
-        if (!picRes.ok)
-          throw new Error(`Image upload failed: ${picRes.status}: ${picText}`);
-      }
-      setProducts((prev) =>
-        prev.map((p) =>
-          p.id === id ? { ...p, pictureVersion: Date.now() } : p
-        )
-      );
-      console.log("Update succeeded, refreshing list...");
-      setIsEditingId(null);
-      setName("");
-      setDescription("");
-      setPrice("");
-      setQuantity("");
-      setCategory("");
-      setSelectedFile(null);
-      if (editFileRef.current) editFileRef.current.value = "";
-
-      await fetchProducts();
-
-      notifyProductsChanged({
-        type: "update",
-        id,
-        category: updated.category,
-        newArrival: !!updated.newArrival,
-        featured: !!updated.featured,
-      });
-    } catch (error) {
-      console.error(error);
-    } finally {
-      console.groupEnd();
+    if (!response.ok) {
+      throw new Error(`Failed to update: ${response.status} ${response.statusText}`);
     }
-  };
+
+    const saved = await response.json();
+    setProducts((prev) => prev.map((p) => (p.id === id ? saved : p)));
+
+    if (selectedFile) {
+      await handleUploadProductPicture(id, selectedFile);
+    }
+
+    setIsEditingId(null);
+    setName("");
+    setDescription("");
+    setPrice("");
+    setQuantity("");
+    setCategory("");
+    setSelectedFile(null);
+    setIsFeatured(false);
+    setIsNewArrival(false);
+    if (editFileRef.current) editFileRef.current.value = "";
+
+    await fetchProducts();
+
+    notifyProductsChanged({
+      type: "update",
+      id,
+      category: updated.category,
+      newArrival: !!updated.newArrival,
+      featured: !!updated.featured,
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   return (
     <div className="home-container">
@@ -619,7 +622,7 @@ const AdminPage = () => {
                     className="upload-product-picture-button"
                     onClick={() => {
                       if (selectedFile) {
-                        handleUploadProductPicture(product.id);
+                        handleUploadProductPicture(product.id, selectedFile);
                       } else {
                         console.error("No file selected for upload");
                       }
