@@ -32,12 +32,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     http
-      .cors()               // ← enable CORS support
+      .cors()        
       .and()
-      .csrf().disable()     // optional, depending on your needs
+      .csrf().disable()    
       .authorizeRequests()
       .antMatchers("/api/admin/**").hasRole("ADMIN")
-        .anyRequest().permitAll()  // or your existing rules
+        .anyRequest().permitAll()  
         .and()
         .httpBasic();
   }

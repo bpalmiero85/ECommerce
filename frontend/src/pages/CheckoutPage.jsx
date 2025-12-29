@@ -6,7 +6,8 @@ import "../styles/CheckoutPage.css";
 import "../styles/ProductPage.css";
 
 const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8080";
-const PAYMENT_API_BASE = process.env.REACT_APP_PAYMENT_API_BASE || "http://localhost:3001";
+const PAYMENT_API_BASE =
+  process.env.REACT_APP_PAYMENT_API_BASE || "http://localhost:3001";
 
 /**
  * CheckoutPage Component
@@ -105,6 +106,10 @@ export default function CheckoutPage({ onSuccess }) {
   const [shippingLoading, setShippingLoading] = useState(false);
   const [shippingError, setShippingError] = useState(null);
 
+  const [orderSaveError, setOrderSaveError] = useState(null);
+  const [orderPayloadToRetry, setOrderPayloadToRetry] = useState(null);
+  const [paidIntentId, setPaidIntentId] = useState(null);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const trimmed = destinationZip.trim();
@@ -142,6 +147,24 @@ export default function CheckoutPage({ onSuccess }) {
     return "";
   };
 
+  const saveOrder = async (payload) => {
+    const res = await fetch(`${API_BASE}/api/orders`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(
+        data?.error || data?.message || `Saving order failed (${res.status})`
+      );
+    }
+    return data;
+  };
+
   /**
    * Handles the form submission to process the payment.
    * 1. Calls the backend to create a PaymentIntent and retrieve clientSecret.
@@ -152,15 +175,15 @@ export default function CheckoutPage({ onSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setAttemptedPay(true);
     setProcessing(true);
 
     try {
-      // 1) Hit backend to create a PaymentIntent
       const tax = shippingState === "OH" ? subtotal * 0.0725 : 0;
       const shipping = shippingRate || 0;
       const total = subtotal + tax + shipping;
 
-      const { clientSecret } = await fetch(
+      const piRes = await fetch(
         `${PAYMENT_API_BASE}/api/create-payment-intent`,
         {
           method: "POST",
@@ -171,39 +194,68 @@ export default function CheckoutPage({ onSuccess }) {
             shipping,
           }),
         }
-      ).then((r) => r.json());
+      );
 
-      // 2) Confirm the payment using Stripe
+      const piData = await piRes.json().catch(() => ({}));
+      if (!piRes.ok) {
+        throw new Error(
+          piData?.error || piData?.message || "Failed to start payment."
+        );
+      }
+
+      const clientSecret = piData.clientSecret;
+
       const result = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: elements.getElement(CardElement),
-          billing_details: {
-            name,
-            email,
-          },
+          billing_details: { name, email },
         },
       });
 
       if (result.error) {
-        // Display error to the user
         setError(result.error.message);
-        setProcessing(false);
-      } else if (result.paymentIntent.status === "succeeded") {
-        // Payment successful
-        setError(null);
-        setProcessing(false);
+        return;
+      }
+
+      if (result.paymentIntent?.status !== "succeeded") {
+        setError("Payment did not complete. Please try again.");
+        return;
+      }
+
+      setError(null);
+
+      const payload = {
+        name,
+        email,
+        total: Number(total.toFixed(2)),
+        status: "PAID",
+        items: cartItems.map((it) => ({
+          productId: it.id,
+          productName: it.name,
+          quantity: Number(it.qty ?? it.quantity ?? 1),
+          unitPrice: Number(it.price),
+        }))
+      };
+
+      setPaidIntentId(result.paymentIntent.id);
+      setOrderPayloadToRetry(payload);
+      setOrderSaveError(null);
+
+      try {
+        await saveOrder(payload);
+
         setSucceeded(true);
-
         clearCartAfterPayment();
-
-        if (onSuccess) {
-          onSuccess();
-        }
+        if (onSuccess) onSuccess();
+      } catch (err) {
+        console.error("Order save failed:", err);
+        setOrderSaveError(err.message || "Failed to save order.");
+        setSucceeded(false);
       }
     } catch (err) {
-      // Catch network or unexpected errors
       console.error("Checkout error:", err);
       setError(err.message || "Payment failed. Please try again.");
+    } finally {
       setProcessing(false);
     }
   };
@@ -224,13 +276,11 @@ export default function CheckoutPage({ onSuccess }) {
     setShippingLoading(true);
 
     try {
-      // For now: use a fixed box + weight assumption.
-      // This matches what you've been testing against USPS.
       const body = {
         destinationZip: destinationZip,
-        weightOunces: totalWeightOunces || 16, // TODO: later: derive from cart items
-        lengthInches: 10,
-        widthInches: 6,
+        weightOunces: totalWeightOunces || 6,
+        lengthInches: 4,
+        widthInches: 3,
         heightInches: 4,
       };
 
@@ -251,11 +301,6 @@ export default function CheckoutPage({ onSuccess }) {
         );
       }
 
-      // Your backend currently returns:
-      // {
-      //   "totalBasePrice": 16.6,
-      //   "rates": [...]
-      // }
       const amount =
         typeof data.totalBasePrice === "number"
           ? data.totalBasePrice
@@ -277,26 +322,27 @@ export default function CheckoutPage({ onSuccess }) {
 
   const payDisabled =
     !stripe ||
-            !isCardComplete ||
-            processing ||
-            succeeded ||
-            !name.trim() ||
-            !email.trim() ||
-            !isEmailValid ||
-            !addressLine1.trim() ||
-            !city.trim() ||
-            !destinationZip.trim() ||
-            shippingRate == null
+    !isCardComplete ||
+    processing ||
+    succeeded ||
+    !name.trim() ||
+    !email.trim() ||
+    !isEmailValid ||
+    !addressLine1.trim() ||
+    !city.trim() ||
+    !destinationZip.trim() ||
+    shippingRate == null;
 
   return cartItems.length === 0 ? (
-    <div className="empty-cart-message">{succeeded ? "Thank you for your order!" : "Your cart is empty."}</div>
+    <div className="empty-cart-message">
+      {succeeded ? "Thank you for your order!" : "Your cart is empty."}
+    </div>
   ) : (
     <form
       onSubmit={handleSubmit}
       style={{ maxWidth: 400, margin: "0 auto" }}
       className="checkout-form"
     >
-  
       {/* Display subtotal */}
       <div className="payment-form">
         <h3>Subtotal: ${subtotal.toFixed(2)}</h3>
@@ -401,7 +447,6 @@ export default function CheckoutPage({ onSuccess }) {
           ></input>
         </label>
       </div>
-  
 
       {/* Stripe CardElement for secure card input */}
       <div className="card-element">
@@ -419,6 +464,36 @@ export default function CheckoutPage({ onSuccess }) {
 
       {/* Display Stripe or network errors */}
       {error && <div style={{ color: "red" }}>{error}</div>}
+      {orderSaveError && (
+        <div className="inline-card-error" style={{ marginTop: "10px" }}>
+          <div>
+            Payment succeeded, but saving the order failed: {orderSaveError}
+          </div>
+
+          <button
+            type="button"
+            style={{ marginTop: "8px" }}
+            disabled={!orderPayloadToRetry || processing}
+            onClick={async () => {
+              try {
+                setProcessing(true);
+                setOrderSaveError(null);
+                await saveOrder(orderPayloadToRetry);
+
+                setSucceeded(true);
+                clearCartAfterPayment();
+                if (onSuccess) onSuccess();
+              } catch (err) {
+                setOrderSaveError(err.message || "Retry failed.");
+              } finally {
+                setProcessing(false);
+              }
+            }}
+          >
+            Retry saving order
+          </button>
+        </div>
+      )}
 
       {/* Payment button */}
       <div
@@ -429,34 +504,29 @@ export default function CheckoutPage({ onSuccess }) {
         }
         onClick={() => setAttemptedPay(true)}
       >
-        <button
-          type="submit"
-          disabled={payDisabled}
-        >
+        <button type="submit" disabled={payDisabled}>
           {processing ? "Processing..." : succeeded ? "Paid!" : "Pay"}
         </button>
 
         {attemptedPay && payDisabled && (
-          <div className="inline-card-error" style={{ marginTop: "8px"}}>
-            {!email.trim() ? (
-              "Email is required."
-              ) : !isEmailValid ? (
-                "Please enter a valid email address."
-              ) : !name.trim() ? (
-                "Name is required."
-              ) : !addressLine1 ? (
-                "Address line 1 is required"
-              ) : !city.trim() ? (
-                "City is required."
-              ) : !destinationZip.trim() ? (
-                "ZIP code is required."
-              ) : shippingRate == null ? (
-                "Please enter a valid ZIP code to calculate shipping."
-              ) : !isCardComplete ? (
-                "Please complete your card details."
-              ) : (
-                "Please complete the form above."
-              )}
+          <div className="inline-card-error" style={{ marginTop: "8px" }}>
+            {!email.trim()
+              ? "Email is required."
+              : !isEmailValid
+              ? "Please enter a valid email address."
+              : !name.trim()
+              ? "Name is required."
+              : !addressLine1
+              ? "Address line 1 is required"
+              : !city.trim()
+              ? "City is required."
+              : !destinationZip.trim()
+              ? "ZIP code is required."
+              : shippingRate == null
+              ? "Please enter a valid ZIP code to calculate shipping."
+              : !isCardComplete
+              ? "Please complete your card details."
+              : "Please complete the form above."}
           </div>
         )}
 
