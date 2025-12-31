@@ -6,6 +6,18 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [auth, setAuth] = useState(null);
   const [error, setError] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [isItemModalOpen, setIsItemModalOpen] = useState(false);
+
+  const openItemModal = (item) => {
+    setSelectedItem(item);
+    setIsItemModalOpen(true);
+  };
+
+  const closeItemModal = () => {
+    setIsItemModalOpen(false);
+    setSelectedItem(null);
+  };
 
   const promptForAuth = useCallback(() => {
     const username = window.prompt("Admin username:");
@@ -125,8 +137,13 @@ export default function OrdersPage() {
                       <ul style={{ margin: "6px 0 12px 20px" }}>
                         {o.items.map((it) => (
                           <li key={it.id}>
-                            {it.productName} × {it.quantity} @ $
-                            {Number(it.unitPrice).toFixed(2)}
+                            <button
+                              className="order-product-button"
+                              onClick={() => openItemModal(it)}
+                            >
+                              {it.productName}
+                            </button>{" "}
+                            × {it.quantity} @ ${Number(it.unitPrice).toFixed(2)}
                           </li>
                         ))}
                       </ul>
@@ -137,6 +154,84 @@ export default function OrdersPage() {
             ))}
           </tbody>
         </table>
+      )}
+      {isItemModalOpen && selectedItem && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={closeItemModal}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+            zIndex: 9999,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "white",
+              borderRadius: 12,
+              maxWidth: 520,
+              width: "100%",
+              padding: 16,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 12,
+              }}
+            >
+              <h2 style={{ margin: 0, fontSize: 18 }}>
+                {selectedItem.productName}
+              </h2>
+              <button type="button" onClick={closeItemModal}>
+                X
+              </button>
+            </div>
+            <div style={{ marginTop: 12 }}>
+              <img
+                src={`${API_BASE}/api/product/${
+                  selectedItem.productId
+                }/picture?version=${Date.now()}`}
+                alt={selectedItem.productName}
+                style={{
+                  width: "100%",
+                  maxHeight: 420,
+                  objectFit: "contain",
+                  borderRadius: 10,
+                  display: "block",
+                }}
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+              <div style={{ marginTop: 10, fontSize: 14, color: "black" }}>
+                <div>
+                  <strong>Product ID:</strong> {selectedItem.productId}
+                </div>
+                <div>
+                  <strong>Qty:</strong> {selectedItem.quantity}
+                </div>
+                <div>
+                  <strong>Unit price:</strong> $
+                  {Number(selectedItem.unitPrice).toFixed(2)}
+                </div>
+              </div>
+
+              <div style={{ marginTop: 10, fontSize: 14, color: "#666" }}>
+                If the image didn't load, this product may not have a picture
+                yet.
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
