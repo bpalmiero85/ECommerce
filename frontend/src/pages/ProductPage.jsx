@@ -28,11 +28,23 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   const checkoutRef = useRef();
   const [activeCategories, setActiveCategories] = useState([]);
   const totalItems = cartItems.reduce((sum, i) => sum + (i?.qty ?? 1), 0);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const subtotal = cartItems.reduce(
     (sum, i) =>
       sum + (Number(i.price) || 0) * (Number(i.qty ?? i.quantity ?? 1) || 0),
     0
   );
+
+  const openProductModal = useCallback((p) => {
+    setSelectedProduct(p);
+    setIsProductModalOpen(true);
+  }, []);
+
+  const closeProductModal = useCallback((p) => {
+    setIsProductModalOpen(false);
+    setSelectedProduct(null);
+  }, []);
 
   async function fetchAvailable(id) {
     const API = process.env.REACT_APP_BASE || "http://localhost:8080";
@@ -204,7 +216,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                 <strong>X</strong>
               </button>
             </div>
-            <CheckoutPage onSuccess={() => setCheckoutSucceeded(true)}/>
+            <CheckoutPage onSuccess={() => setCheckoutSucceeded(true)} />
             <div className="cart-modal-cancel-button">
               <button type="button" onClick={handleCancelCart}>
                 {checkoutSucceeded ? "Ok" : "Cancel"}
@@ -651,12 +663,27 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                       featured={product.featured}
                       newArrival={product.newArrival}
                       onReserved={fetchAvailable}
+                      onOpenModal={() =>
+                        openProductModal({
+                          id: product.id,
+                          name: product.name,
+                          description: product.description,
+                          price: product.price,
+                          quantity:
+                            availableById[product.id] ?? product.quantity,
+                          pictureVersion: product.pictureVersion,
+                          featured: product.featured,
+                          newArrival: product.newArrival,
+                          category: product.category,
+                        })
+                      }
                     />
                   </div>
                 ))
               ) : (
                 <p>No products available.</p>
               )}
+
               <div
                 className={`second-cart-container ${
                   cartItems.length ? "show" : ""
@@ -689,6 +716,62 @@ const ProductPage = ({ products: externalProducts = [] }) => {
           </div>
         </div>
       </div>
+      {isProductModalOpen && selectedProduct && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={closeProductModal}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            fontSize: 14,
+            color: "black",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+            zIndex: 9999,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "white",
+              borderRadius: 12,
+              maxWidth: 720,
+              width: "100%",
+              padding: 16,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: 12,
+              }}
+            >
+              <h2 style={{ margin: 0 }}>{selectedProduct.name}</h2>
+              <button type="button" onClick={closeProductModal}>
+                X
+              </button>
+            </div>
+
+            <div style={{ marginTop: 12 }}>
+              <img
+                alt={selectedProduct.name}
+                src={`http://localhost:8080/api/product/${selectedProduct.id}/picture?version=${selectedProduct.pictureVersion}`}
+                style={{
+                  width: "100%",
+                  maxHeight: 420,
+                  objectFit: "contain",
+                  borderRadius: 8,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

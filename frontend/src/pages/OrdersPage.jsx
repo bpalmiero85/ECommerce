@@ -188,7 +188,7 @@ export default function OrdersPage() {
                 gap: 12,
               }}
             >
-              <h2 style={{ margin: 0, fontSize: 18 }}>
+              <h2 style={{ margin: 0, fontSize: 18, color: "black" }}>
                 {selectedItem.productName}
               </h2>
               <button type="button" onClick={closeItemModal}>

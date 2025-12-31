@@ -16,6 +16,7 @@ const Product = ({
   newArrival,
   pictureVersion,
   onReserved,
+  onOpenModal,
 }) => {
   const {
     addToCart,
@@ -34,6 +35,33 @@ const Product = ({
   const cardRef = useRef(null);
   const [added, setAdded] = useState(false);
   const prevQtyRef = useRef(quantity);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const openModal = (product) => {
+    setIsProductModalOpen(true);
+    setSelectedProduct(product);
+  };
+  const closeModal = () => {
+    setIsProductModalOpen(false);
+    setSelectedProduct(null);
+  }
+
+  const Product = ({
+    id,
+    name,
+    price,
+    quantity,
+    description,
+    category,
+    featured,
+    newArrival,
+    pictureVersion,
+    onReserved,
+    onOpenModal,
+ }) => {
+
+ }
 
   const imageUrl = `http://localhost:8080/api/product/${id}/picture?version=${pictureVersion}`;
 
@@ -54,14 +82,18 @@ const Product = ({
         const take = Math.min(delta, quantity);
 
         for (let i = 0; i < take; i++) {
-          const r = await fetch(`http://localhost:8080/api/cart/${id}/add?qty=1`, 
-            { method: "POST", credentials: "include" });
+          const r = await fetch(
+            `http://localhost:8080/api/cart/${id}/add?qty=1`,
+            { method: "POST", credentials: "include" }
+          );
           if (!r.ok) throw new Error(`reserve failed ${r.status}`);
         }
       } else {
         for (let i = 0; i < -delta; i++) {
-         const r = await fetch(`http://localhost:8080/api/cart/${id}/remove?qty=1`, 
-          { method: "POST", credentials: "include" });
+          const r = await fetch(
+            `http://localhost:8080/api/cart/${id}/remove?qty=1`,
+            { method: "POST", credentials: "include" }
+          );
           if (!r.ok) throw new Error(`unreserve failed ${r.status}`);
         }
         setIsLastItemShown(false);
@@ -159,152 +191,164 @@ const Product = ({
   }, [inCartQty]);
 
   return (
-    <div
-      className={
-        quantity === 0
-          ? "product-card-sold-out"
-          : `product-card ${quantity === 0 ? "-sold-out" : ""}`
-      }
-    >
-      {quantity === 0 && <div className="sold-out-badge">Sold Out</div>}
-      <a
-        className={`product-anchor ${quantity === 0 ? "is-disabled" : ""}`}
-        tabIndex={quantity === 0 ? -1 : 0}
-        href={quantity === 0 ? undefined : `/product/${name}`}
-        aria-disabled={quantity === 0}
-        onClick={
+    <>
+      <div
+        className={
           quantity === 0
-            ? (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }
-            : undefined
-        }
-        onKeyDown={
-          quantity === 0
-            ? (e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }
-              }
-            : undefined
+            ? "product-card-sold-out"
+            : `product-card ${quantity === 0 ? "-sold-out" : ""}`
         }
       >
-        <div className="product-design">
-          <div className="animated-item-container">
-            {featured && <span className="badge-purple">Featured</span>}
-            {newArrival && <span className="badge-purple">New Arrival!</span>}
-            <div
-              className={
-                quantity === 0 ? "animated-item-sold-out" : "animated-item"
-              }
-            >
-              <img className="product-image" src={imageUrl} alt={name}></img>
+        {quantity === 0 && <div className="sold-out-badge">Sold Out</div>}
+        <a
+          className={`product-anchor ${quantity === 0 ? "is-disabled" : ""}`}
+          tabIndex={quantity === 0 ? -1 : 0}
+          href={quantity === 0 ? undefined : `/product/${name}`}
+          aria-disabled={quantity === 0}
+          onClick={(e) => {
+            if (quantity === 0) {
+              e.preventDefault();
+              e.stopPropagation();
+              return;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            onOpenModal?.({
+              id,
+              name,
+              description,
+              price,
+              quantity,
+              pictureVersion,
+              featured,
+              newArrival,
+              category,
+
+            });
+          }}
+          
+          onKeyDown={quantity === 0 ? (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+          } : undefined}
+
+        >
+          <div className="product-design">
+            <div className="animated-item-container">
+              {featured && <span className="badge-purple">Featured</span>}
+              {newArrival && <span className="badge-purple">New Arrival!</span>}
+              <div
+                className={
+                  quantity === 0 ? "animated-item-sold-out" : "animated-item"
+                }
+              >
+                <img className="product-image" src={imageUrl} alt={name}></img>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="product-name-container">
-          <h3 className={quantity === 0 ? "sold-out-name" : "product-name"}>
-            {name}
-          </h3>
-        </div>
+          <div className="product-name-container">
+            <h3 className={quantity === 0 ? "sold-out-name" : "product-name"}>
+              {name}
+            </h3>
+          </div>
 
-        <div className="modal-product-description-container">
-          <DescriptionMore
-            text={
-              typeof description === "string"
-                ? description
-                : String(description ?? "")
-            }
-            quantity={Number.isFinite(quantity) ? quantity : 0}
-          />
-        </div>
-
-        <div className="product-price-container">
-          <p className={quantity === 0 ? "sold-out-price" : "product-price"}>
-            ${price}
-          </p>
-        </div>
-        <div className="product-quantity-container">
-          <p
-            className={
-              quantity === 0 ? "sold-out-quantity" : "product-quantity"
-            }
-          >
-            Available qty: {quantity}
-          </p>
-        </div>
-      </a>
-
-      <div className={`purchase-container${isOpen ? " hidden" : ""}`}>
-        <div className="purchase-buttons">
-          {inCartQty === 0 ? (
-            <button
-              type="button"
-              className={
-                quantity === 0 ? "sold-out-added-to-cart" : "add-to-cart"
+          <div className="modal-product-description-container">
+            <DescriptionMore
+              text={
+                typeof description === "string"
+                  ? description
+                  : String(description ?? "")
               }
-              disabled={isOpen || quantity === 0 || saving}
-              onClick={async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (quantity === 0 || saving) return;
-                handleQtyChange(1);
-              }}
+              quantity={Number.isFinite(quantity) ? quantity : 0}
+            />
+          </div>
+
+          <div className="product-price-container">
+            <p className={quantity === 0 ? "sold-out-price" : "product-price"}>
+              ${price}
+            </p>
+          </div>
+          <div className="product-quantity-container">
+            <p
+              className={
+                quantity === 0 ? "sold-out-quantity" : "product-quantity"
+              }
             >
-              {quantity === 0
-                ? added
-                  ? `${inCartQty} in your cart`
-                  : "Sold Out"
-                : saving
-                ? "Adding..."
-                : "Add to cart"}
-            </button>
-          ) : (
-            <div
-              className="qty-inline"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-            >
+              Available qty: {quantity}
+            </p>
+          </div>
+        </a>
+        <div className={`purchase-container${isOpen ? " hidden" : ""}`}>
+          <div className="purchase-buttons">
+            {inCartQty === 0 ? (
               <button
                 type="button"
-                className="qty-btn"
-                aria-label="Decrease quantity"
-                disabled={saving || inCartQty <= 0}
-                onClick={() => handleQtyChange(inCartQty - 1)}
+                className={
+                  quantity === 0 ? "sold-out-added-to-cart" : "add-to-cart"
+                }
+                disabled={isOpen || quantity === 0 || saving}
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (quantity === 0 || saving) return;
+                  handleQtyChange(1);
+                }}
               >
-                −
+                {quantity === 0
+                  ? added
+                    ? `${inCartQty} in your cart`
+                    : "Sold Out"
+                  : saving
+                  ? "Adding..."
+                  : "Add to cart"}
               </button>
-
-              <span className="qty-count">{inCartQty}</span>
-              <button
-                type="button"
-                className="qty-btn"
-                aria-label="Increase quantity"
-                disabled={saving || quantity <= 0}
-                onClick={() => handleQtyChange(inCartQty + 1)}
+            ) : (
+              <div
+                className="qty-inline"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
               >
-                +
-              </button>
-              <span className="qty-label">in your cart</span>
-            </div>
-          )}
+                <button
+                  type="button"
+                  className="qty-btn"
+                  aria-label="Decrease quantity"
+                  disabled={saving || inCartQty <= 0}
+                  onClick={() => handleQtyChange(inCartQty - 1)}
+                >
+                  −
+                </button>
 
-          {added && quantity !== 0 && (
-            <div className="check-mark">
-              <h3>✅</h3>
-            </div>
-          )}
+                <span className="qty-count">{inCartQty}</span>
+                <button
+                  type="button"
+                  className="qty-btn"
+                  aria-label="Increase quantity"
+                  disabled={saving || quantity <= 0}
+                  onClick={() => handleQtyChange(inCartQty + 1)}
+                >
+                  +
+                </button>
+                <span className="qty-label">in your cart</span>
+              </div>
+            )}
 
-          {isLastItemShown && (
-            <div className="last-item-message">{message}</div>
-          )}
+            {added && quantity !== 0 && (
+              <div className="check-mark">
+                <h3>✅</h3>
+              </div>
+            )}
+
+            {isLastItemShown && (
+              <div className="last-item-message">{message}</div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
