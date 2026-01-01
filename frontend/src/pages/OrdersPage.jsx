@@ -224,11 +224,6 @@ export default function OrdersPage() {
                   {Number(selectedItem.unitPrice).toFixed(2)}
                 </div>
               </div>
-
-              <div style={{ marginTop: 10, fontSize: 14, color: "#666" }}>
-                If the image didn't load, this product may not have a picture
-                yet.
-              </div>
             </div>
           </div>
         </div>

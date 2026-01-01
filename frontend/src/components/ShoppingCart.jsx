@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { CartContext } from "../contexts/CartContext";
 import "../styles/ShoppingCart.css";
 
-const ShoppingCart = () => {
+const ShoppingCart = ({ succeeded = false }) => {
   const { cartItems, setItemQty } = useContext(CartContext);
 
   const handleDecrement = async (productId, qty) => {
@@ -54,13 +54,6 @@ const ShoppingCart = () => {
     console.log("New quantity: " + Number(qty + 1));
   };
 
-  if (cartItems.length === 0) {
-    return (
-      <div className="shopping-cart-container">
-        <p>Your cart is empty.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="shopping-cart-container">

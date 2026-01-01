@@ -284,10 +284,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
     <div className="product-page-container" ref={checkoutRef}>
       {isCartShown && (
         <div className="cart-modal">
-          <ShoppingCart />
-          <div className="cart-subtotal" style={{ padding: "12px 16px" }}>
-            <strong>Subtotal:</strong> ${subtotal.toFixed(2)}
-          </div>
+          <ShoppingCart succeeded={checkoutSucceeded} />
           <div className="checkout-page">
             <div>
               <button onClick={handleCancelCart} className="cancel-cart-x">
@@ -297,7 +294,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
             <CheckoutPage onSuccess={() => setCheckoutSucceeded(true)} />
             <div className="cart-modal-cancel-button">
               <button type="button" onClick={handleCancelCart}>
-                {checkoutSucceeded ? "Ok" : "Cancel"}
+                {checkoutSucceeded ? "Close" : "Cancel"}
               </button>
             </div>
           </div>
