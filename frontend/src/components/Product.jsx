@@ -33,6 +33,8 @@ const Product = ({
   const prevQtyRef = useRef(quantity);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showCheck, setShowCheck] = useState(false);
+  const prevInCartQtyRef = useRef(inCartQty);
 
   const openModal = (product) => {
     setIsProductModalOpen(true);
@@ -42,7 +44,6 @@ const Product = ({
     setIsProductModalOpen(false);
     setSelectedProduct(null);
   };
-
 
   const imageUrl = `http://localhost:8080/api/product/${id}/picture?version=${pictureVersion}`;
 
@@ -105,6 +106,18 @@ const Product = ({
       setIsOpen(false);
     }
   };
+
+  useEffect(() => {
+    const prev = prevInCartQtyRef.current;
+
+    if (prev === 0 && inCartQty === 1) {
+      setShowCheck(true);
+      const t = setTimeout(() => setShowCheck(false), 700);
+      return () => clearTimeout(t);
+    }
+
+    prevInCartQtyRef.current = inCartQty;
+  }, [inCartQty]);
 
   useEffect(() => {
     function onStorage(e) {
@@ -317,6 +330,14 @@ const Product = ({
                 <span className="qty-label">in your cart</span>
               </div>
             )}
+
+            {/** ADDED Animation */}
+            <div
+              className={`check-bubble ${showCheck ? "check-bubble-show" : ""}`}
+            >
+              ✅ Added
+            </div>
+            {/** End of added animation */}
 
             {added && quantity !== 0 && (
               <div className="check-mark">

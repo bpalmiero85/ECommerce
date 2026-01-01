@@ -29,6 +29,20 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   const totalItems = cartItems.reduce((sum, i) => sum + (i?.qty ?? 1), 0);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [showModalCheck, setShowModalCheck] = useState(false);
+  const modalCheckTimerRef = useRef(null);
+  const flashModalCheck = useCallback(() => {
+    setShowModalCheck(true);
+
+    if (modalCheckTimerRef.current) {
+      clearTimeout(modalCheckTimerRef.current);
+    }
+    modalCheckTimerRef.current = setTimeout(() => {
+      setShowModalCheck(false);
+      modalCheckTimerRef.current = null;
+    }, 900);
+  }, []);
+
   const subtotal = cartItems.reduce(
     (sum, i) =>
       sum + (Number(i.price) || 0) * (Number(i.qty ?? i.quantity ?? 1) || 0),
@@ -74,6 +88,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
           );
           if (!r.ok) throw new Error(`reserve failed ${r.status}`);
         }
+        flashModalCheck();
       } else {
         for (let i = 0; i < -delta; i++) {
           const r = await fetch(
@@ -134,6 +149,16 @@ const ProductPage = ({ products: externalProducts = [] }) => {
     setAvailableById((prev) => ({ ...prev, [id]: qty }));
     return qty;
   }
+
+  useEffect(() => {
+    if (!isProductModalOpen) {
+      setShowModalCheck(false);
+      if (modalCheckTimerRef.current) {
+        clearTimeout(modalCheckTimerRef.current);
+        modalCheckTimerRef.current = null;
+      }
+    }
+  }, [isProductModalOpen]);
 
   useEffect(() => {
     const API = process.env.REACT_APP_BASE || "http://localhost:8080";
@@ -294,7 +319,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
             <CheckoutPage onSuccess={() => setCheckoutSucceeded(true)} />
             <div className="cart-modal-cancel-button">
               <button type="button" onClick={handleCancelCart}>
-                {checkoutSucceeded ? "Close" : "Cancel"}
+                Close
               </button>
             </div>
           </div>
@@ -791,6 +816,9 @@ const ProductPage = ({ products: externalProducts = [] }) => {
             className="product-modal-panel"
             onClick={(e) => e.stopPropagation()}
           >
+            <div className={`check-bubble ${showModalCheck ? "show" : ""}`}>
+              ✅ Added
+            </div>
             {/* THIS is the modal header */}
             <div
               style={{
@@ -895,7 +923,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
 
             <div className="product-modal-footer">
               {totalItems > 0 ? (
-                <div classNAme="modal-action-row">
+                <div className="modal-action-row">
                   <button
                     type="button"
                     className="modal-secondary"

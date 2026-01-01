@@ -390,10 +390,13 @@ body {
   background-color: rgb(0, 255, 0);
 }
 
+
 .qty-btn {
   margin: 5px;
   width: 25px;
   height: 25px;
+  font-size: large;
+  background-color: rgb(231, 187, 253);
 }
 
 .second-cart-container {
@@ -1119,6 +1122,43 @@ body {
   }
 }
 
+.check-bubble {
+  position: absolute;
+  background: rgb(0, 255, 0);
+  color: black;
+  font-weight: 900;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 14px;
+  box-shadow: 0 8px 18px rgba(0, 255, 0, 0.25);
+  transform: translate(-8px) scale(0.9);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1000;
+  white-space: nowrap;
+  will-change: transform, opacity;
+}
+
+.check-bubble-show {
+  animation: checkPop 650ms ease-out forwards;
+}
+
+@keyframes checkPop {
+  0%   { opacity: 0; transform: translateY(-8px) scale(0.85); }
+  35%  { opacity: 1; transform: translateY(0px) scale(1.05); }
+  70%  { opacity: 1; transform: translateY(0px) scale(1.0); }
+  100% { opacity: 0; transform: translateY(-6px) scale(0.98); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .check-bubble-show {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    cursor: none;
+  }
+}
+
 /* ===== Product Modal (match product-card styling) ===== */
 .product-modal-overlay {
   position: fixed;
@@ -1141,7 +1181,7 @@ body {
   padding: 40px 40px 20px 40px;
   backdrop-filter: blur(15px);
   color: white;
-  width: 100%;
+  width: clamp(50%, 50vw, 100%);
   max-width: 720px;
   height: fit-content;
   justify-content: center;
