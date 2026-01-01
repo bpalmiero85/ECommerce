@@ -4,7 +4,6 @@ import "../styles/AdminPage.css";
 import "../styles/ProductPage.css";
 import Product from "../components/Product";
 import ShoppingCart from "../components/ShoppingCart";
-import AnimatedBackground from "../components/AnimatedBackground";
 import CheckoutPage from "./CheckoutPage";
 
 const toSlug = (name) => {
@@ -12,7 +11,7 @@ const toSlug = (name) => {
   let slug = name.toLowerCase().trim();
   slug = slug.replace(/&/g, " ");
   slug = slug.replace(/\s+/g, "-");
-  slug = slug.replace(/\-+/g, "-");
+  slug = slug.replace(/-+/g, "-");
 
   return slug;
 };
@@ -21,9 +20,9 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   const [checkoutSucceeded, setCheckoutSucceeded] = useState(false);
   const [products, setProducts] = useState([]);
   const [availableById, setAvailableById] = useState({});
-  const [navCategories, setNavCategories] = useState([]);
   const [isCartShown, setIsCartShown] = useState(false);
-  const { cartItems: rawCart } = useContext(CartContext);
+  const { cartItems: rawCart, setItemQty } = useContext(CartContext);
+  const [modalSaving, setModalSaving] = useState(false);
   const cartItems = Array.isArray(rawCart) ? rawCart : [];
   const checkoutRef = useRef();
   const [activeCategories, setActiveCategories] = useState([]);
@@ -35,6 +34,84 @@ const ProductPage = ({ products: externalProducts = [] }) => {
       sum + (Number(i.price) || 0) * (Number(i.qty ?? i.quantity ?? 1) || 0),
     0
   );
+
+  const modalInCartQty = selectedProduct
+    ? cartItems.reduce(
+        (sum, item) =>
+          item.id === selectedProduct.id ? sum + (item.qty ?? 1) : sum,
+        0
+      )
+    : 0;
+
+  const modalAvailableQty = selectedProduct
+    ? availableById[selectedProduct.id] ?? selectedProduct.quantity
+    : 0;
+  const modalImageUrl = selectedProduct
+    ? `http://localhost:8080/api/product/${selectedProduct.id}/picture?version=${selectedProduct.pictureVersion}`
+    : "";
+
+  async function handleModalQtyChange(nextQty) {
+    if (!selectedProduct) return;
+
+    if (Number.isNaN(nextQty)) nextQty = 0;
+    nextQty = Math.max(0, nextQty);
+
+    const max = modalAvailableQty + modalInCartQty;
+    if (nextQty > max) nextQty = max; // ✅ you were missing this
+
+    if (nextQty === modalInCartQty) return;
+
+    setModalSaving(true);
+    try {
+      const delta = nextQty - modalInCartQty;
+
+      if (delta > 0) {
+        const take = Math.min(delta, modalAvailableQty);
+        for (let i = 0; i < take; i++) {
+          const r = await fetch(
+            `http://localhost:8080/api/cart/${selectedProduct.id}/add?qty=1`,
+            { method: "POST", credentials: "include" }
+          );
+          if (!r.ok) throw new Error(`reserve failed ${r.status}`);
+        }
+      } else {
+        for (let i = 0; i < -delta; i++) {
+          const r = await fetch(
+            `http://localhost:8080/api/cart/${selectedProduct.id}/remove?qty=1`,
+            { method: "POST", credentials: "include" }
+          );
+          if (!r.ok) throw new Error(`unreserve failed ${r.status}`);
+        }
+
+        window.dispatchEvent(
+          new CustomEvent("inventory:changed", { detail: [selectedProduct.id] })
+        );
+      }
+
+      setItemQty(selectedProduct.id, nextQty, {
+        name: selectedProduct.name,
+        price: selectedProduct.price,
+        imageUrl: modalImageUrl,
+        available: modalAvailableQty,
+      });
+
+      if (delta > 0) {
+        const newAvail = await fetchAvailable(selectedProduct.id);
+        if (newAvail === 0) {
+          closeProductModal();
+        }
+      } else {
+        await fetchAvailable(selectedProduct.id);
+      }
+
+      fetchAvailable(selectedProduct.id);
+    } catch (err) {
+      console.error(err);
+      alert("Could not update quantity. Please try again.");
+    } finally {
+      setModalSaving(false);
+    }
+  }
 
   const openProductModal = useCallback((p) => {
     setSelectedProduct(p);
@@ -55,6 +132,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
     if (!resp.ok) return;
     const qty = await resp.json();
     setAvailableById((prev) => ({ ...prev, [id]: qty }));
+    return qty;
   }
 
   useEffect(() => {
@@ -663,20 +741,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                       featured={product.featured}
                       newArrival={product.newArrival}
                       onReserved={fetchAvailable}
-                      onOpenModal={() =>
-                        openProductModal({
-                          id: product.id,
-                          name: product.name,
-                          description: product.description,
-                          price: product.price,
-                          quantity:
-                            availableById[product.id] ?? product.quantity,
-                          pictureVersion: product.pictureVersion,
-                          featured: product.featured,
-                          newArrival: product.newArrival,
-                          category: product.category,
-                        })
-                      }
+                      onOpenModal={openProductModal}
                     />
                   </div>
                 ))
@@ -716,34 +781,20 @@ const ProductPage = ({ products: externalProducts = [] }) => {
           </div>
         </div>
       </div>
+
+      {/* PRODUCT MODAL RETURN **/}
       {isProductModalOpen && selectedProduct && (
         <div
           role="dialog"
           aria-modal="true"
           onClick={closeProductModal}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.6)",
-            fontSize: 14,
-            color: "black",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 16,
-            zIndex: 9999,
-          }}
+          className="product-modal-overlay"
         >
           <div
+            className="product-modal-panel"
             onClick={(e) => e.stopPropagation()}
-            style={{
-              background: "white",
-              borderRadius: 12,
-              maxWidth: 720,
-              width: "100%",
-              padding: 16,
-            }}
           >
+            {/* THIS is the modal header */}
             <div
               style={{
                 display: "flex",
@@ -751,8 +802,12 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                 gap: 12,
               }}
             >
-              <h2 style={{ margin: 0 }}>{selectedProduct.name}</h2>
-              <button type="button" onClick={closeProductModal}>
+              <h2 className="product-modal-title">{selectedProduct.name}</h2>
+              <button
+                type="button"
+                onClick={closeProductModal}
+                className="product-modal-close"
+              >
                 X
               </button>
             </div>
@@ -768,6 +823,110 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                   borderRadius: 8,
                 }}
               />
+            </div>
+
+            <p className="product-modal-description">
+              {selectedProduct.description}
+            </p>
+
+            <p className="product-modal-price">
+              ${Number(selectedProduct.price).toFixed(2)}
+            </p>
+
+            <p className="product-modal-qty">
+              Available qty: {selectedProduct.quantity}
+            </p>
+            <div className="purchase-container">
+              <div className="purchase-buttons">
+                {modalInCartQty === 0 ? (
+                  <button
+                    type="button"
+                    className={
+                      modalAvailableQty === 0
+                        ? "sold-out-added-to-cart"
+                        : "add-to-cart"
+                    }
+                    disabled={modalAvailableQty === 0 || modalSaving}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (modalAvailableQty === 0 || modalSaving) return;
+                      handleModalQtyChange(1);
+                    }}
+                  >
+                    {modalAvailableQty === 0
+                      ? "Sold Out"
+                      : modalSaving
+                      ? "Adding..."
+                      : "Add to cart"}
+                  </button>
+                ) : (
+                  <div
+                    className="qty-inline"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                  >
+                    <button
+                      type="button"
+                      className="qty-btn"
+                      aria-label="Decrease quantity"
+                      disabled={modalSaving || modalInCartQty <= 0}
+                      onClick={() => handleModalQtyChange(modalInCartQty - 1)}
+                    >
+                      −
+                    </button>
+
+                    <span className="qty-count">{modalInCartQty}</span>
+
+                    <button
+                      type="button"
+                      className="qty-btn"
+                      aria-label="Increase quantity"
+                      disabled={modalSaving || modalAvailableQty <= 0}
+                      onClick={() => handleModalQtyChange(modalInCartQty + 1)}
+                    >
+                      +
+                    </button>
+
+                    <span className="qty-label">in your cart</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="product-modal-footer">
+              {totalItems > 0 ? (
+                <div classNAme="modal-action-row">
+                  <button
+                    type="button"
+                    className="modal-secondary"
+                    onClick={closeProductModal}
+                  >
+                    Keep shopping
+                  </button>
+
+                  <button
+                    type="button"
+                    className="modal-primary"
+                    onClick={() => {
+                      closeProductModal();
+                      setIsCartShown(true);
+                    }}
+                  >
+                    Checkout
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="product-modal-exit"
+                  onClick={closeProductModal}
+                >
+                  Exit
+                </button>
+              )}
             </div>
           </div>
         </div>

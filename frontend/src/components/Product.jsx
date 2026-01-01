@@ -18,11 +18,7 @@ const Product = ({
   onReserved,
   onOpenModal,
 }) => {
-  const {
-    addToCart,
-    cartItems: rawItems,
-    setItemQty,
-  } = useContext(CartContext);
+  const { cartItems: rawItems, setItemQty } = useContext(CartContext);
   const cartItems = Array.isArray(rawItems) ? rawItems : [];
   const inCartQty = cartItems.reduce(
     (sum, item) => (item.id === id ? sum + (item.qty ?? 1) : sum),
@@ -45,23 +41,8 @@ const Product = ({
   const closeModal = () => {
     setIsProductModalOpen(false);
     setSelectedProduct(null);
-  }
+  };
 
-  const Product = ({
-    id,
-    name,
-    price,
-    quantity,
-    description,
-    category,
-    featured,
-    newArrival,
-    pictureVersion,
-    onReserved,
-    onOpenModal,
- }) => {
-
- }
 
   const imageUrl = `http://localhost:8080/api/product/${id}/picture?version=${pictureVersion}`;
 
@@ -223,17 +204,18 @@ const Product = ({
               featured,
               newArrival,
               category,
-
             });
           }}
-          
-          onKeyDown={quantity === 0 ? (e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              e.stopPropagation();
-            }
-          } : undefined}
-
+          onKeyDown={
+            quantity === 0
+              ? (e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }
+                }
+              : undefined
+          }
         >
           <div className="product-design">
             <div className="animated-item-container">
