@@ -390,7 +390,6 @@ body {
   background-color: rgb(0, 255, 0);
 }
 
-
 .qty-btn {
   margin: 5px;
   width: 25px;
@@ -410,6 +409,16 @@ body {
 .add-to-cart,
 .added-to-cart,
 .sold-out-added-to-cart {
+  width: 100%;
+  height: 25px;
+  padding: 5px 10px;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+  text-align: center;
+  border-radius: 5px;
+}
+
+.modal-add-to-cart {
   width: 100%;
   height: 25px;
   padding: 5px 10px;
@@ -1144,10 +1153,22 @@ body {
 }
 
 @keyframes checkPop {
-  0%   { opacity: 0; transform: translateY(-8px) scale(0.85); }
-  35%  { opacity: 1; transform: translateY(0px) scale(1.05); }
-  70%  { opacity: 1; transform: translateY(0px) scale(1.0); }
-  100% { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.85);
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(0px) scale(1.05);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(0px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1155,7 +1176,7 @@ body {
     animation: none;
     opacity: 1;
     transform: none;
-    cursor: none;
+    cursor: hidden;
   }
 }
 
@@ -1167,27 +1188,27 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: 12px;
   z-index: 9999;
 }
 
 .product-modal-panel {
-  display: flex;
   position: relative;
-  flex-direction: column;
   background: rgba(0, 0, 0, 0.7);
   border: 2px solid #4a148c;
   border-radius: 20px;
-  padding: 40px 40px 20px 40px;
   backdrop-filter: blur(15px);
   color: white;
-  width: clamp(50%, 50vw, 100%);
-  max-width: 720px;
-  height: fit-content;
-  justify-content: center;
-  align-items: center;
+  width: min(720px, 100%);
+  max-height: min(85vh, 900px);
+  overflow: auto;
+  padding: clamp(12px, 2.5vw, 22px);
   box-sizing: border-box;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: center;
+  text-align: center;
 }
 
 .product-modal-title {
@@ -1196,7 +1217,7 @@ body {
   text-underline-offset: 10px;
   font-size: 2rem;
   color: #e1bee7;
-  margin: 0;
+  margin: 0 auto;
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
 }
 
@@ -1214,51 +1235,85 @@ body {
   font-weight: 800;
 }
 
-.product-modal-exit {
-  background: rgb(127, 0, 253);
-  position: relative;
-  border: 2px solid #4a148c;
-  padding: 5px;
-  position: relative;
-  margin: 0 auto;
-  color: #000000;
-  border-radius: 8px;
-  width: auto;
-  height: 35px;
-  cursor: pointer;
-  font-weight: 800;
-}
-
 .product-modal-close:hover {
   border-color: #7b1fa2;
   color: #ffffff;
 }
 
+/* ✅ main layout: image left, details right */
+.product-modal-content {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+/* image column */
+.product-modal-media {
+  flex: 0 0 clamp(200px, 40vw, 320px);
+}
+
+/* IMPORTANT: your markup wraps img inside .product-modal-image,
+   so this styles the wrapper, not the <img> itself. */
+.product-modal-image {
+  width: 100%;
+  margin: 0;
+}
+
+/* If you later move styles from inline -> CSS, this will apply cleanly */
+.product-modal-image img {
+  width: 100%;
+  height: auto;
+  max-height: 45vh;
+  object-fit: contain;
+  border-radius: 8px;
+  display: block;
+}
+
+/* details column */
+.product-modal-details {
+  flex: 1 1 auto;
+  min-width: 0;
+
+  /* ✅ centers your description/price/qty consistently */
+  text-align: center;
+
+  /* ✅ removes “extra” top/bottom whitespace feeling */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ✅ kills default p margins (this is a big reason things won’t look centered/tight) */
+.product-modal-details p {
+  margin: 0;
+}
+
+/* keep your colors exactly like the product card */
 .product-modal-description {
   font-size: 1.3rem;
   color: #c5cae9;
   line-height: 1.6;
-  margin-top: 12px;
+  margin: 0; /* ✅ remove the 25px top gap */
 }
 
 .product-modal-price {
   color: rgb(181, 0, 181);
   font-size: 1.8rem;
-  margin-top: 8px;
   font-weight: 700;
+  margin: 0;
 }
 
 .product-modal-qty {
   color: rgb(181, 0, 181);
   font-size: 1.2rem;
-  margin-top: 8px;
-  margin-bottom: 45px;
+  margin: 0; /* ✅ remove the 45px bottom gap */
 }
 
+/* footer buttons */
 .product-modal-footer {
-  margin-top: 20px;
   display: flex;
   justify-content: center;
+  margin-top: 4px; /* ✅ tighter */
 }
 
 .modal-action-row {
@@ -1292,5 +1347,66 @@ body {
 }
 
 .modal-secondary:hover {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.product-modal-exit {
+  background: rgb(127, 0, 253);
+  border: 2px solid #4a148c;
+  padding: 5px;
+  margin: 0 auto;
+  color: #000000;
+  border-radius: 8px;
+  width: auto;
+  height: 35px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+/* ✅ one clean mobile rule (no duplicates) */
+@media (max-width: 700px) {
+  .product-modal-content {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .product-modal-media {
+    flex: none;
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .product-modal-image img {
+    max-height: 40vh;
+  }
+
+  .product-modal-panel {
+    width: min(420px, 100%);
+  }
+}
+
+@media (max-width: 460px) {
+  .product-modal-panel {
+    padding: 12px;
+    width: min(400px, 100%);
+  }
+
+  .product-modal-title {
+    font-size: 1.6rem;
+  }
+
+  .product-modal-description {
+    font-size: 1.15rem;
+  }
+
+  .product-modal-price {
+    font-size: 1.35rem;
+  }
+
+  .product-modal-qty {
+    font-size: 1.1rem;
+  }
+  .product-modal-image {
+    width: 75%;
+  }
 }

@@ -31,19 +31,9 @@ const Product = ({
   const cardRef = useRef(null);
   const [added, setAdded] = useState(false);
   const prevQtyRef = useRef(quantity);
-  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
   const [showCheck, setShowCheck] = useState(false);
   const prevInCartQtyRef = useRef(inCartQty);
 
-  const openModal = (product) => {
-    setIsProductModalOpen(true);
-    setSelectedProduct(product);
-  };
-  const closeModal = () => {
-    setIsProductModalOpen(false);
-    setSelectedProduct(null);
-  };
 
   const imageUrl = `http://localhost:8080/api/product/${id}/picture?version=${pictureVersion}`;
 

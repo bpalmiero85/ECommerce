@@ -32,8 +32,10 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   const [showModalCheck, setShowModalCheck] = useState(false);
   const modalCheckTimerRef = useRef(null);
   const flashModalCheck = useCallback(() => {
-    setShowModalCheck(true);
-
+    setShowModalCheck(false);
+    requestAnimationFrame(() => {
+      setShowModalCheck(true);
+    })
     if (modalCheckTimerRef.current) {
       clearTimeout(modalCheckTimerRef.current);
     }
@@ -816,18 +818,12 @@ const ProductPage = ({ products: externalProducts = [] }) => {
             className="product-modal-panel"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className={`check-bubble ${showModalCheck ? "show" : ""}`}>
+            <div className={`check-bubble ${showModalCheck ? "check-bubble-show" : ""}`}>
               ✅ Added
             </div>
             {/* THIS is the modal header */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 12,
-              }}
-            >
-              <h2 className="product-modal-title">{selectedProduct.name}</h2>
+            <div>
+              <h2 className="product-modal-title" style={{ marginTop: "35px"}}>{selectedProduct.name}</h2>
               <button
                 type="button"
                 onClick={closeProductModal}
@@ -836,17 +832,13 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                 X
               </button>
             </div>
-
+              <div className="product-modal-content">
+              <div className="product-modal-media">
             <div style={{ marginTop: 12 }}>
               <img
+              className="product-modal-image" 
                 alt={selectedProduct.name}
                 src={`http://localhost:8080/api/product/${selectedProduct.id}/picture?version=${selectedProduct.pictureVersion}`}
-                style={{
-                  width: "100%",
-                  maxHeight: 420,
-                  objectFit: "contain",
-                  borderRadius: 8,
-                }}
               />
             </div>
 
@@ -869,7 +861,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                     className={
                       modalAvailableQty === 0
                         ? "sold-out-added-to-cart"
-                        : "add-to-cart"
+                        : "modal-add-to-cart"
                     }
                     disabled={modalAvailableQty === 0 || modalSaving}
                     onClick={(e) => {
@@ -918,6 +910,8 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                     <span className="qty-label">in your cart</span>
                   </div>
                 )}
+                </div>
+                </div>
               </div>
             </div>
 
