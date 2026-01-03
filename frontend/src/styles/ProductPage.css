@@ -1200,7 +1200,7 @@ body {
   backdrop-filter: blur(15px);
   color: white;
   width: min(720px, 100%);
-  max-height: min(85vh, 900px);
+  max-height: fit-content;
   overflow: auto;
   padding: clamp(12px, 2.5vw, 22px);
   box-sizing: border-box;
@@ -1209,6 +1209,7 @@ body {
   gap: 12px;
   justify-content: center;
   text-align: center;
+  align-items: center;
 }
 
 .product-modal-title {
@@ -1376,8 +1377,9 @@ body {
     max-width: 360px;
   }
 
-  .product-modal-image img {
-    max-height: 40vh;
+  .product-modal-image  {
+    height: auto;
+    max-width: 270px;
   }
 
   .product-modal-panel {
