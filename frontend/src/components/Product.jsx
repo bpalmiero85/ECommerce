@@ -34,7 +34,6 @@ const Product = ({
   const [showCheck, setShowCheck] = useState(false);
   const prevInCartQtyRef = useRef(inCartQty);
 
-
   const imageUrl = `http://localhost:8080/api/product/${id}/picture?version=${pictureVersion}`;
 
   async function handleQtyChange(nextQty) {
@@ -241,12 +240,21 @@ const Product = ({
 
           <div className="modal-product-description-container">
             <DescriptionMore
-              text={
-                typeof description === "string"
-                  ? description
-                  : String(description ?? "")
+              text={description}
+              quantity={quantity}
+              onMore={() =>
+                onOpenModal?.({
+                  id,
+                  name,
+                  description,
+                  price,
+                  quantity,
+                  pictureVersion,
+                  featured,
+                  newArrival,
+                  category,
+                })
               }
-              quantity={Number.isFinite(quantity) ? quantity : 0}
             />
           </div>
 

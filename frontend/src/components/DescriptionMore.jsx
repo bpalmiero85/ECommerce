@@ -1,35 +1,25 @@
-import { useState } from "react";
 import "../styles/DescriptionMore.css";
-import "../styles/styles.css";
 
-export default function DescriptionMore({
-  text = "",
-  quantity = 0,
-}) {
+export default function DescriptionMore({ text = "", quantity = 0, onMore }) {
   const safeText = typeof text === "string" ? text : String(text ?? "");
   const needsMore = safeText.trim().length > 65;
-  const [isOpen, setIsOpen] = useState(false);
   const isSoldOut = Number(quantity) <= 0;
 
-  const toggle = (e) => {
+  const handleMore = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsOpen((v) => !v);
+    onMore?.(); // ✅ only runs on click
   };
 
   return (
-    <>
-      <div className={!isSoldOut ? "more-container" : "sold-out-more-container"}>
-        <p className={`description-paragraph ${isOpen ? "open" : "clamp"}`}>
-          {safeText}
-        </p>
-        {!isOpen && needsMore && !isSoldOut && (
-          <button type="button" className="more-link" onClick={toggle}>more</button>
-        )}
-        {isOpen && needsMore && (
-          <button type="button" className="less-link" onClick={toggle}>...less</button>
-        )}
-      </div>
-    </>
+    <div className={!isSoldOut ? "more-container" : "sold-out-more-container"}>
+      <p className="description-paragraph clamp">{safeText}</p>
+
+      {needsMore && !isSoldOut && (
+        <button type="button" className="more-link" onClick={handleMore}>
+          more
+        </button>
+      )}
+    </div>
   );
 }

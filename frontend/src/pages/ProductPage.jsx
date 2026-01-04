@@ -35,7 +35,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
     setShowModalCheck(false);
     requestAnimationFrame(() => {
       setShowModalCheck(true);
-    })
+    });
     if (modalCheckTimerRef.current) {
       clearTimeout(modalCheckTimerRef.current);
     }
@@ -765,7 +765,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                       featured={product.featured}
                       newArrival={product.newArrival}
                       onReserved={fetchAvailable}
-                      onOpenModal={openProductModal}
+                      onOpenModal={(p) => openProductModal(p)}
                     />
                   </div>
                 ))
@@ -818,12 +818,18 @@ const ProductPage = ({ products: externalProducts = [] }) => {
             className="product-modal-panel"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className={`check-bubble ${showModalCheck ? "check-bubble-show" : ""}`}>
+            <div
+              className={`check-bubble ${
+                showModalCheck ? "check-bubble-show" : ""
+              }`}
+            >
               ✅ Added
             </div>
             {/* THIS is the modal header */}
-            <div>
-              <h2 className="product-modal-title" style={{ marginTop: "35px"}}>{selectedProduct.name}</h2>
+            <div className="product-modal-header">
+              <h2 className="product-modal-title" style={{ marginTop: "35px" }}>
+                {selectedProduct.name}
+              </h2>
               <button
                 type="button"
                 onClick={closeProductModal}
@@ -832,90 +838,97 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                 X
               </button>
             </div>
+            
               <div className="product-modal-content">
-              <div className="product-modal-media">
-            <div style={{ marginTop: 12 }}>
-              <img
-              className="product-modal-image" 
-                alt={selectedProduct.name}
-                src={`http://localhost:8080/api/product/${selectedProduct.id}/picture?version=${selectedProduct.pictureVersion}`}
-              />
-            </div>
-
-            <p className="product-modal-description">
-              {selectedProduct.description}
-            </p>
-
-            <p className="product-modal-price">
-              ${Number(selectedProduct.price).toFixed(2)}
-            </p>
-
-            <p className="product-modal-qty">
-              Available qty: {selectedProduct.quantity}
-            </p>
-            <div className="purchase-container">
-              <div className="purchase-buttons">
-                {modalInCartQty === 0 ? (
-                  <button
-                    type="button"
-                    className={
-                      modalAvailableQty === 0
-                        ? "sold-out-added-to-cart"
-                        : "modal-add-to-cart"
-                    }
-                    disabled={modalAvailableQty === 0 || modalSaving}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (modalAvailableQty === 0 || modalSaving) return;
-                      handleModalQtyChange(1);
-                    }}
-                  >
-                    {modalAvailableQty === 0
-                      ? "Sold Out"
-                      : modalSaving
-                      ? "Adding..."
-                      : "Add to cart"}
-                  </button>
-                ) : (
-                  <div
-                    className="qty-inline"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }}
-                  >
-                    <button
-                      type="button"
-                      className="qty-btn"
-                      aria-label="Decrease quantity"
-                      disabled={modalSaving || modalInCartQty <= 0}
-                      onClick={() => handleModalQtyChange(modalInCartQty - 1)}
-                    >
-                      −
-                    </button>
-
-                    <span className="qty-count">{modalInCartQty}</span>
-
-                    <button
-                      type="button"
-                      className="qty-btn"
-                      aria-label="Increase quantity"
-                      disabled={modalSaving || modalAvailableQty <= 0}
-                      onClick={() => handleModalQtyChange(modalInCartQty + 1)}
-                    >
-                      +
-                    </button>
-
-                    <span className="qty-label">in your cart</span>
+                <div className="product-modal-media">
+                  <div style={{ marginTop: 12 }}>
+                    <img
+                      className="product-modal-image"
+                      alt={selectedProduct.name}
+                      src={`http://localhost:8080/api/product/${selectedProduct.id}/picture?version=${selectedProduct.pictureVersion}`}
+                    />
                   </div>
-                )}
-                </div>
-                </div>
+                     </div>
               </div>
-            </div>
+  <div className="product-modal-scroll">
+                  <p className="product-modal-description">
+                    {selectedProduct.description}
+                  </p>
+                    </div>
+              <div className="product-modal-footer">
+                    <p className="product-modal-price">
+                      ${Number(selectedProduct.price).toFixed(2)}
+                    </p>
 
-            <div className="product-modal-footer">
+                    <p className="product-modal-qty">
+                      Available qty: {modalAvailableQty}
+                    </p>
+                    <div className="purchase-container">
+                      <div className="purchase-buttons">
+                        {modalInCartQty === 0 ? (
+                          <button
+                            type="button"
+                            className={
+                              modalAvailableQty === 0
+                                ? "sold-out-added-to-cart"
+                                : "modal-add-to-cart"
+                            }
+                            disabled={modalAvailableQty === 0 || modalSaving}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              if (modalAvailableQty === 0 || modalSaving)
+                                return;
+                              handleModalQtyChange(1);
+                            }}
+                          >
+                            {modalAvailableQty === 0
+                              ? "Sold Out"
+                              : modalSaving
+                              ? "Adding..."
+                              : "Add to cart"}
+                          </button>
+                        ) : (
+                          <div
+                            className="qty-inline"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                          >
+                            <button
+                              type="button"
+                              className="qty-btn"
+                              aria-label="Decrease quantity"
+                              disabled={modalSaving || modalInCartQty <= 0}
+                              onClick={() =>
+                                handleModalQtyChange(modalInCartQty - 1)
+                              }
+                            >
+                              −
+                            </button>
+
+                            <span className="qty-count">{modalInCartQty}</span>
+
+                            <button
+                              type="button"
+                              className="qty-btn"
+                              aria-label="Increase quantity"
+                              disabled={modalSaving || modalAvailableQty <= 0}
+                              onClick={() =>
+                                handleModalQtyChange(modalInCartQty + 1)
+                              }
+                            >
+                              +
+                            </button>
+
+                            <span className="qty-label">in your cart</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+              <div className="product-modal-buttons">
               {totalItems > 0 ? (
                 <div className="modal-action-row">
                   <button
@@ -946,7 +959,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                   Exit
                 </button>
               )}
-            </div>
+              </div>
           </div>
         </div>
       )}
