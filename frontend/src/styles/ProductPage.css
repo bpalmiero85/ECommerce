@@ -412,7 +412,13 @@ body {
 .sold-out-added-to-cart {
   width: 100%;
   height: 25px;
-  padding: 5px 10px;
+  padding: 2px 5px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: Arial, Helvetica, sans-serif;
+  cursor: pointer;
+  background-color: rgb(47, 255, 0);
+  margin-bottom: 15px;
   border: 2px solid transparent;
   box-sizing: border-box;
   text-align: center;
@@ -422,7 +428,11 @@ body {
 .modal-add-to-cart {
   width: 100%;
   height: 25px;
-  padding: 5px 10px;
+  padding: 2px 5px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: rgb(47, 255, 0);
   border: 2px solid transparent;
   box-sizing: border-box;
   text-align: center;
@@ -476,7 +486,9 @@ body {
 }
 
 .product-card:hover {
-  transform: scale(1.05);
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(74, 20, 140, 0.4);
+  border-color: #7b1fa2;
 }
 
 .item-cart {
@@ -504,11 +516,6 @@ body {
 }
 .purchase-button-off {
   display: none;
-}
-
-.add-to-cart {
-  cursor: pointer;
-  margin-bottom: 15px;
 }
 
 .added-to-cart {
@@ -575,6 +582,7 @@ body {
   display: flex;
   position: relative;
   width: auto;
+  border: 4px solid rgb(251, 255, 0);
   border-radius: 10px;
   max-width: 200px;
   height: 200px;
@@ -592,11 +600,7 @@ body {
   }
 }
 
-.product-card:hover {
-  transform: translateY(-10px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(74, 20, 140, 0.4);
-  border-color: #7b1fa2;
-}
+
 
 .product-design {
   height: 180px;
@@ -1195,9 +1199,10 @@ body {
 .product-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, .7);
   display: flex;
   align-items: center;
+  height: 100vh !important;
   justify-content: center;
   padding: 12px;
   z-index: 9999;
@@ -1225,16 +1230,16 @@ body {
   border-radius: 20px;
   backdrop-filter: blur(15px);
   color: white;
-  width: min(720px, 100%);
+  width: min(700px, 100%);
   max-height: 90vh;
   overflow: hidden;
+  margin-top: 35px;
   padding: 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   text-align: center;
-
 }
 
 .product-modal-title {
@@ -1243,7 +1248,9 @@ body {
   text-underline-offset: 10px;
   font-size: 2rem;
   color: #e1bee7;
+  padding-top: 5px;
   margin: 0 auto;
+  margin-bottom: -20px;
   text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
 }
 
@@ -1266,7 +1273,6 @@ body {
   color: #ffffff;
 }
 
-
 .product-modal-content {
   display: flex;
   flex: 1 1 auto;
@@ -1285,7 +1291,7 @@ body {
 }
 
 .product-modal-image {
-  width: clamp(75%, 20vw, 100%);
+  width: 100%;
   height: auto;
   margin: 0 auto;
   max-height: 45vh;
@@ -1299,26 +1305,22 @@ body {
   flex: 1 1 auto;
   min-width: 0;
 
-  /* ✅ centers your description/price/qty consistently */
   text-align: center;
 
-  /* ✅ removes “extra” top/bottom whitespace feeling */
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-/* ✅ kills default p margins (this is a big reason things won’t look centered/tight) */
 .product-modal-details p {
   margin: 0;
 }
 
-/* keep your colors exactly like the product card */
 .product-modal-description {
   font-size: 1.3rem;
   color: #c5cae9;
   line-height: 1.6;
-  margin: 0; /* ✅ remove the 25px top gap */
+  margin: 0;
 }
 
 .product-modal-price {
@@ -1332,7 +1334,7 @@ body {
   position: relative;
   color: rgb(181, 0, 181);
   font-size: 1.2rem;
-  margin: 0; /* ✅ remove the 45px bottom gap */
+  margin: 0;
 }
 
 .product-modal-footer {
@@ -1342,9 +1344,8 @@ body {
   padding: 12px 20px 16px;
   width: 80%;
   justify-content: center;
-  margin: 0 auto;
-  margin-bottom: 10px;
-  margin-top: 25px;
+  margin: 12px auto 10px;
+  margin-top: auto;
   border: 2px solid rgba(191, 0, 255, 0.574);
   border-radius: 10px;
 }
@@ -1354,7 +1355,6 @@ body {
   justify-content: center;
   margin: 0 auto;
 }
-
 
 .modal-action-row {
   display: flex;
@@ -1370,6 +1370,8 @@ body {
   font-weight: 600;
   cursor: pointer;
   margin: 0 5px;
+  margin-bottom: 7px;
+  font-size: 1.1rem;
 }
 
 .modal-secondary {
@@ -1380,6 +1382,8 @@ body {
   border-radius: 6px;
   cursor: pointer;
   margin: 0 5px;
+  margin-bottom: 7px;
+  font-size: 1.1rem;
 }
 
 .modal-primary:hover {
@@ -1396,7 +1400,7 @@ body {
   padding: 5px;
   margin: 0 auto;
   margin-bottom: 10px;
-  color: #000000;
+  color: #ffffff;
   border-radius: 8px;
   width: auto;
   height: 35px;
@@ -1404,12 +1408,109 @@ body {
   font-weight: 800;
 }
 
-/* ✅ one clean mobile rule (no duplicates) */
+@media (max-height: 600px) and (orientation: landscape) {
+  .product-modal-image {
+    width: 100%;
+   max-height: 35vh;
+   
+  }
+
+}
+
+@media (max-height: 500px) {
+  .product-modal-description {
+    font-size: clamp(0.8rem, 4vh, 1rem) !important;
+  }
+}
+
+@media (max-height: 820px) {
+  .product-modal-overlay {
+    height: 100vh;
+  }
+  .product-modal-panel {
+    height: 95vh;
+  }
+  .product-modal-footer {
+    width: 90%;
+    height: 65px;
+    padding: 2px;
+  }
+
+  .product-modal-price {
+    font-size: 0.9rem;
+    margin-top: 45px;
+    line-height: 1.1;
+  }
+  .product-modal-qty {
+    font-size: 0.9rem;
+    line-height: 1.1;
+  }
+
+  .product-modal-description {
+    font-size: 1rem;
+    background: transparent;
+  }
+  .purchase-container {
+    gap: 0.35rem;
+  }
+
+  .modal-add-to-cart,
+  .add-to-cart,
+  .added-to-cart,
+  .sold-out-added-to-cart {
+    height: auto;
+    padding: 2px 4px;
+    margin-bottom: 40px;
+    font-size: 0.95rem;
+    text-align: center;
+  }
+
+  .qty-btn {
+    width: 18px;
+    height: 18px;
+    font-size: 0.75rem;
+    margin-bottom: 52px;
+  }
+
+  .product-modal-buttons {
+    margin-top: 0;
+  }
+  .product-modal-title {
+    margin-top: 0 !important;
+    font-size: 1.2rem;
+  }
+
+  .product-modal-image {
+    margin-top: 0;
+    height: 60%;
+    width: auto;
+  }
+
+  .modal-primary,
+  .modal-secondary {
+    padding: 4px 7px;
+    font-size: 0.9rem;
+    margin-bottom: 0;
+  }
+
+  .product-modal-exit {
+    font-size: 0.75rem;
+    height: fit-content;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+}
+
 @media (max-width: 700px) {
   .product-grid {
     justify-content: center;
     justify-items: center;
   }
+
+  .product-modal-panel {
+    max-height: 85vh;
+  }
+
   .product-modal-content {
     flex-direction: column;
     align-items: center;
@@ -1422,13 +1523,17 @@ body {
     justify-content: center;
   }
 
-  .product-modal-image  {
+  .product-modal-image {
     height: auto;
-    max-width: 270px;
+    max-width: 230px;
   }
 
   .product-modal-panel {
     width: min(420px, 100%);
+  }
+  .modal-primary,
+  .modal-secondary {
+    margin-bottom: 10px;
   }
 }
 
@@ -1436,10 +1541,15 @@ body {
   .product-modal-panel {
     padding: 12px;
     width: min(400px, 100%);
+    height: auto;
   }
 
   .product-modal-title {
-    font-size: 1.6rem;
+    position: absolute;
+    bottom: 98%;
+    text-underline-offset: 5px;
+    width: 100%;
+    font-size: 1.4rem;
   }
 
   .product-modal-description {
@@ -1460,4 +1570,24 @@ body {
     justify-content: center;
     justify-items: center;
   }
+}
+
+/* Modal: remove layout hacks that cause awkward clipping */
+.product-modal-overlay {
+  height: 100vh;        
+  margin-top: 0;        
+}
+
+.product-modal-panel {
+  margin-top: 0;          
+  margin-bottom: 0;     
+  height: auto;           
+  max-height: 90vh;     
+}
+
+.product-card .check-mark {
+  margin-left: 10px !important;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
 }

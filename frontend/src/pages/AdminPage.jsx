@@ -505,35 +505,48 @@ const AdminPage = () => {
                         onChange={(e) => handleFileChange(e)}
                       ></input>
 
+                    <label>
+                    Name:
                       <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required
                       />
-
+                    </label>
+                    
+                    <label>
+                    Description:
                       <textarea
                         ref={editDescriptionRef}
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         required
                       />
+                    </label>
 
+                    <label>
+                    Price:
                       <input
                         type="number"
                         value={price}
                         onChange={(e) => setPrice(e.target.value)}
                         required
                       />
+                    </label>
 
+                    <label>
+                    Quantity:
                       <input
                         type="number"
                         value={quantity}
                         onChange={(e) => setQuantity(e.target.value)}
                         required
                       />
-
-                      <label>Category: </label>
+                      </label>
+                    
+                
+                      <label>Category: 
                       <select
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
@@ -559,6 +572,7 @@ const AdminPage = () => {
                           checked={isNewArrival}
                           onChange={(e) => setIsNewArrival(e.target.checked)}
                         />
+                      </label>
                       </label>
 
                       <button className="edit-button" type="submit">

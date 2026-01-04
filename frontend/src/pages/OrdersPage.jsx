@@ -120,7 +120,13 @@ export default function OrdersPage() {
           <tbody>
             {orders.map((o) => (
               <React.Fragment key={o.orderId}>
-                <tr style={{ borderTop: "1px solid #ddd" }}>
+                <tr
+                  style={{
+                    borderTop: "1px solid #ddd",
+                    fontSize: "18px",
+                    color: "white",
+                  }}
+                >
                   <td>{o.orderId}</td>
                   <td>{o.orderName}</td>
                   <td>{o.orderEmail}</td>
@@ -130,7 +136,6 @@ export default function OrdersPage() {
                     {o.createdAt ? new Date(o.createdAt).toLocaleString() : ""}
                   </td>
                 </tr>
-
                 {o.items && o.items.length > 0 && (
                   <tr>
                     <td colSpan="6">
@@ -212,7 +217,7 @@ export default function OrdersPage() {
                   e.currentTarget.style.display = "none";
                 }}
               />
-              <div style={{ marginTop: 10, fontSize: 14, color: "black" }}>
+              <div style={{ marginTop: 10, fontSize: 18, color: "black" }}>
                 <div>
                   <strong>Product ID:</strong> {selectedItem.productId}
                 </div>

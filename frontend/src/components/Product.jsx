@@ -167,7 +167,7 @@ const Product = ({
     }
 
     prevQtyRef.current = quantity;
-  }, [quantity]);
+  }, [quantity, inCartQty]);
 
   useEffect(() => {
     setAdded(inCartQty > 0);
@@ -305,27 +305,35 @@ const Product = ({
                   e.stopPropagation();
                 }}
               >
-                <button
-                  type="button"
-                  className="qty-btn"
-                  aria-label="Decrease quantity"
-                  disabled={saving || inCartQty <= 0}
-                  onClick={() => handleQtyChange(inCartQty - 1)}
-                >
-                  −
-                </button>
+                <span classNAme="in-cart-wrap">
+                  <button
+                    type="button"
+                    className="qty-btn"
+                    aria-label="Decrease quantity"
+                    disabled={saving || inCartQty <= 0}
+                    onClick={() => handleQtyChange(inCartQty - 1)}
+                  >
+                    −
+                  </button>
 
-                <span className="qty-count">{inCartQty}</span>
-                <button
-                  type="button"
-                  className="qty-btn"
-                  aria-label="Increase quantity"
-                  disabled={saving || quantity <= 0}
-                  onClick={() => handleQtyChange(inCartQty + 1)}
-                >
-                  +
-                </button>
-                <span className="qty-label">in your cart</span>
+                  <span className="qty-count">{inCartQty}</span>
+                  <button
+                    type="button"
+                    className="qty-btn"
+                    aria-label="Increase quantity"
+                    disabled={saving || quantity <= 0}
+                    onClick={() => handleQtyChange(inCartQty + 1)}
+                  >
+                    +
+                  </button>
+                  <span className="qty-label">in your cart</span>
+
+                  {added && quantity !== 0 && (
+                    <div className="check-mark">
+                      <h3>✅</h3>
+                    </div>
+                  )}
+                </span>
               </div>
             )}
 
@@ -336,12 +344,6 @@ const Product = ({
               ✅ Added
             </div>
             {/** End of added animation */}
-
-            {added && quantity !== 0 && (
-              <div className="check-mark">
-                <h3>✅</h3>
-              </div>
-            )}
 
             {isLastItemShown && (
               <div className="last-item-message">{message}</div>

@@ -73,7 +73,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
     nextQty = Math.max(0, nextQty);
 
     const max = modalAvailableQty + modalInCartQty;
-    if (nextQty > max) nextQty = max; // ✅ you were missing this
+    if (nextQty > max) nextQty = max; 
 
     if (nextQty === modalInCartQty) return;
 
@@ -825,11 +825,11 @@ const ProductPage = ({ products: externalProducts = [] }) => {
             >
               ✅ Added
             </div>
-            {/* THIS is the modal header */}
-            <div className="product-modal-header">
-              <h2 className="product-modal-title" style={{ marginTop: "35px" }}>
+             <h2 className="product-modal-title" style={{ marginTop: "35px" }}>
                 {selectedProduct.name}
               </h2>
+            {/* THIS is the modal header */}
+            <div className="product-modal-header">
               <button
                 type="button"
                 onClick={closeProductModal}
