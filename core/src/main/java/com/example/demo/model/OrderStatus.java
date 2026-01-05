@@ -4,7 +4,7 @@ package com.example.demo.model;
     PAID, 
     PROCESSING, 
     SHIPPED, 
-    COMPLETED, 
+    DELIVERED, 
     CANCELLED
   }
 

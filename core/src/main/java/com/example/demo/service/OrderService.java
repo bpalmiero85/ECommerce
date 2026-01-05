@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -48,6 +49,41 @@ public class OrderService {
 
   public List<Order> getAllOrders() {
     return orderRepository.findAllByOrderByCreatedAtDesc();
+  }
+
+  @Transactional
+  public Order updateOrderStatus(Long orderId, OrderStatus newStatus, String carrier, String trackingNumber) {
+    Order order = orderRepository.findById(orderId).orElseThrow();
+    order.setOrderStatus(newStatus);
+
+    if (newStatus == OrderStatus.SHIPPED) {
+      if (order.getShippedAt() == null) {
+        order.setShippedAt(Instant.now());
+      }
+
+      if (carrier != null && !carrier.isBlank()) {
+        order.setCarrier(carrier.trim());
+      }
+
+      if (trackingNumber != null && !trackingNumber.isBlank()) {
+        order.setTrackingNumber(trackingNumber.trim());
+      }
+    }
+
+    if (carrier != null && !carrier.isBlank()) {
+      order.setCarrier(carrier.trim());
+    }
+    if (trackingNumber != null && !trackingNumber.isBlank()) {
+      order.setTrackingNumber(trackingNumber.trim());
+    }
+
+    if (newStatus == OrderStatus.DELIVERED) {
+      if (order.getDeliveredAt() == null) {
+        order.setDeliveredAt(Instant.now());
+      }
+    }
+
+    return orderRepository.save(order);
   }
 
 }

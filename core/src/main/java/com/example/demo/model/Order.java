@@ -52,6 +52,18 @@ public class Order {
   @Column(nullable = false, updatable = false)
   private Instant createdAt;
 
+  @Column
+  private String trackingNumber;
+
+  @Column
+  private String carrier;
+
+  @Column
+  private Instant shippedAt;
+
+  @Column
+  private Instant deliveredAt;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private OrderStatus orderStatus;
