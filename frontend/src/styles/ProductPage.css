@@ -373,6 +373,19 @@ body {
   z-index: 2000;
 }
 
+.qty-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  position: relative;
+}
+
+.in-your-cart {
+  display: flex;
+  position: absolute;
+  bottom: 2px;
+}
 .product-card img {
   transition: opacity 0.2s ease;
 }
@@ -380,6 +393,10 @@ body {
 .qty-count {
   font-size: 1.2rem;
   color: rgb(255, 255, 255);
+}
+
+.cart-qty-count {
+  color: black;
 }
 
 .qty-label {
@@ -398,6 +415,7 @@ body {
   font-size: large;
   background-color: rgb(231, 187, 253);
 }
+
 
 .second-cart-container {
   position: fixed;
@@ -1607,3 +1625,6 @@ body {
   align-items: center;
   line-height: 1;
 }
+
+
+

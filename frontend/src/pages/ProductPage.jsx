@@ -73,7 +73,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
     nextQty = Math.max(0, nextQty);
 
     const max = modalAvailableQty + modalInCartQty;
-    if (nextQty > max) nextQty = max; 
+    if (nextQty > max) nextQty = max;
 
     if (nextQty === modalInCartQty) return;
 
@@ -825,9 +825,9 @@ const ProductPage = ({ products: externalProducts = [] }) => {
             >
               ✅ Added
             </div>
-             <h2 className="product-modal-title" style={{ marginTop: "35px" }}>
-                {selectedProduct.name}
-              </h2>
+            <h2 className="product-modal-title" style={{ marginTop: "35px" }}>
+              {selectedProduct.name}
+            </h2>
             {/* THIS is the modal header */}
             <div className="product-modal-header">
               <button
@@ -838,97 +838,93 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                 X
               </button>
             </div>
-            
-              <div className="product-modal-content">
-                <div className="product-modal-media">
-                  <div style={{ marginTop: 12 }}>
-                    <img
-                      className="product-modal-image"
-                      alt={selectedProduct.name}
-                      src={`http://localhost:8080/api/product/${selectedProduct.id}/picture?version=${selectedProduct.pictureVersion}`}
-                    />
-                  </div>
-                     </div>
+
+            <div className="product-modal-content">
+              <div className="product-modal-media">
+                <div style={{ marginTop: 12 }}>
+                  <img
+                    className="product-modal-image"
+                    alt={selectedProduct.name}
+                    src={`http://localhost:8080/api/product/${selectedProduct.id}/picture?version=${selectedProduct.pictureVersion}`}
+                  />
+                </div>
               </div>
-  <div className="product-modal-scroll">
-                  <p className="product-modal-description">
-                    {selectedProduct.description}
-                  </p>
+            </div>
+            <div className="product-modal-scroll">
+              <p className="product-modal-description">
+                {selectedProduct.description}
+              </p>
+            </div>
+            <div className="product-modal-footer">
+              <p className="product-modal-price">
+                ${Number(selectedProduct.price).toFixed(2)}
+              </p>
+
+              <p className="product-modal-qty">
+                Available qty: {modalAvailableQty}
+              </p>
+              <div className="purchase-container">
+                <div className="purchase-buttons">
+                  {modalInCartQty === 0 ? (
+                    <button
+                      type="button"
+                      className={
+                        modalAvailableQty === 0
+                          ? "sold-out-added-to-cart"
+                          : "modal-add-to-cart"
+                      }
+                      disabled={modalAvailableQty === 0 || modalSaving}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (modalAvailableQty === 0 || modalSaving) return;
+                        handleModalQtyChange(1);
+                      }}
+                    >
+                      {modalAvailableQty === 0
+                        ? "Sold Out"
+                        : modalSaving
+                        ? "Adding..."
+                        : "Add to cart"}
+                    </button>
+                  ) : (
+                    <div
+                      className="qty-inline"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                    >
+                      <button
+                        type="button"
+                        className="qty-btn"
+                        aria-label="Decrease quantity"
+                        disabled={modalSaving || modalInCartQty <= 0}
+                        onClick={() => handleModalQtyChange(modalInCartQty - 1)}
+                      >
+                        −
+                      </button>
+
+                      <span className="qty-count">{modalInCartQty}</span>
+
+                      <button
+                        type="button"
+                        className="qty-btn"
+                        aria-label="Increase quantity"
+                        disabled={modalSaving || modalAvailableQty <= 0}
+                        onClick={() => handleModalQtyChange(modalInCartQty + 1)}
+                      >
+                        +
+                      </button>
+                    
+                        <span className="qty-label">in your cart</span>
+                    
                     </div>
-              <div className="product-modal-footer">
-                    <p className="product-modal-price">
-                      ${Number(selectedProduct.price).toFixed(2)}
-                    </p>
-
-                    <p className="product-modal-qty">
-                      Available qty: {modalAvailableQty}
-                    </p>
-                    <div className="purchase-container">
-                      <div className="purchase-buttons">
-                        {modalInCartQty === 0 ? (
-                          <button
-                            type="button"
-                            className={
-                              modalAvailableQty === 0
-                                ? "sold-out-added-to-cart"
-                                : "modal-add-to-cart"
-                            }
-                            disabled={modalAvailableQty === 0 || modalSaving}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              if (modalAvailableQty === 0 || modalSaving)
-                                return;
-                              handleModalQtyChange(1);
-                            }}
-                          >
-                            {modalAvailableQty === 0
-                              ? "Sold Out"
-                              : modalSaving
-                              ? "Adding..."
-                              : "Add to cart"}
-                          </button>
-                        ) : (
-                          <div
-                            className="qty-inline"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                            }}
-                          >
-                            <button
-                              type="button"
-                              className="qty-btn"
-                              aria-label="Decrease quantity"
-                              disabled={modalSaving || modalInCartQty <= 0}
-                              onClick={() =>
-                                handleModalQtyChange(modalInCartQty - 1)
-                              }
-                            >
-                              −
-                            </button>
-
-                            <span className="qty-count">{modalInCartQty}</span>
-
-                            <button
-                              type="button"
-                              className="qty-btn"
-                              aria-label="Increase quantity"
-                              disabled={modalSaving || modalAvailableQty <= 0}
-                              onClick={() =>
-                                handleModalQtyChange(modalInCartQty + 1)
-                              }
-                            >
-                              +
-                            </button>
-
-                            <span className="qty-label">in your cart</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-              <div className="product-modal-buttons">
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="product-modal-buttons">
               {totalItems > 0 ? (
                 <div className="modal-action-row">
                   <button
@@ -959,7 +955,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                   Exit
                 </button>
               )}
-              </div>
+            </div>
           </div>
         </div>
       )}
