@@ -2,3 +2,5 @@
 .env.*
 target/
 *.log
+application-prod.properties
+secrets.yml
