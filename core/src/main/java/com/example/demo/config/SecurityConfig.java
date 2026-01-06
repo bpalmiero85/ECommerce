@@ -70,7 +70,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     // allow your React origin
     config.setAllowedOrigins(List.of("http://localhost:3000"));
     // allow all the HTTP methods you need
-    config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+    config.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
     // allow any headers (e.g. Content-Type, Authorization, etc.)
     config.setAllowedHeaders(List.of("*"));
     // if you need to send cookies or auth headers

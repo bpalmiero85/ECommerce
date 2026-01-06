@@ -8,6 +8,20 @@ export default function OrdersPage() {
   const [error, setError] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
+  const [orderStatus, setOrderStatus] = useState("active");
+
+  const orderStatusEndpoint = useCallback(() => {
+    if (orderStatus === "active") {
+      return "http://localhost:8080/api/admin/orders/status/active-orders";
+    }
+    if (orderStatus === "completed") {
+      return "http://localhost:8080/api/admin/orders/status/completed";
+    }
+    if (orderStatus === "cancelled") {
+      return "http://localhost:8080/api/admin/orders/status/cancelled";
+    }
+    return null;
+  }, [orderStatus]);
 
   const openItemModal = (item) => {
     setSelectedItem(item);
@@ -17,6 +31,18 @@ export default function OrdersPage() {
   const closeItemModal = () => {
     setIsItemModalOpen(false);
     setSelectedItem(null);
+  };
+
+  const handleChooseOrderStatus = (status) => {
+    if (status === "active") {
+      setOrderStatus(status);
+    } else if (status === "completed") {
+      setOrderStatus(status);
+    } else if (status === "cancelled") {
+      setOrderStatus(status);
+    } else {
+      setOrderStatus(null);
+    }
   };
 
   const promptForAuth = useCallback(() => {
@@ -65,12 +91,37 @@ export default function OrdersPage() {
     [auth, promptForAuth]
   );
 
+  const handleMarkShipped = async (orderId) => {
+    const carrier = window.prompt("Carrier (ex: USPS, FedEx):") || "";
+    const trackingNumber = window.prompt("Tracking Number:") || "";
+
+      try {
+    const res = await authedFetch(
+      `${API_BASE}/api/admin/orders/${orderId}/status`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: "SHIPPED",
+          carrier,
+          trackingNumber,
+        }),
+      }
+    );
+    if (!res.ok) return;
+      await fetchOrders();
+      console.log("ship payload:", { orderId, carrier, trackingNumber });
+      return res;
+  } catch (e) {
+    console.error(e);
+    setError(e.message || "Failed to mark as shipped");
+  }
+  };
+
   const fetchOrders = useCallback(async () => {
     try {
       setError(null);
-      const API_BASE =
-        process.env.REACT_APP_API_BASE || "http://localhost:8080";
-      const res = await authedFetch(`${API_BASE}/api/admin/orders/all`, {
+      const res = await authedFetch(orderStatusEndpoint(), {
         method: "GET",
       });
 
@@ -82,16 +133,46 @@ export default function OrdersPage() {
       console.error(e);
       setError(e.message || "Failed to load orders.");
     }
-  }, [authedFetch]);
+  }, [authedFetch, orderStatusEndpoint]);
 
   useEffect(() => {
     if (!auth) return;
     fetchOrders();
-  }, [auth, fetchOrders]);
+  }, [auth, orderStatus, fetchOrders]);
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: 16 }}>
       <h1>Orders</h1>
+      <div className="choose-order-status">
+        <button
+          type="button"
+          style={{ backgroundColor: "lightBlue" }}
+          onClick={() => {
+            handleChooseOrderStatus("active");
+          }}
+        >
+          Active
+        </button>
+
+        <button
+          type="button"
+          style={{ backgroundColor: "lightBlue" }}
+          onClick={() => {
+            handleChooseOrderStatus("completed");
+          }}
+        >
+          Completed
+        </button>
+        <button
+          type="button"
+          style={{ backgroundColor: "lightBlue" }}
+          onClick={() => {
+            handleChooseOrderStatus("cancelled");
+          }}
+        >
+          Cancelled
+        </button>
+      </div>
 
       {error && <div style={{ color: "red", marginBottom: 12 }}>{error}</div>}
 
@@ -109,6 +190,7 @@ export default function OrdersPage() {
         >
           <thead>
             <tr style={{ textAlign: "left" }}>
+              <th>Actions</th>
               <th>Order ID</th>
               <th>Name</th>
               <th>Email</th>
@@ -127,6 +209,13 @@ export default function OrdersPage() {
                     color: "white",
                   }}
                 >
+                  <td>
+                    {o.orderStatus === "PAID" && (
+                      <button onClick={() => handleMarkShipped(o.orderId)}>
+                        Mark shipped
+                      </button>
+                    )}
+                  </td>
                   <td>{o.orderId}</td>
                   <td>{o.orderName}</td>
                   <td>{o.orderEmail}</td>
