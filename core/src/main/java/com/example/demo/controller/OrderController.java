@@ -18,8 +18,6 @@ import com.example.demo.model.Order;
 import com.example.demo.model.OrderStatus;
 import com.example.demo.service.OrderService;
 
-
-
 @RestController
 @RequestMapping("/api/admin/orders")
 public class OrderController {
@@ -31,11 +29,10 @@ public class OrderController {
 
   @PatchMapping("/{orderId}/status")
   public ResponseEntity<Order> updateOrderStatus(
-    @PathVariable Long orderId,
-    @RequestBody Map<String, String> body
-  ) {
+      @PathVariable Long orderId,
+      @RequestBody Map<String, String> body) {
     String statusRaw = body.get("status");
-    if (statusRaw == null || statusRaw.isBlank()){ 
+    if (statusRaw == null || statusRaw.isBlank()) {
       return ResponseEntity.badRequest().build();
     }
 
@@ -48,18 +45,17 @@ public class OrderController {
 
     String carrier = body.get("carrier");
     String trackingNumber = body.get("trackingNumber");
-    
+
     Order updated = orderService.updateOrderStatus(orderId, newStatus, carrier, trackingNumber);
     return ResponseEntity.ok(updated);
   }
 
   @PostMapping
   public Order createOrder(
-    @RequestParam String name,
-    @RequestParam String email,
-    @RequestParam BigDecimal total,
-    @RequestParam (required = false) OrderStatus status
-  ) {
+      @RequestParam String name,
+      @RequestParam String email,
+      @RequestParam BigDecimal total,
+      @RequestParam(required = false) OrderStatus status) {
     return orderService.createOrder(name, email, total, status);
   }
 
@@ -67,5 +63,27 @@ public class OrderController {
   public List<Order> getOrders() {
     return orderService.getAllOrders();
   }
-  
+
+  @GetMapping("/status/{status}")
+  public List<Order> getOrdersWithStatus(
+      @PathVariable OrderStatus status) {
+    List<Order> order = orderService.findOrderByStatus(status);
+    return order;
+  }
+
+  @GetMapping("/status/completed")
+  public List<Order> getDeliveredOrders() {
+    return orderService.getCompletedOrders();
+  }
+
+  @GetMapping("/status/cancelled")
+  public List<Order> getCancelledOrders() {
+    return orderService.getCancelledOrders();
+  }
+
+  @GetMapping("/status/active-orders")
+  public List<Order> getActiveOrders() {
+    return orderService.getAllActiveOrders();
+  }
+
 }

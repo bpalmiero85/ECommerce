@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -51,6 +52,21 @@ public class OrderService {
     return orderRepository.findAllByOrderByCreatedAtDesc();
   }
 
+  public List<Order> getAllActiveOrders() {
+    List<OrderStatus> status = List.of(OrderStatus.DELIVERED, OrderStatus.CANCELLED);
+    List<Order> order = orderRepository.findAllByOrderStatusNotInOrderByCreatedAtAsc(status);
+    return order;
+
+  }
+
+  public List<Order> getCompletedOrders() {
+    return findOrderByStatus(OrderStatus.DELIVERED);
+  }
+
+  public List<Order> getCancelledOrders() {
+    return findOrderByStatus(OrderStatus.CANCELLED);
+  }
+
   @Transactional
   public Order updateOrderStatus(Long orderId, OrderStatus newStatus, String carrier, String trackingNumber) {
     Order order = orderRepository.findById(orderId).orElseThrow();
@@ -84,6 +100,12 @@ public class OrderService {
     }
 
     return orderRepository.save(order);
+  }
+
+  public List<Order> findOrderByStatus(OrderStatus status) {
+    List<Order> order = orderRepository.findByOrderStatusOrderByCreatedAtAsc(status);
+    return order;
+
   }
 
 }
