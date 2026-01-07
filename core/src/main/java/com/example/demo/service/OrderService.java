@@ -53,10 +53,14 @@ public class OrderService {
   }
 
   public List<Order> getAllActiveOrders() {
-    List<OrderStatus> status = List.of(OrderStatus.DELIVERED, OrderStatus.CANCELLED);
+    List<OrderStatus> status = List.of(OrderStatus.DELIVERED, OrderStatus.CANCELLED, OrderStatus.SHIPPED);
     List<Order> order = orderRepository.findAllByOrderStatusNotInOrderByCreatedAtAsc(status);
     return order;
 
+  }
+
+  public List<Order> getShippedOrders() {
+    return findOrderByStatus(OrderStatus.SHIPPED);
   }
 
   public List<Order> getCompletedOrders() {

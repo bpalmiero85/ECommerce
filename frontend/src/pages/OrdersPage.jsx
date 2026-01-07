@@ -14,6 +14,9 @@ export default function OrdersPage() {
     if (orderStatus === "active") {
       return "http://localhost:8080/api/admin/orders/status/active-orders";
     }
+    if (orderStatus === "shipped") {
+      return "http://localhost:8080/api/admin/orders/status/shipped";
+    }
     if (orderStatus === "completed") {
       return "http://localhost:8080/api/admin/orders/status/completed";
     }
@@ -40,7 +43,10 @@ export default function OrdersPage() {
       setOrderStatus(status);
     } else if (status === "cancelled") {
       setOrderStatus(status);
-    } else {
+    } else if (status === "shipped") {
+      setOrderStatus(status);
+    } 
+    else {
       setOrderStatus(null);
     }
   };
@@ -151,8 +157,17 @@ export default function OrdersPage() {
             handleChooseOrderStatus("active");
           }}
         >
-          Active
+          ACTIVE
         </button>
+        <button
+          type="button"
+          style={{ backgroundColor: "lightblue"}}
+          onClick={() => {
+            handleChooseOrderStatus("shipped");
+          }}
+          >
+            SHIPPED
+          </button>
 
         <button
           type="button"
@@ -161,7 +176,7 @@ export default function OrdersPage() {
             handleChooseOrderStatus("completed");
           }}
         >
-          Completed
+          COMPLETED
         </button>
         <button
           type="button"
@@ -170,7 +185,7 @@ export default function OrdersPage() {
             handleChooseOrderStatus("cancelled");
           }}
         >
-          Cancelled
+          CANCELLED
         </button>
       </div>
 

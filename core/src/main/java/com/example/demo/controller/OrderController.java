@@ -71,6 +71,13 @@ public class OrderController {
     return order;
   }
 
+  @GetMapping("/status/shipped")
+  public List<Order> getShippedOrders() {
+    return orderService.getShippedOrders();
+  }
+  
+  
+
   @GetMapping("/status/completed")
   public List<Order> getDeliveredOrders() {
     return orderService.getCompletedOrders();
