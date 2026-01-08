@@ -45,8 +45,7 @@ export default function OrdersPage() {
       setOrderStatus(status);
     } else if (status === "shipped") {
       setOrderStatus(status);
-    } 
-    else {
+    } else {
       setOrderStatus(null);
     }
   };
@@ -101,27 +100,27 @@ export default function OrdersPage() {
     const carrier = window.prompt("Carrier (ex: USPS, FedEx):") || "";
     const trackingNumber = window.prompt("Tracking Number:") || "";
 
-      try {
-    const res = await authedFetch(
-      `${API_BASE}/api/admin/orders/${orderId}/status`,
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          status: "SHIPPED",
-          carrier,
-          trackingNumber,
-        }),
-      }
-    );
-    if (!res.ok) return;
+    try {
+      const res = await authedFetch(
+        `${API_BASE}/api/admin/orders/${orderId}/status`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            status: "SHIPPED",
+            carrier,
+            trackingNumber,
+          }),
+        }
+      );
+      if (!res.ok) return;
       await fetchOrders();
       console.log("ship payload:", { orderId, carrier, trackingNumber });
       return res;
-  } catch (e) {
-    console.error(e);
-    setError(e.message || "Failed to mark as shipped");
-  }
+    } catch (e) {
+      console.error(e);
+      setError(e.message || "Failed to mark as shipped");
+    }
   };
 
   const fetchOrders = useCallback(async () => {
@@ -161,13 +160,13 @@ export default function OrdersPage() {
         </button>
         <button
           type="button"
-          style={{ backgroundColor: "lightblue"}}
+          style={{ backgroundColor: "lightblue" }}
           onClick={() => {
             handleChooseOrderStatus("shipped");
           }}
-          >
-            SHIPPED
-          </button>
+        >
+          SHIPPED
+        </button>
 
         <button
           type="button"
@@ -211,6 +210,7 @@ export default function OrdersPage() {
               <th>Email</th>
               <th>Total</th>
               <th>Status</th>
+              <th>Tracking</th>
               <th>Created</th>
             </tr>
           </thead>
@@ -224,6 +224,7 @@ export default function OrdersPage() {
                     color: "white",
                   }}
                 >
+                  {/* Actions */}
                   <td>
                     {o.orderStatus === "PAID" && (
                       <button onClick={() => handleMarkShipped(o.orderId)}>
@@ -231,18 +232,42 @@ export default function OrdersPage() {
                       </button>
                     )}
                   </td>
+
+                  {/* Order ID */}
                   <td>{o.orderId}</td>
+
+                  {/* Name */}
                   <td>{o.orderName}</td>
+
+                  {/* Email */}
                   <td>{o.orderEmail}</td>
+
+                  {/* Total */}
                   <td>${Number(o.orderTotal).toFixed(2)}</td>
+
+                  {/* Status */}
                   <td>{o.orderStatus}</td>
+
+                  {/* Tracking */}
+                  <td>
+                    {o.orderStatus === "SHIPPED" && o.trackingNumber && (
+                      <>
+                        <div>{o.carrier}</div>
+                        <div style={{ fontSize: 12, color: "#ccc" }}>
+                          {o.trackingNumber}
+                        </div>
+                      </>
+                    )}
+                  </td>
+
+                  {/* Created */}
                   <td>
                     {o.createdAt ? new Date(o.createdAt).toLocaleString() : ""}
                   </td>
                 </tr>
                 {o.items && o.items.length > 0 && (
                   <tr>
-                    <td colSpan="6">
+                    <td colSpan="8">
                       <ul style={{ margin: "6px 0 12px 20px" }}>
                         {o.items.map((it) => (
                           <li key={it.id}>
