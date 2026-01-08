@@ -46,17 +46,22 @@
   cursor: not-allowed;
 }
 
+
+
 .more-link {
-  position: absolute;
-  margin-left: 99%;
-  bottom: 5px;
-  padding-left: 0.7rem;
+  position: static;
+  right: 0;
+  bottom: 0;
   background: none;
   border: 0;
   padding: 0;
   cursor: pointer;
+  margin-bottom: 5px;
   font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.604);
+  color: rgb(176, 0, 251);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
 }
 
 .less-link {
@@ -72,6 +77,7 @@
   font-size: 1.1rem;
   color: rgba(255, 255, 255, 0.604);
 }
+
 
 .modal-product-description-container {
   display: flex;
