@@ -2,6 +2,7 @@ import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useState, useContext, useEffect } from "react";
 import { CartContext } from "../contexts/CartContext";
 import ClearCartButton from "../components/ClearCartButton";
+import emailjs from "@emailjs/browser";
 import "../styles/CheckoutPage.css";
 import "../styles/ProductPage.css";
 
@@ -154,12 +155,24 @@ export default function CheckoutPage({ onSuccess }) {
       credentials: "include",
       body: JSON.stringify(payload),
     });
+    const rawText = await res.text();
+    let data = {};
 
-    const data = await res.json().catch(() => ({}));
+    try {
+      data = rawText ? JSON.parse(rawText) : {};
+    } catch {}
 
     if (!res.ok) {
+      console.error("saveOrder failed:", {
+        status: res.status,
+        rawText,
+        data,
+        payloadSent: payload,
+      });
       throw new Error(
-        data?.error || data?.message || `Saving order failed (${res.status})`
+        data?.error ||
+        rawText ||
+        `Saving order failed (${res.status})`
       );
     }
     return data;
@@ -234,22 +247,42 @@ export default function CheckoutPage({ onSuccess }) {
           productName: it.name,
           quantity: Number(it.qty ?? it.quantity ?? 1),
           unitPrice: Number(it.price),
-        }))
+        })),
       };
 
       setPaidIntentId(result.paymentIntent.id);
       setOrderPayloadToRetry(payload);
       setOrderSaveError(null);
 
+      
+
       try {
-        await saveOrder(payload);
+        console.log("Attempting to save order with payload:", payload);
+        const savedOrder = await saveOrder(payload);
+
+        try {
+        await emailjs.send(
+          "service_1wp75sm",
+          "template_0psmti8",
+          {
+            to_email: savedOrder.orderEmail,
+            order_id: savedOrder.orderId,
+            customer_name: savedOrder.orderName,
+            order_total: `$${Number(savedOrder.orderTotal).toFixed(2)}`,
+          },
+          "ZkQfANdcZnMH2U1KL"
+        );
+      } catch (emailErr) {
+        console.error("EmailJS failed:", emailErr);
+        console.error("EmailJS details:", emailErr?.status, email?.text);
+      }
 
         setSucceeded(true);
         clearCartAfterPayment();
         if (onSuccess) onSuccess();
       } catch (err) {
-        console.error("Order save failed:", err);
-        setOrderSaveError(err.message || "Failed to save order.");
+        console.error("Post-payment step failed:", err);
+        setOrderSaveError(err?.text|| err?.message || "Post-payment step failed.");
         setSucceeded(false);
       }
     } catch (err) {

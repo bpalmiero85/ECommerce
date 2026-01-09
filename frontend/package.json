@@ -1,26 +1,23 @@
-
-
 {
-  
-  
   "type": "module",
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@stripe/react-stripe-js": "^3.7.0",
     "@stripe/stripe-js": "^7.4.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
-    "express": "^4.18.2",
-    "stripe": "^20.158.0",
     "dotenv": "^16.0.0",
+    "express": "^4.18.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-easy-crop": "^5.2.0",
     "react-router-dom": "^6.28.0",
     "react-scripts": "^5.0.1",
+    "stripe": "^20.1.0",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -47,6 +44,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-   
   }
 }

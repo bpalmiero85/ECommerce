@@ -250,7 +250,7 @@ export default function OrdersPage() {
 
                   {/* Tracking */}
                   <td>
-                    {o.orderStatus === "SHIPPED" && o.trackingNumber && (
+                    {o.trackingNumber && (o.orderStatus === "SHIPPED" || o.orderStatus === "DELIVERED") && (
                       <>
                         <div>{o.carrier}</div>
                         <div style={{ fontSize: 12, color: "#ccc" }}>

@@ -305,7 +305,7 @@ const Product = ({
                   e.stopPropagation();
                 }}
               >
-                <span classNAme="in-cart-wrap">
+                <span className="in-cart-wrap">
                   <button
                     type="button"
                     className="qty-btn"
