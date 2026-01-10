@@ -111,6 +111,9 @@ export default function CheckoutPage({ onSuccess }) {
   const [orderPayloadToRetry, setOrderPayloadToRetry] = useState(null);
   const [paidIntentId, setPaidIntentId] = useState(null);
 
+  // store order information to display to customer
+  const [savedOrder, setSavedOrder] = useState(null);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const trimmed = destinationZip.trim();
@@ -170,9 +173,7 @@ export default function CheckoutPage({ onSuccess }) {
         payloadSent: payload,
       });
       throw new Error(
-        data?.error ||
-        rawText ||
-        `Saving order failed (${res.status})`
+        data?.error || rawText || `Saving order failed (${res.status})`
       );
     }
     return data;
@@ -254,35 +255,37 @@ export default function CheckoutPage({ onSuccess }) {
       setOrderPayloadToRetry(payload);
       setOrderSaveError(null);
 
-      
-
       try {
         console.log("Attempting to save order with payload:", payload);
-        const savedOrder = await saveOrder(payload);
+        const createdOrder = await saveOrder(payload);
+        setSavedOrder(createdOrder);
 
         try {
-        await emailjs.send(
-          "service_1wp75sm",
-          "template_0psmti8",
-          {
-            to_email: savedOrder.orderEmail,
-            order_id: savedOrder.orderId,
-            customer_name: savedOrder.orderName,
-            order_total: `$${Number(savedOrder.orderTotal).toFixed(2)}`,
-          },
-          "ZkQfANdcZnMH2U1KL"
-        );
-      } catch (emailErr) {
-        console.error("EmailJS failed:", emailErr);
-        console.error("EmailJS details:", emailErr?.status, email?.text);
-      }
+          await emailjs.send(
+            "service_1wp75sm",
+            "template_0psmti8",
+            {
+              to_email: createdOrder.orderEmail,
+              order_id: createdOrder.orderId,
+              customer_name: createdOrder.orderName,
+              order_total: `$${Number(createdOrder.orderTotal).toFixed(2)}`,
+            },
+            "ZkQfANdcZnMH2U1KL"
+          );
+          setSucceeded(true);
+        } catch (emailErr) {
+          console.error("EmailJS failed:", emailErr);
+          console.error("EmailJS details:", emailErr?.status, email?.text);
+        }
 
         setSucceeded(true);
         clearCartAfterPayment();
         if (onSuccess) onSuccess();
       } catch (err) {
         console.error("Post-payment step failed:", err);
-        setOrderSaveError(err?.text|| err?.message || "Post-payment step failed.");
+        setOrderSaveError(
+          err?.text || err?.message || "Post-payment step failed."
+        );
         setSucceeded(false);
       }
     } catch (err) {
@@ -368,7 +371,30 @@ export default function CheckoutPage({ onSuccess }) {
 
   return cartItems.length === 0 ? (
     <div className="empty-cart-message">
-      {succeeded ? "Thank you for your order!" : "Your cart is empty."}
+      {succeeded ? (
+        <>
+          <div style={{ fontSize: "2rem" }}>Thank you for your order! 🖤✨</div>
+
+          {savedOrder?.orderId && (
+            <div style={{ fontSize: "1.6rem", marginTop: 20, position: "relative" }}>
+              <strong>Order #:</strong> {savedOrder.orderId}
+            </div>
+          )}
+
+          {savedOrder?.orderEmail && (
+            <div style={{ fontSize: "1.6rem", marginTop: 25, position: "relative" }}>
+              We sent a confirmation email to{" "}
+              <strong>{savedOrder.orderEmail}</strong>.
+            </div>
+          )}
+
+          <div style={{ marginTop: 30, fontSize: 18, opacity: 0.95, position: "relative" }}>
+           (If you don&apos;t see it, check spam/promotions.)
+          </div>
+        </>
+      ) : (
+        "Your cart is empty."
+      )}
     </div>
   ) : (
     <form
