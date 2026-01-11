@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import emailjs from "@emailjs/browser";
 
 const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8080";
 
@@ -9,6 +10,22 @@ export default function OrdersPage() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [orderStatus, setOrderStatus] = useState("active");
+
+  const SHIPPING_TEMPLATE_ID = "template_wqi7wms";
+  const EMAILJS_SERVICE_ID = "service_1wp75sm";
+  const EMAILJS_PUBLIC_KEY = "ZkQfANdcZnMH2U1KL";
+
+  const buildTrackingUrl = (carrier, trackingNumber) => {
+    const c = (carrier || "").toLowerCase();
+    const t = (trackingNumber || "").trim();
+
+    if (!t) return "";
+    if (c.includes("usps")) return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${encodeURIComponent(t)}`;
+    if (c.includes("ups")) return `https://www.ups.com/track?loc=en_US&tracknum=${encodeURIComponent(t)}`;
+    if (c.includes("fedex")) return `https://www.fedex.com/fedextrack/?trknbr=${encodeURIComponent(t)}`;
+
+    return "";
+  };
 
   const orderStatusEndpoint = useCallback(() => {
     if (orderStatus === "active") {
@@ -96,7 +113,8 @@ export default function OrdersPage() {
     [auth, promptForAuth]
   );
 
-  const handleMarkShipped = async (orderId) => {
+  const handleMarkShipped = async (order) => {
+    const orderId = order.orderId;
     const carrier = window.prompt("Carrier (ex: USPS, FedEx):") || "";
     const trackingNumber = window.prompt("Tracking Number:") || "";
 
@@ -114,8 +132,27 @@ export default function OrdersPage() {
         }
       );
       if (!res.ok) return;
+      const updated = await res.json().catch(() => null);
+
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        SHIPPING_TEMPLATE_ID,
+        {
+          to_email: updated?.orderEmail ?? order.orderEmail,
+          customer_name: updated?.orderName ?? order.orderName,
+          order_id: updated?.orderId ?? order.orderId,
+          carrier: updated?.carrier ?? carrier,
+          tracking_number: updated?.trackingNumber ?? trackingNumber,
+          tracking_url: buildTrackingUrl(
+            updated?.carrier ?? carrier,
+            updated?.trackingNumber ?? trackingNumber
+          ),
+        },
+        EMAILJS_PUBLIC_KEY
+      );
       await fetchOrders();
       console.log("ship payload:", { orderId, carrier, trackingNumber });
+      console.log("shipping email sent for:", orderId);
       return res;
     } catch (e) {
       console.error(e);
@@ -227,7 +264,7 @@ export default function OrdersPage() {
                   {/* Actions */}
                   <td>
                     {o.orderStatus === "PAID" && (
-                      <button onClick={() => handleMarkShipped(o.orderId)}>
+                      <button onClick={() => handleMarkShipped(o)}>
                         Mark shipped
                       </button>
                     )}

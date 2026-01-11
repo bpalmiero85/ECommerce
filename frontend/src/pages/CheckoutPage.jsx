@@ -388,7 +388,7 @@ export default function CheckoutPage({ onSuccess }) {
             </div>
           )}
 
-          <div style={{ marginTop: 30, fontSize: 18, opacity: 0.95, position: "relative" }}>
+          <div style={{ marginTop: 30, fontSize: "1.3rem", opacity: 0.95, position: "relative" }}>
            (If you don&apos;t see it, check spam/promotions.)
           </div>
         </>
