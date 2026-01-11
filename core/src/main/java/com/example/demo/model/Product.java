@@ -26,6 +26,8 @@ public class Product {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  private boolean soldOut;
+
   private String pictureType;
 
   private long pictureVersion;

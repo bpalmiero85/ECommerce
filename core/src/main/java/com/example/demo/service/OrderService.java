@@ -5,21 +5,27 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.example.demo.model.Order;
 import com.example.demo.model.OrderItem;
 import com.example.demo.model.OrderStatus;
+import com.example.demo.model.Product;
 import com.example.demo.repository.OrderRepository;
+import com.example.demo.repository.ProductRepository;
 
 @Service
 public class OrderService {
 
   private final OrderRepository orderRepository;
+  private final ProductRepository productRepository;
 
-  public OrderService(OrderRepository orderRepository) {
+  public OrderService(OrderRepository orderRepository, ProductRepository productRepository) {
     this.orderRepository = orderRepository;
+    this.productRepository = productRepository;
   }
 
   public Order createOrder(String name, String email, BigDecimal total, OrderStatus status) {
@@ -34,15 +40,28 @@ public class OrderService {
   @Transactional
   public Order createOrderWithItems(String name, String email, BigDecimal total, OrderStatus status,
       List<OrderItem> items) {
+      
+      if (items == null || items.isEmpty()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order must contain at least one item");
+      }
+
     Order order = new Order();
     order.setOrderName(name);
     order.setOrderEmail(email);
     order.setOrderTotal(total);
     order.setOrderStatus(status);
-    if (items != null) {
-      for (OrderItem it : items) {
-        order.addItem(it);
+
+    for (OrderItem it : items) {
+      order.addItem(it);
+
+      Product p = productRepository.findById(it.getProductId()).orElseThrow();
+      int newQty = p.getQuantity() - it.getQuantity();
+      if (newQty < 0) {
+        throw new ResponseStatusException(HttpStatus.CONFLICT, "Not enough stock");
       }
+      p.setQuantity(newQty);
+      p.setSoldOut(newQty <= 0);
+      productRepository.save(p);
     }
 
     return orderRepository.save(order);
@@ -53,7 +72,8 @@ public class OrderService {
   }
 
   public List<Order> getAllActiveOrders() {
-    List<OrderStatus> status = List.of(OrderStatus.DELIVERED, OrderStatus.CANCELLED, OrderStatus.SHIPPED, OrderStatus.ARCHIVED);
+    List<OrderStatus> status = List.of(OrderStatus.DELIVERED, OrderStatus.CANCELLED, OrderStatus.SHIPPED,
+        OrderStatus.ARCHIVED);
     List<Order> order = orderRepository.findAllByOrderStatusNotInOrderByCreatedAtAsc(status);
     return order;
 

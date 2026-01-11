@@ -1,6 +1,8 @@
 package com.example.demo.controller;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.MediaType;
@@ -31,6 +33,11 @@ public class AdminController {
   @GetMapping
   public String adminCheck() {
     return "Admin access OK";
+  }
+
+  @GetMapping("/products/sold-out")
+  public List<Product> getSoldOut() {
+    return productService.getSoldOutProducts();
   }
 
   @PostMapping("/product")

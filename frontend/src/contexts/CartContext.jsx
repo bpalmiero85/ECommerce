@@ -36,7 +36,13 @@ function migrateItem(raw) {
     price: Number.isFinite(priceNum) ? priceNum : 0,
     imageUrl: raw.imageUrl ?? "",
     qty: Number.isFinite(qtyNum) && qtyNum > 0 ? qtyNum : 1,
-    available: Number(raw.available ?? raw.inventory ?? raw.quantityAvailable ?? raw.quantity ?? Number.POSITIVE_INFINITY),
+    available: Number(
+      raw.available ??
+        raw.inventory ??
+        raw.quantityAvailable ??
+        raw.quantity ??
+        Number.POSITIVE_INFINITY
+    ),
   };
 }
 
@@ -123,8 +129,11 @@ export function CartProvider({ children }) {
   }
 
   function clearCartAfterPayment() {
+    try {
+      sessionStorage.removeItem("pendingRelease");
+    } catch {}
     setCartItems([]);
-  };
+  }
 
   const addToCart = (item) => {
     setCartItems((prev) => {
@@ -200,25 +209,25 @@ export function CartProvider({ children }) {
   }, [cartItems.length]);
 
   useEffect(() => {
-  const s = sessionStorage.getItem("pendingRelease");
-  if (!s) return;
-  sessionStorage.removeItem("pendingRelease");
+    const s = sessionStorage.getItem("pendingRelease");
+    if (!s) return;
+    sessionStorage.removeItem("pendingRelease");
 
-  try {
-    const payload = JSON.parse(s) || {};
-    const list = Array.isArray(payload.list) ? payload.list : [];
-    const ts = Number(payload.ts) || 0;
-    const AGE_MS = Date.now() - ts;
+    try {
+      const payload = JSON.parse(s) || {};
+      const list = Array.isArray(payload.list) ? payload.list : [];
+      const ts = Number(payload.ts) || 0;
+      const AGE_MS = Date.now() - ts;
 
-    if (AGE_MS > 30_000 && list.length) {
-      (async () => {
-        for (const it of list) await releaseQty(it.id, it.qty);
-      })();
+      if (AGE_MS > 30_000 && list.length) {
+        (async () => {
+          for (const it of list) await releaseQty(it.id, it.qty);
+        })();
+      }
+    } catch {
+      // ignore
     }
-  } catch {
-    // ignore
-  }
-}, []);
+  }, []);
 
   useEffect(() => {
     const s = sessionStorage.getItem("pendingRelease");

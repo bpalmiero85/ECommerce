@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +24,7 @@ public class ProductService {
     if (product.getCategory() == null || product.getCategory().isBlank()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category is required when posting a product.");
     }
+    product.setSoldOut(product.getQuantity() <= 0);
     Product saved = productRepository.save(product);
     inventory.setStock(saved.getId(), saved.getQuantity());
     return saved;
@@ -67,6 +69,7 @@ public class ProductService {
       product.setDescription(updatedProduct.getDescription());
       product.setPrice(updatedProduct.getPrice());
       product.setQuantity(updatedProduct.getQuantity());
+      product.setSoldOut(product.getQuantity() <= 0);
       product.setCategory(updatedProduct.getCategory());
       product.setFeatured(updatedProduct.isFeatured());
       product.setNewArrival(updatedProduct.isNewArrival());
@@ -81,10 +84,10 @@ public class ProductService {
   }
 
   public List<Product> getFeaturedProducts() {
-      List<Product> list = productRepository.findByFeaturedTrueOrderByNameAsc();
-      list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
-      return list;
-    
+    List<Product> list = productRepository.findByFeaturedTrueOrderByNameAsc();
+    list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
+    return list;
+
   }
 
   public List<Product> getFeaturedProductsByCategory(String category) {
@@ -94,18 +97,20 @@ public class ProductService {
   }
 
   public List<Product> getNewArrivals() {
-  List<Product> list = productRepository.findByNewArrivalTrueOrderByNameAsc();
-  list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
-  return list;
-}
+    List<Product> list = productRepository.findByNewArrivalTrueOrderByNameAsc();
+    list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
+    return list;
+  }
 
-public List<Product> getNewArrivalsByCategory(String category) {
-  List<Product> list = productRepository.findByCategoryIgnoreCaseAndNewArrivalTrueOrderByNameAsc(category);
-  list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
-  return list;
-}
+  public List<Product> getNewArrivalsByCategory(String category) {
+    List<Product> list = productRepository.findByCategoryIgnoreCaseAndNewArrivalTrueOrderByNameAsc(category);
+    list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
+    return list;
+  }
 
-
+  public List<Product> getSoldOutProducts() {
+    return productRepository.findBySoldOutTrueOrderByNameAsc();
+  }
 
   public void deleteProduct(Long id) {
     if (productRepository.existsById(id)) {
