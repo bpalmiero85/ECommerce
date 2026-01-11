@@ -90,6 +90,10 @@ public class ProductService {
 
   }
 
+    public List<Product> getLowStockProducts() {
+    return productRepository.findByQuantityAndSoldOutIsFalseOrderByNameAsc(1);
+  }
+
   public List<Product> getFeaturedProductsByCategory(String category) {
     List<Product> list = productRepository.findByCategoryIgnoreCaseAndFeaturedTrueOrderByNameAsc(category);
     list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));

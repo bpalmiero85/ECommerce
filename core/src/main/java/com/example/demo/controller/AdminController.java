@@ -40,6 +40,11 @@ public class AdminController {
     return productService.getSoldOutProducts();
   }
 
+  @GetMapping("/products/low-stock")
+  public List<Product> getLowStock() {
+    return productService.getLowStockProducts();
+  }
+
   @PostMapping("/product")
   public ResponseEntity<Product> saveProduct(@RequestBody Product product) {
     Product newProduct = productService.saveProduct(product);

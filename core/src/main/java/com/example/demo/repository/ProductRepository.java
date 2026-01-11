@@ -19,6 +19,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
   List<Product> findBySoldOutTrueOrderByNameAsc();
 
+  List<Product> findByQuantityAndSoldOutIsFalseOrderByNameAsc(Integer quantity);
+
   List<Product> findByCategoryIgnoreCaseAndNewArrivalTrueOrderByNameAsc(String category);
 
   List<Product> findByCategoryIgnoreCaseAndFeaturedTrueOrderByNameAsc(String category);

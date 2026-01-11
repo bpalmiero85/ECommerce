@@ -9,6 +9,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -55,6 +58,7 @@ public class Product {
   private boolean newArrival;
 
   @Lob
+  @JsonIgnore
   @Column(name = "product_picture_file")
   private byte[] productPictureFile;
 
