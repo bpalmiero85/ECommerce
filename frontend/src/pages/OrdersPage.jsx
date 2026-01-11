@@ -20,16 +20,25 @@ export default function OrdersPage() {
     const t = (trackingNumber || "").trim();
 
     if (!t) return "";
-    if (c.includes("usps")) return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${encodeURIComponent(t)}`;
-    if (c.includes("ups")) return `https://www.ups.com/track?loc=en_US&tracknum=${encodeURIComponent(t)}`;
-    if (c.includes("fedex")) return `https://www.fedex.com/fedextrack/?trknbr=${encodeURIComponent(t)}`;
+    if (c.includes("usps"))
+      return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${encodeURIComponent(
+        t
+      )}`;
+    if (c.includes("ups"))
+      return `https://www.ups.com/track?loc=en_US&tracknum=${encodeURIComponent(
+        t
+      )}`;
+    if (c.includes("fedex"))
+      return `https://www.fedex.com/fedextrack/?trknbr=${encodeURIComponent(
+        t
+      )}`;
 
     return "";
   };
 
   const orderStatusEndpoint = useCallback(() => {
     if (orderStatus === "active") {
-      return "http://localhost:8080/api/admin/orders/status/active-orders";
+      return "http://localhost:8080/api/admin/orders/status/active";
     }
     if (orderStatus === "shipped") {
       return "http://localhost:8080/api/admin/orders/status/shipped";
@@ -39,6 +48,9 @@ export default function OrdersPage() {
     }
     if (orderStatus === "cancelled") {
       return "http://localhost:8080/api/admin/orders/status/cancelled";
+    }
+    if (orderStatus === "archived") {
+      return "http://localhost:8080/api/admin/orders/status/archived";
     }
     return null;
   }, [orderStatus]);
@@ -54,17 +66,7 @@ export default function OrdersPage() {
   };
 
   const handleChooseOrderStatus = (status) => {
-    if (status === "active") {
-      setOrderStatus(status);
-    } else if (status === "completed") {
-      setOrderStatus(status);
-    } else if (status === "cancelled") {
-      setOrderStatus(status);
-    } else if (status === "shipped") {
-      setOrderStatus(status);
-    } else {
-      setOrderStatus(null);
-    }
+    setOrderStatus(status);
   };
 
   const promptForAuth = useCallback(() => {
@@ -160,6 +162,73 @@ export default function OrdersPage() {
     }
   };
 
+  const handleMarkDelivered = async (order) => {
+    const orderId = order.orderId;
+
+    try {
+      const res = await authedFetch(
+        `${API_BASE}/api/admin/orders/${orderId}/status`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            status: "DELIVERED",
+          }),
+        }
+      );
+
+      if (!res.ok) return;
+
+      await fetchOrders();
+      return res;
+    } catch (e) {
+      console.error(e);
+      setError(e.message || "Failed to mark as delivered");
+    }
+  };
+
+  const handleResendTracking = async (order) => {
+    try {
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        SHIPPING_TEMPLATE_ID,
+        {
+          to_email: order.orderEmail,
+          customer_name: order.orderName,
+          order_id: order.orderId,
+          carrier: order.carrier,
+          tracking_number: order.trackingNumber,
+          tracking_url: buildTrackingUrl(order.carrier, order.trackingNumber),
+        },
+        EMAILJS_PUBLIC_KEY
+      );
+      alert(`Tracking email resent to ${order.orderEmail}`);
+    } catch (e) {
+      console.error("Resend tracking failed:", e);
+      alert("Failed to resend tracking email.");
+    }
+  };
+
+  const handleArchiveOrder = async (order) => {
+    const orderId = order.orderId;
+
+    try {
+      const res = await authedFetch(
+        `${API_BASE}/api/admin/orders/${orderId}/status`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "ARCHIVED" }),
+        }
+      );
+      if (!res.ok) throw new Error("Failed to archive order");
+      await fetchOrders();
+    } catch (e) {
+      console.error(e);
+      setError(e.message || "Failed to archive order");
+    }
+  };
+
   const fetchOrders = useCallback(async () => {
     try {
       setError(null);
@@ -223,6 +292,15 @@ export default function OrdersPage() {
         >
           CANCELLED
         </button>
+        <button
+          type="button"
+          style={{ backgroundColor: "lightBlue" }}
+          onClick={() => {
+            handleChooseOrderStatus("archived");
+          }}
+        >
+          ARCHIVED
+        </button>
       </div>
 
       {error && <div style={{ color: "red", marginBottom: 12 }}>{error}</div>}
@@ -234,21 +312,19 @@ export default function OrdersPage() {
       {orders.length === 0 ? (
         <div>No orders yet.</div>
       ) : (
-        <table
-          width="100%"
-          cellPadding="10"
-          style={{ borderCollapse: "collapse" }}
-        >
+        <table width="100%" style={{ borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ textAlign: "left" }}>
-              <th>Actions</th>
-              <th>Order ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Total</th>
-              <th>Status</th>
-              <th>Tracking</th>
-              <th>Created</th>
+              <th style={{ padding: "12px 20px" }}>Actions</th>
+              <th style={{ padding: "12px 20px" }}>Order ID</th>
+              <th style={{ padding: "12px 20px" }}>Name</th>
+              <th style={{ padding: "12px 20px" }}>Email</th>
+              <th style={{ padding: "12px 20px" }}>Total</th>
+              <th style={{ padding: "12px 20px" }}>Status</th>
+              {orderStatus !== "active" && (
+                <th style={{ padding: "12px 20px" }}>Tracking</th>
+              )}
+              <th style={{ padding: "12px 20px" }}>Created</th>
             </tr>
           </thead>
           <tbody>
@@ -262,49 +338,80 @@ export default function OrdersPage() {
                   }}
                 >
                   {/* Actions */}
-                  <td>
+                  <td style={{ padding: "12px 20px" }}>
                     {o.orderStatus === "PAID" && (
                       <button onClick={() => handleMarkShipped(o)}>
                         Mark shipped
                       </button>
                     )}
+
+                    {orderStatus === "shipped" &&
+                      o.orderStatus === "SHIPPED" &&
+                      o.trackingNumber &&
+                      !o.deliveredAt && (
+                        <>
+                          <button
+                            style={{ marginLeft: 8 }}
+                            onClick={() => handleResendTracking(o)}
+                          >
+                            Resend tracking
+                          </button>
+                          <button onClick={() => handleMarkDelivered(o)}>
+                            Mark delivered
+                          </button>
+                        </>
+                      )}
+                    {orderStatus === "completed" &&
+                      o.orderStatus === "DELIVERED" && (
+                        <button
+                          style={{ marginLeft: 8 }}
+                          onClick={() => handleArchiveOrder(o)}
+                        >
+                          Archive
+                        </button>
+                      )}
                   </td>
 
                   {/* Order ID */}
-                  <td>{o.orderId}</td>
+                  <td style={{ padding: "12px 20px" }}>{o.orderId}</td>
 
                   {/* Name */}
-                  <td>{o.orderName}</td>
+                  <td style={{ padding: "12px 20px" }}>{o.orderName}</td>
 
                   {/* Email */}
-                  <td>{o.orderEmail}</td>
+                  <td style={{ padding: "12px 20px" }}>{o.orderEmail}</td>
 
                   {/* Total */}
-                  <td>${Number(o.orderTotal).toFixed(2)}</td>
-
-                  {/* Status */}
-                  <td>{o.orderStatus}</td>
-
-                  {/* Tracking */}
-                  <td>
-                    {o.trackingNumber && (o.orderStatus === "SHIPPED" || o.orderStatus === "DELIVERED") && (
-                      <>
-                        <div>{o.carrier}</div>
-                        <div style={{ fontSize: 12, color: "#ccc" }}>
-                          {o.trackingNumber}
-                        </div>
-                      </>
-                    )}
+                  <td style={{ padding: "12px 20px" }}>
+                    ${Number(o.orderTotal).toFixed(2)}
                   </td>
 
+                  {/* Status */}
+                  <td style={{ padding: "12px 20px" }}>{o.orderStatus}</td>
+
+                  {/* Tracking */}
+                  {orderStatus !== "active" && (
+                    <td style={{ padding: "12px 20px" }}>
+                      {o.trackingNumber &&
+                        (o.orderStatus === "SHIPPED" ||
+                          o.orderStatus === "DELIVERED") && (
+                          <>
+                            <div>{o.carrier}</div>
+                            <div style={{ fontSize: 12, color: "#ccc" }}>
+                              {o.trackingNumber}
+                            </div>
+                          </>
+                        )}
+                    </td>
+                  )}
                   {/* Created */}
-                  <td>
+                  <td style={{ padding: "12px 20px" }}>
                     {o.createdAt ? new Date(o.createdAt).toLocaleString() : ""}
                   </td>
                 </tr>
                 {o.items && o.items.length > 0 && (
                   <tr>
-                    <td colSpan="8">
+                    <td colSpan="8" style={{ padding: "12px 20px" }}>
                       <ul style={{ margin: "6px 0 12px 20px" }}>
                         {o.items.map((it) => (
                           <li key={it.id}>

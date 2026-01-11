@@ -5,6 +5,7 @@ package com.example.demo.model;
     PROCESSING, 
     SHIPPED, 
     DELIVERED, 
-    CANCELLED
+    CANCELLED,
+    ARCHIVED
   }
 

@@ -88,9 +88,14 @@ public class OrderController {
     return orderService.getCancelledOrders();
   }
 
-  @GetMapping("/status/active-orders")
+  @GetMapping("/status/active")
   public List<Order> getActiveOrders() {
     return orderService.getAllActiveOrders();
+  }
+
+  @GetMapping("/status/archived")
+  public List<Order> getArchivedOrders() {
+    return orderService.getArchivedOrders();
   }
 
 }

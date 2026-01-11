@@ -53,7 +53,7 @@ public class OrderService {
   }
 
   public List<Order> getAllActiveOrders() {
-    List<OrderStatus> status = List.of(OrderStatus.DELIVERED, OrderStatus.CANCELLED, OrderStatus.SHIPPED);
+    List<OrderStatus> status = List.of(OrderStatus.DELIVERED, OrderStatus.CANCELLED, OrderStatus.SHIPPED, OrderStatus.ARCHIVED);
     List<Order> order = orderRepository.findAllByOrderStatusNotInOrderByCreatedAtAsc(status);
     return order;
 
@@ -69,6 +69,10 @@ public class OrderService {
 
   public List<Order> getCancelledOrders() {
     return findOrderByStatus(OrderStatus.CANCELLED);
+  }
+
+  public List<Order> getArchivedOrders() {
+    return findOrderByStatus(OrderStatus.ARCHIVED);
   }
 
   @Transactional
