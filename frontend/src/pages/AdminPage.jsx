@@ -13,13 +13,13 @@ const AdminPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [productPicture, setProductPicture] = useState(null);
   const [isEditingId, setIsEditingId] = useState(null);
-  const [isOpen, setIsOpen] = useState(false);
   const [isPictureUploaded, setIsPictureUploaded] = useState(false);
   const [croppingStatus, setCroppingStatus] = useState(false);
   const [category, setCategory] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
   const [isNewArrival, setIsNewArrival] = useState(false);
+  const [activeTab, setActiveTab] = useState("all");
   const formRef = useRef(null);
   const mainFileRef = useRef(null);
   const editFileRef = useRef(null);
@@ -44,12 +44,12 @@ const AdminPage = () => {
     const password = window.prompt("Admin password:");
     if (!password) return null;
     return btoa(`${username}:${password}`);
-    }, []);
+  }, []);
 
   useEffect(() => {
-   if (auth) return;
-   const token = promptForAuth();
-   if (token) setAuth(token);
+    if (auth) return;
+    const token = promptForAuth();
+    if (token) setAuth(token);
   }, [auth, promptForAuth]);
 
   const authedFetch = useCallback(
@@ -79,7 +79,9 @@ const AdminPage = () => {
         }
       }
       return res;
-    }, [auth, promptForAuth]);
+    },
+    [auth, promptForAuth]
+  );
 
   const notifyProductsChanged = useCallback((payload) => {
     try {
@@ -102,7 +104,21 @@ const AdminPage = () => {
           : `?_=${Date.now()}`;
       const url = `${base}${qs}`;
 
-      const response = await fetch(url, { method: "GET", cache: "no-store" });
+      let response;
+      if (activeTab === "all") {
+        response = await fetch(url, { method: "GET", cache: "no-store" });
+      } else if (activeTab === "low-stock") {
+        response = await authedFetch(
+          "http://localhost:8080/api/admin/products/low-stock",
+          { method: "GET" }
+        );
+      } else if (activeTab === "sold-out") {
+        response = await authedFetch(
+          "http://localhost:8080/api/admin/products/sold-out",
+          { method: "GET" }
+        );
+      }
+
       if (!response.ok) throw new Error(`Error: ${response.status}`);
 
       const data = await response.json();
@@ -110,7 +126,7 @@ const AdminPage = () => {
     } catch (error) {
       console.error("Error fetching products", error);
     }
-  }, [filterCategory]);
+  }, [filterCategory, activeTab, authedFetch]);
 
   useEffect(() => {
     if (!editDescriptionRef.current) return;
@@ -136,19 +152,22 @@ const AdminPage = () => {
     }
 
     try {
-      const response = await authedFetch("http://localhost:8080/api/admin/product", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-      name,
-      description,
-      price: parseFloat(price),
-      quantity: parseInt(quantity, 10),
-      category,
-      featured: isFeatured,
-      newArrival: isNewArrival,
-  }),
-});
+      const response = await authedFetch(
+        "http://localhost:8080/api/admin/product",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            description,
+            price: parseFloat(price),
+            quantity: parseInt(quantity, 10),
+            category,
+            featured: isFeatured,
+            newArrival: isNewArrival,
+          }),
+        }
+      );
 
       if (!response.ok) throw new Error(`Error: ${response.status}`);
 
@@ -163,7 +182,7 @@ const AdminPage = () => {
       setIsNewArrival(false);
       if (mainFileRef.current) mainFileRef.current.value = "";
 
-      const fileToUpload = selectedFile; 
+      const fileToUpload = selectedFile;
       setSelectedFile(null);
 
       if (fileToUpload) {
@@ -195,28 +214,29 @@ const AdminPage = () => {
   };
 
   const handleUploadProductPicture = async (productId, file) => {
-  if (!productId) return console.error("Product ID is required to upload a picture");
-  if (!file) return console.error("No file selected for upload");
+    if (!productId)
+      return console.error("Product ID is required to upload a picture");
+    if (!file) return console.error("No file selected for upload");
 
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
 
-    const response = await authedFetch(
-      `http://localhost:8080/api/admin/product/${productId}/uploadPicture`,
-      { method: "POST", body: formData }
-    );
+      const response = await authedFetch(
+        `http://localhost:8080/api/admin/product/${productId}/uploadPicture`,
+        { method: "POST", body: formData }
+      );
 
-    if (!response.ok) throw new Error(`Error: ${response.status}`);
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
 
-    await response.json();
-    fetchProducts();
+      await response.json();
+      fetchProducts();
 
-    notifyProductsChanged({ type: "picture-upload", id: productId });
-  } catch (error) {
-    console.error("Error uploading product picture:", error);
-  }
-};
+      notifyProductsChanged({ type: "picture-upload", id: productId });
+    } catch (error) {
+      console.error("Error uploading product picture:", error);
+    }
+  };
 
   const handleDeleteProduct = async (id) => {
     const ok = window.confirm(
@@ -225,9 +245,12 @@ const AdminPage = () => {
     if (!ok) return;
 
     try {
-      const response = await authedFetch(`http://localhost:8080/api/admin/products/${id}`, {
-      method: "DELETE",
-    });
+      const response = await authedFetch(
+        `http://localhost:8080/api/admin/products/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to delete (status ${response.status})`);
@@ -237,7 +260,7 @@ const AdminPage = () => {
 
       notifyProductsChanged({
         type: "delete",
-        id
+        id,
       });
     } catch (error) {
       console.error("Error deleting product: ", error);
@@ -245,73 +268,97 @@ const AdminPage = () => {
   };
 
   const handleUpdateProduct = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!isEditingId) {
-    console.error("No product selected to edit");
-    return;
-  }
+    if (!isEditingId) {
+      console.error("No product selected to edit");
+      return;
+    }
 
-  const id = isEditingId;
+    const id = isEditingId;
 
-  const updated = {
-    name,
-    description,
-    price: +price,
-    quantity: +quantity,
-    category,
-    featured: isFeatured,
-    newArrival: isNewArrival,
-  };
+    const updated = {
+      name,
+      description,
+      price: +price,
+      quantity: +quantity,
+      category,
+      featured: isFeatured,
+      newArrival: isNewArrival,
+    };
 
-  try {
-    const response = await authedFetch(
-      `http://localhost:8080/api/admin/products/${id}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updated),
+    try {
+      const response = await authedFetch(
+        `http://localhost:8080/api/admin/products/${id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updated),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to update: ${response.status} ${response.statusText}`
+        );
       }
-    );
 
-    if (!response.ok) {
-      throw new Error(`Failed to update: ${response.status} ${response.statusText}`);
+      const saved = await response.json();
+      setProducts((prev) => prev.map((p) => (p.id === id ? saved : p)));
+
+      if (selectedFile) {
+        await handleUploadProductPicture(id, selectedFile);
+      }
+
+      setIsEditingId(null);
+      setName("");
+      setDescription("");
+      setPrice("");
+      setQuantity("");
+      setCategory("");
+      setSelectedFile(null);
+      setIsFeatured(false);
+      setIsNewArrival(false);
+      if (editFileRef.current) editFileRef.current.value = "";
+
+      await fetchProducts();
+
+      notifyProductsChanged({
+        type: "update",
+        id,
+        category: updated.category,
+        newArrival: !!updated.newArrival,
+        featured: !!updated.featured,
+      });
+    } catch (error) {
+      console.error(error);
     }
-
-    const saved = await response.json();
-    setProducts((prev) => prev.map((p) => (p.id === id ? saved : p)));
-
-    if (selectedFile) {
-      await handleUploadProductPicture(id, selectedFile);
-    }
-
-    setIsEditingId(null);
-    setName("");
-    setDescription("");
-    setPrice("");
-    setQuantity("");
-    setCategory("");
-    setSelectedFile(null);
-    setIsFeatured(false);
-    setIsNewArrival(false);
-    if (editFileRef.current) editFileRef.current.value = "";
-
-    await fetchProducts();
-
-    notifyProductsChanged({
-      type: "update",
-      id,
-      category: updated.category,
-      newArrival: !!updated.newArrival,
-      featured: !!updated.featured,
-    });
-  } catch (error) {
-    console.error(error);
-  }
-};
+  };
 
   return (
     <div className="home-container">
+      <div className="admin-tabs">
+        <button
+          className={activeTab === "all" ? "active-tab" : ""}
+          onClick={() => setActiveTab("all")}
+        >
+          All Products
+        </button>
+
+        <button
+          className={activeTab === "low-stock" ? "active-tab" : ""}
+          onClick={() => setActiveTab("low-stock")}
+        >
+          Low Stock
+        </button>
+
+        <button
+          className={activeTab === "sold-out" ? "active-tab" : ""}
+          onClick={() => setActiveTab("sold-out")}
+        >
+          Sold Out
+        </button>
+      </div>
       <div className="product-form">
         <h1>Home</h1>
         <h1>List an item:</h1>
@@ -505,74 +552,74 @@ const AdminPage = () => {
                         onChange={(e) => handleFileChange(e)}
                       ></input>
 
-                    <label>
-                    Name:
-                      <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                      />
-                    </label>
-                    
-                    <label>
-                    Description:
-                      <textarea
-                        ref={editDescriptionRef}
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        required
-                      />
-                    </label>
-
-                    <label>
-                    Price:
-                      <input
-                        type="number"
-                        value={price}
-                        onChange={(e) => setPrice(e.target.value)}
-                        required
-                      />
-                    </label>
-
-                    <label>
-                    Quantity:
-                      <input
-                        type="number"
-                        value={quantity}
-                        onChange={(e) => setQuantity(e.target.value)}
-                        required
-                      />
-                      </label>
-                    
-                
-                      <label>Category: 
-                      <select
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                      >
-                        {CATEGORIES.map((category) => (
-                          <option key={category} value={category}>
-                            {category}
-                          </option>
-                        ))}
-                      </select>
                       <label>
-                        Featured
+                        Name:
                         <input
-                          type="checkbox"
-                          checked={isFeatured}
-                          onChange={(e) => setIsFeatured(e.target.checked)}
-                        ></input>
-                      </label>
-                      <label>
-                        New Arrivals
-                        <input
-                          type="checkbox"
-                          checked={isNewArrival}
-                          onChange={(e) => setIsNewArrival(e.target.checked)}
+                          type="text"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          required
                         />
                       </label>
+
+                      <label>
+                        Description:
+                        <textarea
+                          ref={editDescriptionRef}
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          required
+                        />
+                      </label>
+
+                      <label>
+                        Price:
+                        <input
+                          type="number"
+                          value={price}
+                          onChange={(e) => setPrice(e.target.value)}
+                          required
+                        />
+                      </label>
+
+                      <label>
+                        Quantity:
+                        <input
+                          type="number"
+                          value={quantity}
+                          onChange={(e) => setQuantity(e.target.value)}
+                          required
+                        />
+                      </label>
+
+                      <label>
+                        Category:
+                        <select
+                          value={category}
+                          onChange={(e) => setCategory(e.target.value)}
+                        >
+                          {CATEGORIES.map((category) => (
+                            <option key={category} value={category}>
+                              {category}
+                            </option>
+                          ))}
+                        </select>
+                        <label>
+                          Featured
+                          <input
+                            type="checkbox"
+                            checked={isFeatured}
+                            onChange={(e) => setIsFeatured(e.target.checked)}
+                          ></input>
+                        </label>
+                        <label>
+                          New Arrivals
+                          <input
+                            type="checkbox"
+                            checked={isNewArrival}
+                            onChange={(e) => setIsNewArrival(e.target.checked)}
+                          />
+                        </label>
                       </label>
 
                       <button className="edit-button" type="submit">
