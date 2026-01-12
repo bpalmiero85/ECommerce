@@ -20,6 +20,9 @@ const AdminPage = () => {
   const [isFeatured, setIsFeatured] = useState(false);
   const [isNewArrival, setIsNewArrival] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
+  const [authFailed, setAuthFailed] = useState(false);
+  const [authVerified, setAuthVerified] = useState(false);
+  const [authAttempted, setAuthAttempted] = useState(false);
   const formRef = useRef(null);
   const mainFileRef = useRef(null);
   const editFileRef = useRef(null);
@@ -46,11 +49,47 @@ const AdminPage = () => {
     return btoa(`${username}:${password}`);
   }, []);
 
+  const verifyAuth = useCallback(async (token) => {
+    const res = await fetch(
+      "http://localhost:8080/api/admin/products/sold-out",
+      {
+        method: "GET",
+        headers: { Authorization: `Basic ${token}` },
+        credentials: "include",
+      }
+    );
+    return res.ok;
+  }, []);
+
   useEffect(() => {
-    if (auth) return;
+    if (authVerified) return;
+    if (authAttempted) return; // don't keep prompting
+
+    setAuthAttempted(true);
+
     const token = promptForAuth();
-    if (token) setAuth(token);
-  }, [auth, promptForAuth]);
+    if (!token) {
+      setAuthFailed(true);
+      setAuth(null);
+      setAuthVerified(false);
+      return; // ✅ no throw
+    }
+
+    (async () => {
+      const ok = await verifyAuth(token);
+
+      if (!ok) {
+        setAuthFailed(true);
+        setAuth(null);
+        setAuthVerified(false);
+        return;
+      }
+
+      setAuthFailed(false);
+      setAuth(token);
+      setAuthVerified(true);
+    })();
+  }, [authVerified, authAttempted, promptForAuth, verifyAuth]);
 
   const authedFetch = useCallback(
     async (url, options = {}) => {
@@ -67,16 +106,32 @@ const AdminPage = () => {
 
       if (res.status === 401) {
         const token = promptForAuth();
-        if (token) {
-          setAuth(token);
-          const retryHeaders = new Headers(options.headers || {});
-          retryHeaders.set("Authorization", `Basic ${token}`);
-          return fetch(url, {
-            ...options,
-            headers: retryHeaders,
-            credentials: "include",
-          });
+        if (!token) {
+          setAuthFailed(true);
+          setAuth(null);
+          throw new Error("Invalid username or password");
         }
+
+        const retryHeaders = new Headers(options.headers || {});
+        retryHeaders.set("Authorization", `Basic ${token}`);
+        const retryRes = await fetch(url, {
+          ...options,
+          headers: retryHeaders,
+          credentials: "include",
+        });
+
+        if (retryRes.status === 401) {
+          setAuthFailed(true);
+          setAuthVerified(false);
+          setAuth(null);
+          throw new Error("Invalid username or password");
+        }
+
+        setAuthFailed(false);
+        setAuth(token);
+        setAuthVerified(true);
+
+        return retryRes;
       }
       return res;
     },
@@ -141,8 +196,9 @@ const AdminPage = () => {
   }, [isEditingId, description]);
 
   useEffect(() => {
+    if (!auth) return;
     fetchProducts();
-  }, [fetchProducts]);
+  }, [auth, fetchProducts]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -335,6 +391,89 @@ const AdminPage = () => {
     }
   };
 
+  if (authFailed) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "black",
+          color: "red",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+          zIndex: 999999,
+          padding: 40,
+        }}
+      >
+        <div>
+          <h2>ACCESS DENIED</h2>
+          <p>Invalid admin credentials.</p>
+
+          <button
+            type="button"
+            onClick={() => {
+              setAuthFailed(false);
+              setAuthVerified(false);
+              setAuth(null);
+              setAuthAttempted(false); // ✅ allows prompting again
+            }}
+            style={{ marginTop: 12 }}
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!authVerified) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "black",
+          color: "white",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+          zIndex: 999999,
+          padding: 40,
+        }}
+      >
+        <div>
+          <h2>Admin login required</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (!auth) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "black",
+          color: "white",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+          zIndex: 999999,
+          padding: 40,
+        }}
+      >
+        <div>
+          <h2>Admin login required</h2>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="home-container">
       <div className="admin-tabs">

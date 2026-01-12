@@ -10,7 +10,9 @@ export default function OrdersPage() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [orderStatus, setOrderStatus] = useState("active");
-
+  const [authFailed, setAuthFailed] = useState(false);
+  const [authVerified, setAuthVerified] = useState(false);
+  const [authAttempted, setAuthAttempted] = useState(false);
   const SHIPPING_TEMPLATE_ID = "template_wqi7wms";
   const EMAILJS_SERVICE_ID = "service_1wp75sm";
   const EMAILJS_PUBLIC_KEY = "ZkQfANdcZnMH2U1KL";
@@ -79,9 +81,19 @@ export default function OrdersPage() {
 
   useEffect(() => {
     if (auth) return;
+    if (authAttempted) return;
+
+    setAuthAttempted(true);
+
     const token = promptForAuth();
-    if (token) setAuth(token);
-  }, [auth, promptForAuth]);
+    if (token) {
+      setAuthFailed(false);
+      setAuth(token);
+    } else {
+      setAuthFailed(true);
+      setAuth(null);
+    }
+  }, [auth, authAttempted, promptForAuth]);
 
   const authedFetch = useCallback(
     async (url, options = {}) => {
@@ -98,16 +110,30 @@ export default function OrdersPage() {
 
       if (res.status === 401) {
         const token = promptForAuth();
-        if (token) {
-          setAuth(token);
-          const retryHeaders = new Headers(options.headers || {});
-          retryHeaders.set("Authorization", `Basic ${token}`);
-          return fetch(url, {
-            ...options,
-            headers: retryHeaders,
-            credentials: "include",
-          });
+        if (!token) {
+          setAuthFailed(true);
+          setAuth(null);
+          throw new Error("Invalid username or password");
         }
+
+        const retryHeaders = new Headers(options.headers || {});
+        retryHeaders.set("Authorization", `Basic ${token}`);
+        const retryRes = await fetch(url, {
+          ...options,
+          headers: retryHeaders,
+          credentials: "include",
+        });
+
+        if (retryRes.status === 401) {
+          setAuthFailed(true);
+          setAuth(null);
+          throw new Error("Invalid username or password");
+        }
+
+        setAuthFailed(false);
+        setAuth(token);
+
+        return retryRes;
       }
 
       return res;
@@ -240,9 +266,13 @@ export default function OrdersPage() {
 
       const data = await res.json();
       setOrders(data);
+      setAuthVerified(true);
     } catch (e) {
       console.error(e);
       setError(e.message || "Failed to load orders.");
+
+      setAuthFailed(true);
+      setAuth(null);
     }
   }, [authedFetch, orderStatusEndpoint]);
 
@@ -250,6 +280,66 @@ export default function OrdersPage() {
     if (!auth) return;
     fetchOrders();
   }, [auth, orderStatus, fetchOrders]);
+
+  if (authFailed) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "black",
+          color: "red",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+          zIndex: 999999,
+          padding: 40,
+        }}
+      >
+        <div>
+          <h2>ACCESS DENIED</h2>
+          <p>Invalid admin credentials.</p>
+
+          <button
+            type="button"
+            onClick={() => {
+              setAuthFailed(false);
+              setAuth(null);
+              setAuthAttempted(false);
+              setError(null);
+            }}
+            style={{ marginTop: 12 }}
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!authVerified) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "black",
+          color: "white",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+          zIndex: 999999,
+          padding: 40,
+        }}
+      >
+        <div>
+          <h2>Admin login required</h2>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ maxWidth: 1100, margin: "0 auto", padding: 16 }}>
