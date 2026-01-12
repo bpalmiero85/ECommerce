@@ -31,8 +31,10 @@ const Product = ({
   const cardRef = useRef(null);
   const [added, setAdded] = useState(false);
   const prevQtyRef = useRef(quantity);
+  const depletionTakeRef = useRef(0);
   const [showCheck, setShowCheck] = useState(false);
   const prevInCartQtyRef = useRef(inCartQty);
+  const prevInCartQtyForCheckRef = useRef(inCartQty);
 
   const imageUrl = `http://localhost:8080/api/product/${id}/picture?version=${pictureVersion}`;
 
@@ -52,6 +54,9 @@ const Product = ({
       if (delta > 0) {
         const take = Math.min(delta, quantity);
 
+        // accumulate how many were taken in THIS depletion run
+        depletionTakeRef.current += take;
+
         for (let i = 0; i < take; i++) {
           const r = await fetch(
             `http://localhost:8080/api/cart/${id}/add?qty=1`,
@@ -59,7 +64,17 @@ const Product = ({
           );
           if (!r.ok) throw new Error(`reserve failed ${r.status}`);
         }
+
+        // if this click depleted the remaining stock, show message using total taken
+        if (take > 0 && take === quantity) {
+          const taken = depletionTakeRef.current;
+          showTempMessage(
+            taken === 1 ? "You got the last one!" : "You got the last ones!"
+          );
+          depletionTakeRef.current = 0;
+        }
       } else {
+        depletionTakeRef.current = 0;
         for (let i = 0; i < -delta; i++) {
           const r = await fetch(
             `http://localhost:8080/api/cart/${id}/remove?qty=1`,
@@ -96,16 +111,18 @@ const Product = ({
     }
   };
 
+
   useEffect(() => {
-    const prev = prevInCartQtyRef.current;
+    const prev = prevInCartQtyForCheckRef.current;
 
     if (prev === 0 && inCartQty === 1) {
       setShowCheck(true);
       const t = setTimeout(() => setShowCheck(false), 700);
+      prevInCartQtyForCheckRef.current = inCartQty;
       return () => clearTimeout(t);
     }
 
-    prevInCartQtyRef.current = inCartQty;
+    prevInCartQtyForCheckRef.current = inCartQty;
   }, [inCartQty]);
 
   useEffect(() => {
@@ -155,23 +172,21 @@ const Product = ({
   useEffect(() => {
     const prev = prevQtyRef.current;
 
-    if (prev > 0 && quantity === 0) {
-      showTempMessage(
-        inCartQty === 1 ? "You got the last one!" : "You got the last ones!"
-      );
-    }
-
     if (prev === 0 && quantity > 0) {
       setIsLastItemShown(false);
       setMessage("");
     }
 
+    prevInCartQtyRef.current = inCartQty;
     prevQtyRef.current = quantity;
-  }, [quantity, inCartQty]);
+  }, [quantity, inCartQty, isLastItemShown]);
 
   useEffect(() => {
     setAdded(inCartQty > 0);
   }, [inCartQty]);
+
+  const stopProp = (e) => e.stopPropagation();
+  const stopAll = (e) => e.stopPropagation();
 
   return (
     <>
@@ -273,6 +288,9 @@ const Product = ({
             </p>
           </div>
         </a>
+        {quantity === 1 && inCartQty === 0 && (
+          <div className="last-one">Last one! Get it before it's gone!</div>
+        )}
         <div className={`purchase-container${isOpen ? " hidden" : ""}`}>
           <div className="purchase-buttons">
             {inCartQty === 0 ? (
@@ -281,6 +299,7 @@ const Product = ({
                 className={
                   quantity === 0 ? "sold-out-added-to-cart" : "add-to-cart"
                 }
+                onMouseDownCapture={stopProp}
                 disabled={isOpen || quantity === 0 || saving}
                 onClick={async (e) => {
                   e.preventDefault();
@@ -298,18 +317,13 @@ const Product = ({
                   : "Add to cart"}
               </button>
             ) : (
-              <div
-                className="qty-inline"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-              >
+              <div className="qty-inline" onMouseDownCapture={stopAll}>
                 <span className="in-cart-wrap">
                   <button
                     type="button"
                     className="qty-btn"
                     aria-label="Decrease quantity"
+                    onMouseDownCapture={stopAll}
                     disabled={saving || inCartQty <= 0}
                     onClick={() => handleQtyChange(inCartQty - 1)}
                   >
@@ -321,6 +335,7 @@ const Product = ({
                     type="button"
                     className="qty-btn"
                     aria-label="Increase quantity"
+                    onMouseDownCapture={stopAll}
                     disabled={saving || quantity <= 0}
                     onClick={() => handleQtyChange(inCartQty + 1)}
                   >
@@ -336,7 +351,6 @@ const Product = ({
                 </span>
               </div>
             )}
-
             {/** ADDED Animation */}
             <div
               className={`check-bubble ${showCheck ? "check-bubble-show" : ""}`}

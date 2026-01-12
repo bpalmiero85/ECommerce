@@ -15,8 +15,8 @@
 }
 
 .admin-tabs button.active-tab {
-  background: purple;
-  border-color: purple;
+  background: rgb(92, 0, 128);
+  border-color: rgb(250, 0, 200);
 }
 
 /* input[type="file"]{
