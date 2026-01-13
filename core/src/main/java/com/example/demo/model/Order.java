@@ -47,7 +47,7 @@ public class Order {
   private String orderEmail;
 
   @Column(nullable = false, precision = 10, scale = 2)
-  private BigDecimal orderTotal;
+  private BigDecimal orderTotal = BigDecimal.ZERO;
 
   @Column(nullable = false, updatable = false)
   private Instant createdAt;
@@ -60,6 +60,18 @@ public class Order {
 
   @Column
   private Instant shippedAt;
+
+  @Column(name="subtotal", nullable = false, precision = 10, scale = 2)
+  private BigDecimal subtotal = BigDecimal.ZERO;
+
+  @Column(name="shipping_total", nullable = false, precision = 10, scale = 2)
+  private BigDecimal shippingTotal = BigDecimal.ZERO;
+
+  @Column(name="tax_total", nullable = false, precision = 10, scale = 2)
+  private BigDecimal taxTotal = BigDecimal.ZERO;
+
+  @Column(name="discount_total", nullable = false, precision = 10, scale = 2)
+  private BigDecimal discountTotal = BigDecimal.ZERO;
 
   @Column
   private Instant deliveredAt;
