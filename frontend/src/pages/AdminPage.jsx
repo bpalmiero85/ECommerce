@@ -15,6 +15,8 @@ const AdminPage = () => {
   const [isEditingId, setIsEditingId] = useState(null);
   const [isPictureUploaded, setIsPictureUploaded] = useState(false);
   const [croppingStatus, setCroppingStatus] = useState(false);
+  const [metrics, setMetrics] = useState(null);
+  const [metricsLoading, setMetricsLoading] = useState(false);
   const [category, setCategory] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
@@ -23,6 +25,7 @@ const AdminPage = () => {
   const [authFailed, setAuthFailed] = useState(false);
   const [authVerified, setAuthVerified] = useState(false);
   const [authAttempted, setAuthAttempted] = useState(false);
+  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const formRef = useRef(null);
   const mainFileRef = useRef(null);
   const editFileRef = useRef(null);
@@ -60,36 +63,6 @@ const AdminPage = () => {
     );
     return res.ok;
   }, []);
-
-  useEffect(() => {
-    if (authVerified) return;
-    if (authAttempted) return; // don't keep prompting
-
-    setAuthAttempted(true);
-
-    const token = promptForAuth();
-    if (!token) {
-      setAuthFailed(true);
-      setAuth(null);
-      setAuthVerified(false);
-      return; // ✅ no throw
-    }
-
-    (async () => {
-      const ok = await verifyAuth(token);
-
-      if (!ok) {
-        setAuthFailed(true);
-        setAuth(null);
-        setAuthVerified(false);
-        return;
-      }
-
-      setAuthFailed(false);
-      setAuth(token);
-      setAuthVerified(true);
-    })();
-  }, [authVerified, authAttempted, promptForAuth, verifyAuth]);
 
   const authedFetch = useCallback(
     async (url, options = {}) => {
@@ -137,6 +110,67 @@ const AdminPage = () => {
     },
     [auth, promptForAuth]
   );
+
+  useEffect(() => {
+    if (!isDashboardOpen) return;
+    if (!authVerified) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        setMetricsLoading(true);
+
+        const res = await authedFetch(
+          "http://localhost:8080/api/admin/metrics/summary",
+          { method: "GET" }
+        );
+
+        if (!res.ok) throw new Error(`Failed metrics (${res.status})`);
+        const data = await res.json();
+
+        if (!cancelled) setMetrics(data);
+      } catch (e) {
+        if (!cancelled) console.error(e);
+      } finally {
+        if (!cancelled) setMetricsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isDashboardOpen, authedFetch, authVerified]);
+
+  useEffect(() => {
+    if (authVerified) return;
+    if (authAttempted) return; // don't keep prompting
+
+    setAuthAttempted(true);
+
+    const token = promptForAuth();
+    if (!token) {
+      setAuthFailed(true);
+      setAuth(null);
+      setAuthVerified(false);
+      return; // ✅ no throw
+    }
+
+    (async () => {
+      const ok = await verifyAuth(token);
+
+      if (!ok) {
+        setAuthFailed(true);
+        setAuth(null);
+        setAuthVerified(false);
+        return;
+      }
+
+      setAuthFailed(false);
+      setAuth(token);
+      setAuthVerified(true);
+    })();
+  }, [authVerified, authAttempted, promptForAuth, verifyAuth]);
 
   const notifyProductsChanged = useCallback((payload) => {
     try {
@@ -391,6 +425,10 @@ const AdminPage = () => {
     }
   };
 
+  const handleOpenMetricsDashboard = () => {
+    setIsDashboardOpen(true);
+  };
+
   if (authFailed) {
     return (
       <div
@@ -417,7 +455,7 @@ const AdminPage = () => {
               setAuthFailed(false);
               setAuthVerified(false);
               setAuth(null);
-              setAuthAttempted(false); // ✅ allows prompting again
+              setAuthAttempted(false);
             }}
             style={{ marginTop: 12 }}
           >
@@ -473,7 +511,7 @@ const AdminPage = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="home-container">
       <div className="admin-tabs">
@@ -498,9 +536,45 @@ const AdminPage = () => {
           Sold Out
         </button>
       </div>
+      <div>
+        <button type="button" onClick={handleOpenMetricsDashboard}>
+          DASHBOARD
+        </button>
+
+        {isDashboardOpen && (
+          <div
+            className="metrics-backdrop"
+            onClick={() => setIsDashboardOpen(false)}
+          >
+            <div
+              className="metrics-dashboard"
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              {!metrics && !metricsLoading && (
+                <div>Failed to load metrics. Please try again.</div>
+              )}
+
+              {metricsLoading && <div>Loading metrics...</div>}
+
+              {metrics && !metricsLoading && (
+                <pre>{JSON.stringify(metrics, null, 2)}</pre>
+              )}
+
+              <div className="metrics-close">
+                <button onClick={() => setIsDashboardOpen(false)}>
+                  <strong>X</strong>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="product-form">
-        <h1>Home</h1>
-        <h1>List an item:</h1>
+        <h1>Admin Home</h1>
+        <h3>List an item:</h3>
         {isEditingId === null && (
           <form onSubmit={handleSubmit} id="productForm" ref={formRef}>
             <input
@@ -546,7 +620,7 @@ const AdminPage = () => {
               required
             />
             <div className="category-select">
-              <label>Category: </label>
+              <label className="input-label"><strong>Category:</strong></label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
@@ -561,6 +635,7 @@ const AdminPage = () => {
                   </option>
                 ))}
               </select>
+              <div className="check-boxes">
               <div className="featured-select">
                 <label
                   className="featured-flag"
@@ -586,6 +661,7 @@ const AdminPage = () => {
                   />
                   New Arrival
                 </label>
+              </div>
               </div>
             </div>
 
