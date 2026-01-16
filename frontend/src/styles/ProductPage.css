@@ -82,15 +82,22 @@ body {
 }
 
 .cancel-cart-x {
-  display: flex;
   position: absolute;
-  background: transparent;
+  top: 10px;
+  right: 10px;
+  margin-top: 10px;
+  left: auto;
+  bottom: auto;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
   justify-content: center;
+
+  background: transparent;
   padding: 2px;
   font-size: 1rem;
   width: 25px;
-  margin-bottom: 95%;
-  margin-left: 95%;
+  z-index: 2001;
 }
 
 .check-mark {
@@ -1191,6 +1198,11 @@ body {
     min-width: 0;
     width: 100%;
     max-width: 420px;
+  }
+
+  .cancel-cart-x {
+    top: 8px;
+    right: 8px;
   }
 }
 

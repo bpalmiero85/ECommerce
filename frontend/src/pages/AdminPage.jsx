@@ -429,6 +429,7 @@ const AdminPage = () => {
   const handleOpenMetricsDashboard = () => {
     setMetrics(null);
     setIsDashboardOpen(true);
+    setMetricsRefreshKey((k) => k + 1);
   };
 
   if (authFailed) {
@@ -571,10 +572,9 @@ const AdminPage = () => {
                 {!metrics && !metricsLoading && (
                   <div>Failed to load metrics. Please try again.</div>
                 )}
-                {!metricsLoading && metrics === null && (
+                {metricsLoading && metrics === null && (
                   <div>Loading metrics...</div>
                 )}
-                ;
                 {metrics && !metricsLoading && (
                   <div className="metrics-grid">
                     {Object.entries(metrics).map(([key, value]) => (

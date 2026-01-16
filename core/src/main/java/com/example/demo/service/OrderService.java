@@ -34,27 +34,41 @@ public class OrderService {
     order.setOrderEmail(email);
     order.setOrderTotal(total);
     order.setOrderStatus(status);
+
     return orderRepository.save(order);
   }
 
   @Transactional
   public Order createOrderWithItems(String name, String email, BigDecimal total, OrderStatus status,
       List<OrderItem> items) {
-      
-      if (items == null || items.isEmpty()) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order must contain at least one item");
-      }
+
+    if (items == null || items.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order must contain at least one item");
+    }
 
     Order order = new Order();
     order.setOrderName(name);
     order.setOrderEmail(email);
-    order.setOrderTotal(total);
     order.setOrderStatus(status);
 
+    BigDecimal subtotal = BigDecimal.ZERO;
+
     for (OrderItem it : items) {
-      order.addItem(it);
 
       Product p = productRepository.findById(it.getProductId()).orElseThrow();
+
+      // ✅ Snapshot “sale-time” values (required by your schema)
+      it.setProductName(p.getName());
+      it.setUnitPrice(p.getPrice());
+      it.setMaterialCostAtSale(p.getMaterialCost());
+
+      // ✅ accumulate subtotal (unitPrice * quantity)
+      BigDecimal lineTotal = it.getUnitPrice()
+          .multiply(BigDecimal.valueOf(it.getQuantity()));
+      subtotal = subtotal.add(lineTotal);
+
+      order.addItem(it);
+
       int newQty = p.getQuantity() - it.getQuantity();
       if (newQty < 0) {
         throw new ResponseStatusException(HttpStatus.CONFLICT, "Not enough stock");
@@ -63,6 +77,24 @@ public class OrderService {
       p.setSoldOut(newQty <= 0);
       productRepository.save(p);
     }
+
+    // ✅ set order money fields AFTER loop
+    order.setSubtotal(subtotal);
+
+    // If these are not being sent yet, force them to 0 so math is stable
+    if (order.getShippingTotal() == null)
+      order.setShippingTotal(BigDecimal.ZERO);
+    if (order.getTaxTotal() == null)
+      order.setTaxTotal(BigDecimal.ZERO);
+    if (order.getDiscountTotal() == null)
+      order.setDiscountTotal(BigDecimal.ZERO);
+
+    // ✅ total = subtotal + shipping + tax - discount
+    order.setOrderTotal(
+        order.getSubtotal()
+            .add(order.getShippingTotal())
+            .add(order.getTaxTotal())
+            .subtract(order.getDiscountTotal()));
 
     return orderRepository.save(order);
   }

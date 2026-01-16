@@ -35,6 +35,9 @@ public class Product {
 
   private long pictureVersion;
 
+  @Column(name = "material_cost", nullable = false, precision = 10, scale = 2)
+  private BigDecimal materialCost = BigDecimal.ZERO;
+
   @Column(nullable = false)
   private String name;
 

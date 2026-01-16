@@ -311,18 +311,18 @@ const ProductPage = ({ products: externalProducts = [] }) => {
     <div className="product-page-container" ref={checkoutRef}>
       {isCartShown && (
         <div className="cart-modal">
-          <ShoppingCart succeeded={checkoutSucceeded} />
-          <div className="checkout-page">
-            <div>
-              <button onClick={handleCancelCart} className="cancel-cart-x">
-                <strong>X</strong>
-              </button>
-            </div>
-            <CheckoutPage onSuccess={() => setCheckoutSucceeded(true)} />
-            <div className="cart-modal-cancel-button">
-              <button type="button" onClick={handleCancelCart}>
-                Close
-              </button>
+          <div className="cart-modal-inner">
+            <button onClick={handleCancelCart} className="cancel-cart-x">
+              <strong>X</strong>
+            </button>
+            <ShoppingCart succeeded={checkoutSucceeded} />
+            <div className="checkout-page">
+              <CheckoutPage onSuccess={() => setCheckoutSucceeded(true)} />
+              <div className="cart-modal-cancel-button">
+                <button type="button" onClick={handleCancelCart}>
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -916,9 +916,8 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                       >
                         +
                       </button>
-                    
-                        <span className="qty-label">in your cart</span>
-                    
+
+                      <span className="qty-label">in your cart</span>
                     </div>
                   )}
                 </div>

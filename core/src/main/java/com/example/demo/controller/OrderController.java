@@ -5,18 +5,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.model.Order;
+import com.example.demo.model.OrderItem;
 import com.example.demo.model.OrderStatus;
 import com.example.demo.service.OrderService;
+
+import lombok.Getter;
+import lombok.Setter;
 
 @RestController
 @RequestMapping("/api/admin/orders")
@@ -31,6 +28,7 @@ public class OrderController {
   public ResponseEntity<Order> updateOrderStatus(
       @PathVariable Long orderId,
       @RequestBody Map<String, String> body) {
+
     String statusRaw = body.get("status");
     if (statusRaw == null || statusRaw.isBlank()) {
       return ResponseEntity.badRequest().build();
@@ -50,13 +48,27 @@ public class OrderController {
     return ResponseEntity.ok(updated);
   }
 
-  @PostMapping
-  public Order createOrder(
-      @RequestParam String name,
-      @RequestParam String email,
-      @RequestParam BigDecimal total,
-      @RequestParam(required = false) OrderStatus status) {
-    return orderService.createOrder(name, email, total, status);
+  @PostMapping(consumes = "application/json")
+  public Order createOrder(@RequestBody CreateOrderRequest req) {
+    // default if not sent
+    OrderStatus status = (req.getStatus() == null) ? OrderStatus.PAID : req.getStatus();
+
+    return orderService.createOrderWithItems(
+        req.getName(),
+        req.getEmail(),
+        req.getTotal(),
+        status,
+        req.getItems());
+  }
+
+  @Getter
+  @Setter
+  public static class CreateOrderRequest {
+    private String name;
+    private String email;
+    private BigDecimal total;
+    private OrderStatus status;
+    private List<OrderItem> items; // <-- this makes your JSON work
   }
 
   @GetMapping("/all")
@@ -65,18 +77,14 @@ public class OrderController {
   }
 
   @GetMapping("/status/{status}")
-  public List<Order> getOrdersWithStatus(
-      @PathVariable OrderStatus status) {
-    List<Order> order = orderService.findOrderByStatus(status);
-    return order;
+  public List<Order> getOrdersWithStatus(@PathVariable OrderStatus status) {
+    return orderService.findOrderByStatus(status);
   }
 
   @GetMapping("/status/shipped")
   public List<Order> getShippedOrders() {
     return orderService.getShippedOrders();
   }
-  
-  
 
   @GetMapping("/status/completed")
   public List<Order> getDeliveredOrders() {
@@ -97,5 +105,4 @@ public class OrderController {
   public List<Order> getArchivedOrders() {
     return orderService.getArchivedOrders();
   }
-
 }

@@ -24,28 +24,33 @@ public class OrderPublicController {
   }
 
   @PostMapping
-  public Order createOrder(@RequestBody CreateOrderRequest req) {
+  public java.util.Map<String, Object> createOrder(@RequestBody CreateOrderRequest req) {
 
-    List<OrderItem> items = null;
-
-    if (req.getItems() != null && !req.getItems().isEmpty()) {
-      items = req.getItems().stream().map(i -> {
-        OrderItem it = new OrderItem();
-        it.setProductId(i.getProductId());
-        it.setProductName(i.getProductName());
-        it.setQuantity(i.getQuantity());
-        it.setUnitPrice(i.getUnitPrice());
-        return it;
-      }).toList();
+    if (req.getItems() == null || req.getItems().isEmpty()) {
+      throw new IllegalArgumentException("Order must contain at least one item");
     }
 
-    return orderService.createOrderWithItems(
+    List<OrderItem> items = req.getItems().stream().map(i -> {
+      OrderItem it = new OrderItem();
+      it.setProductId(i.getProductId());
+      it.setQuantity(i.getQuantity());
+      // DO NOT rely on client for name/price/material; service should snapshot those
+      // from Product
+      return it;
+    }).toList();
+
+    OrderStatus status = (req.getStatus() == null) ? OrderStatus.PAID : req.getStatus();
+
+    Order saved = orderService.createOrderWithItems(
         req.getName(),
         req.getEmail(),
         req.getTotal(),
-        req.getStatus(),
-        items
-      );
+        status,
+        items);
+
+    return java.util.Map.of(
+        "orderId", saved.getOrderId(),
+        "status", saved.getOrderStatus().name());
   }
 
   public static class CreateOrderRequest {

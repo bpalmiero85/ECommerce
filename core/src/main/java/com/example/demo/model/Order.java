@@ -36,7 +36,7 @@ public class Order {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long orderId;
 
-  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   @JsonManagedReference
   private List<OrderItem> items = new ArrayList<>();
 

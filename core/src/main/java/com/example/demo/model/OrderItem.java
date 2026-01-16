@@ -5,11 +5,14 @@ import javax.persistence.*;
 
 import lombok.*;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "order_items")
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderItem {
 
   @Id
@@ -19,7 +22,11 @@ public class OrderItem {
   @ManyToOne(optional = false, fetch = FetchType.LAZY)
   @JoinColumn(name = "order_id")
   @JsonBackReference
+  @JsonIgnore
   private Order order;
+
+  @Column(name = "material_cost_at_sale", nullable = false, precision = 10, scale = 2)
+  private BigDecimal materialCostAtSale = BigDecimal.ZERO;
 
   @Column(nullable = false)
   private Long productId;
@@ -28,7 +35,7 @@ public class OrderItem {
   private String productName;
 
   @Column(nullable = false)
-  private int quantity;
+  private Integer quantity;
 
   @Column(nullable = false, precision = 10, scale = 2)
   private BigDecimal unitPrice;
