@@ -51,14 +51,14 @@ export default function CheckoutPage({ onSuccess }) {
     (sum, item) =>
       sum +
       (Number(item.price) || 0) * (Number(item.qty ?? item.quantity ?? 1) || 0),
-    0
+    0,
   );
 
   // TODO: replace this with real product weights later.
 
   const totalWeightOunces = cartItems.reduce(
     (sum, item) => sum + 8 * (Number(item.qty ?? item.quantity ?? 1) || 0),
-    0
+    0,
   );
 
   // Stripe hooks
@@ -173,7 +173,7 @@ export default function CheckoutPage({ onSuccess }) {
         payloadSent: payload,
       });
       throw new Error(
-        data?.error || rawText || `Saving order failed (${res.status})`
+        data?.error || rawText || `Saving order failed (${res.status})`,
       );
     }
     return data;
@@ -207,13 +207,13 @@ export default function CheckoutPage({ onSuccess }) {
             state: shippingState,
             shipping,
           }),
-        }
+        },
       );
 
       const piData = await piRes.json().catch(() => ({}));
       if (!piRes.ok) {
         throw new Error(
-          piData?.error || piData?.message || "Failed to start payment."
+          piData?.error || piData?.message || "Failed to start payment.",
         );
       }
 
@@ -258,19 +258,30 @@ export default function CheckoutPage({ onSuccess }) {
       try {
         console.log("Attempting to save order with payload:", payload);
         const createdOrder = await saveOrder(payload);
-        setSavedOrder(createdOrder);
+        console.log("createdOrder response:", createdOrder);
+
+        const resolvedEmail = String(
+          createdOrder?.orderEmail || payload.email || email || "",
+        ).trim();
+
+        const normalizedOrder = {
+          ...createdOrder,
+          orderEmail: resolvedEmail,
+        };
+
+        setSavedOrder(normalizedOrder);
 
         try {
           await emailjs.send(
             "service_1wp75sm",
             "template_0psmti8",
             {
-              to_email: createdOrder.orderEmail,
-              order_id: createdOrder.orderId,
-              customer_name: createdOrder.orderName,
+              to_email: resolvedEmail,
+              order_id: normalizedOrder.orderId,
+              customer_name: normalizedOrder.orderName,
               order_total: `$${Number(createdOrder.orderTotal).toFixed(2)}`,
             },
-            "ZkQfANdcZnMH2U1KL"
+            "ZkQfANdcZnMH2U1KL",
           );
           setSucceeded(true);
         } catch (emailErr) {
@@ -284,7 +295,7 @@ export default function CheckoutPage({ onSuccess }) {
       } catch (err) {
         console.error("Post-payment step failed:", err);
         setOrderSaveError(
-          err?.text || err?.message || "Post-payment step failed."
+          err?.text || err?.message || "Post-payment step failed.",
         );
         setSucceeded(false);
       }
@@ -333,7 +344,7 @@ export default function CheckoutPage({ onSuccess }) {
         throw new Error(
           data?.error ||
             data?.details ||
-            `Shipping lookup failed (${res.status})`
+            `Shipping lookup failed (${res.status})`,
         );
       }
 
@@ -376,20 +387,39 @@ export default function CheckoutPage({ onSuccess }) {
           <div style={{ fontSize: "2rem" }}>Thank you for your order! 🖤✨</div>
 
           {savedOrder?.orderId && (
-            <div style={{ fontSize: "1.6rem", marginTop: 20, position: "relative" }}>
+            <div
+              style={{
+                fontSize: "1.6rem",
+                marginTop: 20,
+                position: "relative",
+              }}
+            >
               <strong>Order #:</strong> {savedOrder.orderId}
             </div>
           )}
 
           {savedOrder?.orderEmail && (
-            <div style={{ fontSize: "1.6rem", marginTop: 25, position: "relative" }}>
+            <div
+              style={{
+                fontSize: "1.6rem",
+                marginTop: 25,
+                position: "relative",
+              }}
+            >
               We sent a confirmation email to{" "}
               <strong>{savedOrder.orderEmail}</strong>.
             </div>
           )}
 
-          <div style={{ marginTop: 30, fontSize: "1.3rem", opacity: 0.95, position: "relative" }}>
-           (If you don&apos;t see it, check spam/promotions.)
+          <div
+            style={{
+              marginTop: 30,
+              fontSize: "1.3rem",
+              opacity: 0.95,
+              position: "relative",
+            }}
+          >
+            (If you don&apos;t see it, check spam/promotions.)
           </div>
         </>
       ) : (
@@ -537,7 +567,13 @@ export default function CheckoutPage({ onSuccess }) {
               try {
                 setProcessing(true);
                 setOrderSaveError(null);
-                await saveOrder(orderPayloadToRetry);
+
+                const createdOrder = await saveOrder(orderPayloadToRetry);
+
+                const resolvedEmail = String(
+                  createdOrder?.orderEmail || orderPayloadToRetry.email || ""
+                ).trim();
+                setSavedOrder({ ...createdOrder, orderEmail: resolvedEmail });
 
                 setSucceeded(true);
                 clearCartAfterPayment();
@@ -572,20 +608,20 @@ export default function CheckoutPage({ onSuccess }) {
             {!email.trim()
               ? "Email is required."
               : !isEmailValid
-              ? "Please enter a valid email address."
-              : !name.trim()
-              ? "Name is required."
-              : !addressLine1
-              ? "Address line 1 is required"
-              : !city.trim()
-              ? "City is required."
-              : !destinationZip.trim()
-              ? "ZIP code is required."
-              : shippingRate == null
-              ? "Please enter a valid ZIP code to calculate shipping."
-              : !isCardComplete
-              ? "Please complete your card details."
-              : "Please complete the form above."}
+                ? "Please enter a valid email address."
+                : !name.trim()
+                  ? "Name is required."
+                  : !addressLine1
+                    ? "Address line 1 is required"
+                    : !city.trim()
+                      ? "City is required."
+                      : !destinationZip.trim()
+                        ? "ZIP code is required."
+                        : shippingRate == null
+                          ? "Please enter a valid ZIP code to calculate shipping."
+                          : !isCardComplete
+                            ? "Please complete your card details."
+                            : "Please complete the form above."}
           </div>
         )}
 

@@ -162,12 +162,25 @@ export default function OrdersPage() {
       if (!res.ok) return;
       const updated = await res.json().catch(() => null);
 
+      const resolvedEmail = String(
+        (updated && updated.orderEmail) || (order && order.orderEmail) || ""
+      ).trim();
+
+      if (!resolvedEmail) {
+        console.error("EmailJS NOT sent: resolvedEmail is empty", {
+          updatedEmail: updated?.orderEmail,
+          orderEmail: order?.orderEmail,
+          orderId,
+        });
+        throw new Error("Cannot send shipping email: customer email is missing.");
+      }
+
       await emailjs.send(
         EMAILJS_SERVICE_ID,
         SHIPPING_TEMPLATE_ID,
         {
-          to_email: updated?.orderEmail ?? order.orderEmail,
-          customer_name: updated?.orderName ?? order.orderName,
+          to_email: resolvedEmail,
+          customer_name: (updated?.orderName ?? order.orderName) || "",
           order_id: updated?.orderId ?? order.orderId,
           carrier: updated?.carrier ?? carrier,
           tracking_number: updated?.trackingNumber ?? trackingNumber,
