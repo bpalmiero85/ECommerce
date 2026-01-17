@@ -43,6 +43,15 @@ const AdminPage = () => {
     "Garbage Ghouls",
   ];
 
+  const LABELS = {
+    todayOrders: "Today's Orders",
+    last7DaysOrders: "Last 7 Days Orders",
+    todayGrossRevenue: "Today's Gross Revenue",
+    todayNetRevenueMinusShipTax: "Today's Net Revenue (Minus Shipping & Tax)",
+    todayMaterialCost: "Today's Material Cost",
+    todayProfitAfterMaterial: "Today's Profit After Material",
+  };
+
   const [auth, setAuth] = useState(null);
 
   const promptForAuth = useCallback(() => {
@@ -60,7 +69,7 @@ const AdminPage = () => {
         method: "GET",
         headers: { Authorization: `Basic ${token}` },
         credentials: "include",
-      }
+      },
     );
     return res.ok;
   }, []);
@@ -109,7 +118,7 @@ const AdminPage = () => {
       }
       return res;
     },
-    [auth, promptForAuth]
+    [auth, promptForAuth],
   );
 
   useEffect(() => {
@@ -124,7 +133,7 @@ const AdminPage = () => {
 
         const res = await authedFetch(
           "http://localhost:8080/api/admin/metrics/summary",
-          { method: "GET" }
+          { method: "GET" },
         );
 
         if (!res.ok) throw new Error(`Failed metrics (${res.status})`);
@@ -145,7 +154,7 @@ const AdminPage = () => {
 
   useEffect(() => {
     if (authVerified) return;
-    if (authAttempted) return; // don't keep prompting
+    if (authAttempted) return;
 
     setAuthAttempted(true);
 
@@ -176,7 +185,7 @@ const AdminPage = () => {
   const notifyProductsChanged = useCallback((payload) => {
     try {
       window.dispatchEvent(
-        new CustomEvent("products:changed", { detail: payload })
+        new CustomEvent("products:changed", { detail: payload }),
       );
     } catch (e) {
       console.error("products:changed dispatch failed", e);
@@ -189,7 +198,7 @@ const AdminPage = () => {
       const qs =
         filterCategory && filterCategory.trim()
           ? `?category=${encodeURIComponent(
-              filterCategory.trim()
+              filterCategory.trim(),
             )}&_=${Date.now()}`
           : `?_=${Date.now()}`;
       const url = `${base}${qs}`;
@@ -200,12 +209,12 @@ const AdminPage = () => {
       } else if (activeTab === "low-stock") {
         response = await authedFetch(
           "http://localhost:8080/api/admin/products/low-stock",
-          { method: "GET" }
+          { method: "GET" },
         );
       } else if (activeTab === "sold-out") {
         response = await authedFetch(
           "http://localhost:8080/api/admin/products/sold-out",
-          { method: "GET" }
+          { method: "GET" },
         );
       }
 
@@ -257,7 +266,7 @@ const AdminPage = () => {
             featured: isFeatured,
             newArrival: isNewArrival,
           }),
-        }
+        },
       );
 
       if (!response.ok) throw new Error(`Error: ${response.status}`);
@@ -315,7 +324,7 @@ const AdminPage = () => {
 
       const response = await authedFetch(
         `http://localhost:8080/api/admin/product/${productId}/uploadPicture`,
-        { method: "POST", body: formData }
+        { method: "POST", body: formData },
       );
 
       if (!response.ok) throw new Error(`Error: ${response.status}`);
@@ -331,7 +340,7 @@ const AdminPage = () => {
 
   const handleDeleteProduct = async (id) => {
     const ok = window.confirm(
-      "Are you sure you want to delete this item? This action cannot be undone."
+      "Are you sure you want to delete this item? This action cannot be undone.",
     );
     if (!ok) return;
 
@@ -340,7 +349,7 @@ const AdminPage = () => {
         `http://localhost:8080/api/admin/products/${id}`,
         {
           method: "DELETE",
-        }
+        },
       );
 
       if (!response.ok) {
@@ -385,12 +394,12 @@ const AdminPage = () => {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(updated),
-        }
+        },
       );
 
       if (!response.ok) {
         throw new Error(
-          `Failed to update: ${response.status} ${response.statusText}`
+          `Failed to update: ${response.status} ${response.statusText}`,
         );
       }
 
@@ -468,6 +477,17 @@ const AdminPage = () => {
       </div>
     );
   }
+
+  const formatMetricValue = (key, value) => {
+    if (
+      key.includes("Revenue") ||
+      key.includes("Profit") ||
+      key.includes("Cost")
+    ) {
+      return `$${Number(value).toFixed(2)}`;
+    }
+    return value;
+  };
 
   if (!authVerified) {
     return (
@@ -579,8 +599,8 @@ const AdminPage = () => {
                   <div className="metrics-grid">
                     {Object.entries(metrics).map(([key, value]) => (
                       <div key={key} className="metric-card">
-                        <div className="metric-label">{key}</div>
-                        <div className="metric-value">{String(value)}</div>
+                        <div className="metric-label">{LABELS[key] ?? key}</div>
+                        <div className="metric-value"><strong>{formatMetricValue(key, value)}</strong></div>
                       </div>
                     ))}
                   </div>

@@ -57,7 +57,7 @@ public class OrderService {
 
       Product p = productRepository.findById(it.getProductId()).orElseThrow();
 
-      // ✅ Snapshot “sale-time” values (required by your schema)
+      // ✅ Snapshot “sale-time” values (required by schema)
       it.setProductName(p.getName());
       it.setUnitPrice(p.getPrice());
       it.setMaterialCostAtSale(p.getMaterialCost());
