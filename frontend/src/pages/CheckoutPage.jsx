@@ -121,9 +121,6 @@ export default function CheckoutPage({ onSuccess }) {
       setShippingRate(null);
       setShippingError(null);
       return;
-    } else if (trimmed === null) {
-      setShippingRate(null);
-      setShippingError(null);
     } else if (!/^\d{5}(-\d{4})?$/.test(trimmed)) {
       setShippingRate(null);
       setShippingError(null);
@@ -264,9 +261,19 @@ export default function CheckoutPage({ onSuccess }) {
           createdOrder?.orderEmail || payload.email || email || "",
         ).trim();
 
+        const resolvedName = String(
+          createdOrder?.orderName || payload.name || name || "",
+        ).trim();
+
+        const resolvedTotal = Number(
+          createdOrder?.orderTotal ?? payload.total ?? 0,
+        );
+
         const normalizedOrder = {
           ...createdOrder,
           orderEmail: resolvedEmail,
+          orderName: resolvedName,
+          orderTotal: resolvedTotal,
         };
 
         setSavedOrder(normalizedOrder);
@@ -278,15 +285,14 @@ export default function CheckoutPage({ onSuccess }) {
             {
               to_email: resolvedEmail,
               order_id: normalizedOrder.orderId,
-              customer_name: normalizedOrder.orderName,
-              order_total: `$${Number(createdOrder.orderTotal).toFixed(2)}`,
+              customer_name: resolvedName,
+              order_total: `$${resolvedTotal.toFixed(2)}`,
             },
             "ZkQfANdcZnMH2U1KL",
           );
-          setSucceeded(true);
         } catch (emailErr) {
           console.error("EmailJS failed:", emailErr);
-          console.error("EmailJS details:", emailErr?.status, email?.text);
+          console.error("EmailJS details:", emailErr?.status, emailErr?.text);
         }
 
         setSucceeded(true);
@@ -571,9 +577,52 @@ export default function CheckoutPage({ onSuccess }) {
                 const createdOrder = await saveOrder(orderPayloadToRetry);
 
                 const resolvedEmail = String(
-                  createdOrder?.orderEmail || orderPayloadToRetry.email || ""
+                  createdOrder?.orderEmail ||
+                    orderPayloadToRetry.email ||
+                    email ||
+                    "",
                 ).trim();
-                setSavedOrder({ ...createdOrder, orderEmail: resolvedEmail });
+
+                const resolvedName = String(
+                  createdOrder?.orderName ||
+                    orderPayloadToRetry.name ||
+                    name ||
+                    "",
+                ).trim();
+
+                const resolvedTotal = Number(
+                  createdOrder?.orderTotal ?? orderPayloadToRetry.total ?? 0,
+                );
+
+                const normalizedOrder = {
+                  ...createdOrder,
+                  orderEmail: resolvedEmail,
+                  orderName: resolvedName,
+                  orderTotal: resolvedTotal,
+                };
+
+                setSavedOrder(normalizedOrder);
+
+                try {
+                  await emailjs.send(
+                    "service_1wp75sm",
+                    "template_0psmti8",
+                    {
+                      to_email: resolvedEmail,
+                      order_id: normalizedOrder.orderId,
+                      customer_name: resolvedName,
+                      order_total: `$${resolvedTotal.toFixed(2)}`,
+                    },
+                    "ZkQfANdcZnMH2U1KL",
+                  );
+                } catch (emailErr) {
+                  console.error("EmailJS failed:", emailErr);
+                  console.error(
+                    "EmailJS details:",
+                    emailErr?.status,
+                    emailErr?.text,
+                  );
+                }
 
                 setSucceeded(true);
                 clearCartAfterPayment();
