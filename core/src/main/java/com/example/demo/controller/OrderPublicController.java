@@ -52,21 +52,23 @@ public class OrderPublicController {
         + " discount=" + discountTotal
         + " items=" + items.size());
 
-    // Your service signature is:
-    // createOrderWithItems(String name, String email, BigDecimal subtotalIgnored,
-    // OrderStatus status,
-    // List<OrderItem> items, BigDecimal shippingTotal, BigDecimal taxTotal,
-    // BigDecimal discountTotal)
-
     Order saved = orderService.createOrderWithItems(
         req.getName(),
         req.getEmail(),
-        BigDecimal.ZERO, // subtotalIgnored (service calculates subtotal itself)
+        BigDecimal.ZERO,
         status,
         items,
         shippingTotal,
         taxTotal,
         discountTotal);
+
+    saved.setShippingAddress1(req.getShippingAddress1());
+    saved.setShippingAddress2(req.getShippingAddress2());
+    saved.setShippingCity(req.getShippingCity());
+    saved.setShippingState(req.getShippingState());
+    saved.setShippingZip(req.getShippingZip());
+
+    saved = orderService.save(saved);
 
     return java.util.Map.of(
         "orderId", saved.getOrderId(),
@@ -76,6 +78,11 @@ public class OrderPublicController {
   public static class CreateOrderRequest {
     private String name;
     private String email;
+    private String shippingAddress1;
+    private String shippingAddress2;
+    private String shippingCity;
+    private String shippingState;
+    private String shippingZip;
     private OrderStatus status;
     private List<CreateOrderItem> items;
 
@@ -97,6 +104,46 @@ public class OrderPublicController {
 
     public void setEmail(String email) {
       this.email = email;
+    }
+
+    public String getShippingAddress1() {
+      return shippingAddress1;
+    }
+
+    public void setShippingAddress1(String shippingAddress1) {
+      this.shippingAddress1 = shippingAddress1;
+    }
+
+    public String getShippingAddress2() {
+      return shippingAddress2;
+    }
+
+    public void setShippingAddress2(String shippingAddress2) {
+      this.shippingAddress2 = shippingAddress2;
+    }
+
+    public String getShippingCity() {
+      return shippingCity;
+    }
+
+    public void setShippingCity(String shippingCity) {
+      this.shippingCity = shippingCity;
+    }
+
+    public String getShippingState() {
+      return shippingState;
+    }
+
+    public void setShippingState(String shippingState) {
+      this.shippingState = shippingState;
+    }
+
+    public String getShippingZip() {
+      return shippingZip;
+    }
+
+    public void setShippingZip(String shippingZip) {
+      this.shippingZip = shippingZip;
     }
 
     public OrderStatus getStatus() {

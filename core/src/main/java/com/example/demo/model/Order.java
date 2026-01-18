@@ -56,6 +56,21 @@ public class Order {
   private String trackingNumber;
 
   @Column
+  String shippingAddress1;
+
+  @Column
+  String shippingAddress2;
+
+  @Column
+  String shippingState;
+
+  @Column
+  String shippingCity;
+
+  @Column
+  String shippingZip;
+
+  @Column
   private String carrier;
 
   @Column

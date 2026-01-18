@@ -94,6 +94,10 @@ public class OrderService {
     return orderRepository.save(order);
   }
 
+  public Order save(Order order) {
+    return orderRepository.save(order);
+  }
+
   public List<Order> getAllOrders() {
     return orderRepository.findAllByOrderByCreatedAtDesc();
   }
