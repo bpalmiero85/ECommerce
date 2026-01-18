@@ -190,10 +190,31 @@ export default function CheckoutPage({ onSuccess }) {
     setProcessing(true);
 
     try {
-      const tax = shippingState === "OH" ? subtotal * 0.0725 : 0;
-      const shipping = shippingRate || 0;
-      const total = subtotal + tax + shipping;
+      // ✅ Single source of truth: compute from current inputs (no async state timing)
+      const stateNow = inferStateFromZip(destinationZip);
 
+      const taxTotal =
+        stateNow === "OH" ? Number((subtotal * 0.0725).toFixed(2)) : 0;
+
+      const shippingTotal =
+        shippingRate != null ? Number(Number(shippingRate).toFixed(2)) : 0;
+
+      const discountTotal = 0;
+
+      const total = Number(
+        (subtotal + taxTotal + shippingTotal - discountTotal).toFixed(2),
+      );
+
+      console.log("TOTALS:", {
+        subtotal,
+        stateNow,
+        taxTotal,
+        shippingTotal,
+        discountTotal,
+        total,
+      });
+
+      // ✅ Use the SAME values for Stripe
       const piRes = await fetch(
         `${PAYMENT_API_BASE}/api/create-payment-intent`,
         {
@@ -201,18 +222,19 @@ export default function CheckoutPage({ onSuccess }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             amount: Math.round(total * 100),
-            state: shippingState,
-            shipping,
+            state: stateNow,
+            shipping: shippingTotal,
           }),
         },
       );
-
       const piData = await piRes.json().catch(() => ({}));
       if (!piRes.ok) {
         throw new Error(
           piData?.error || piData?.message || "Failed to start payment.",
         );
       }
+
+      if (!piData?.clientSecret) throw new Error("No client secret returned.");
 
       const clientSecret = piData.clientSecret;
 
@@ -238,8 +260,12 @@ export default function CheckoutPage({ onSuccess }) {
       const payload = {
         name,
         email,
-        total: Number(total.toFixed(2)),
         status: "PAID",
+        shippingTotal,
+        taxTotal,
+        discountTotal,
+        total: Number(total.toFixed(2)),
+
         items: cartItems.map((it) => ({
           productId: it.id,
           productName: it.name,
@@ -248,12 +274,22 @@ export default function CheckoutPage({ onSuccess }) {
         })),
       };
 
+      console.log("SENDING ORDER PAYLOAD:", payload);
+
       setPaidIntentId(result.paymentIntent.id);
       setOrderPayloadToRetry(payload);
       setOrderSaveError(null);
 
       try {
         console.log("Attempting to save order with payload:", payload);
+        console.log("payload keys:", Object.keys(payload));
+        console.log("payload json:", JSON.stringify(payload));
+        console.log("totals check:", {
+          shippingTotal,
+          taxTotal,
+          discountTotal,
+          total,
+        });
         const createdOrder = await saveOrder(payload);
         console.log("createdOrder response:", createdOrder);
 

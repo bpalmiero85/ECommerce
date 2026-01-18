@@ -30,23 +30,43 @@ public class OrderPublicController {
       throw new IllegalArgumentException("Order must contain at least one item");
     }
 
+    // Build OrderItem entities from request items
     List<OrderItem> items = req.getItems().stream().map(i -> {
       OrderItem it = new OrderItem();
       it.setProductId(i.getProductId());
       it.setQuantity(i.getQuantity());
-      // DO NOT rely on client for name/price/material; service should snapshot those
-      // from Product
       return it;
     }).toList();
 
+    // Default status
     OrderStatus status = (req.getStatus() == null) ? OrderStatus.PAID : req.getStatus();
+
+    // Totals coming from client (these MUST be sent by frontend)
+    BigDecimal shippingTotal = (req.getShippingTotal() == null) ? BigDecimal.ZERO : req.getShippingTotal();
+    BigDecimal taxTotal = (req.getTaxTotal() == null) ? BigDecimal.ZERO : req.getTaxTotal();
+    BigDecimal discountTotal = (req.getDiscountTotal() == null) ? BigDecimal.ZERO : req.getDiscountTotal();
+
+    // PROVE what you received
+    System.out.println("PUBLIC ORDER INCOMING: shipping=" + shippingTotal
+        + " tax=" + taxTotal
+        + " discount=" + discountTotal
+        + " items=" + items.size());
+
+    // Your service signature is:
+    // createOrderWithItems(String name, String email, BigDecimal subtotalIgnored,
+    // OrderStatus status,
+    // List<OrderItem> items, BigDecimal shippingTotal, BigDecimal taxTotal,
+    // BigDecimal discountTotal)
 
     Order saved = orderService.createOrderWithItems(
         req.getName(),
         req.getEmail(),
-        req.getTotal(),
+        BigDecimal.ZERO, // subtotalIgnored (service calculates subtotal itself)
         status,
-        items);
+        items,
+        shippingTotal,
+        taxTotal,
+        discountTotal);
 
     return java.util.Map.of(
         "orderId", saved.getOrderId(),
@@ -56,9 +76,12 @@ public class OrderPublicController {
   public static class CreateOrderRequest {
     private String name;
     private String email;
-    private BigDecimal total;
     private OrderStatus status;
     private List<CreateOrderItem> items;
+
+    private BigDecimal shippingTotal;
+    private BigDecimal taxTotal;
+    private BigDecimal discountTotal;
 
     public String getName() {
       return name;
@@ -76,14 +99,6 @@ public class OrderPublicController {
       this.email = email;
     }
 
-    public BigDecimal getTotal() {
-      return total;
-    }
-
-    public void setTotal(BigDecimal total) {
-      this.total = total;
-    }
-
     public OrderStatus getStatus() {
       return status;
     }
@@ -99,13 +114,35 @@ public class OrderPublicController {
     public void setItems(List<CreateOrderItem> items) {
       this.items = items;
     }
+
+    public BigDecimal getShippingTotal() {
+      return shippingTotal;
+    }
+
+    public void setShippingTotal(BigDecimal shippingTotal) {
+      this.shippingTotal = shippingTotal;
+    }
+
+    public BigDecimal getTaxTotal() {
+      return taxTotal;
+    }
+
+    public void setTaxTotal(BigDecimal taxTotal) {
+      this.taxTotal = taxTotal;
+    }
+
+    public BigDecimal getDiscountTotal() {
+      return discountTotal;
+    }
+
+    public void setDiscountTotal(BigDecimal discountTotal) {
+      this.discountTotal = discountTotal;
+    }
   }
 
   public static class CreateOrderItem {
     private Long productId;
-    private String productName;
     private int quantity;
-    private BigDecimal unitPrice;
 
     public Long getProductId() {
       return productId;
@@ -115,28 +152,12 @@ public class OrderPublicController {
       this.productId = productId;
     }
 
-    public String getProductName() {
-      return productName;
-    }
-
-    public void setProductName(String productName) {
-      this.productName = productName;
-    }
-
     public int getQuantity() {
       return quantity;
     }
 
     public void setQuantity(int quantity) {
       this.quantity = quantity;
-    }
-
-    public BigDecimal getUnitPrice() {
-      return unitPrice;
-    }
-
-    public void setUnitPrice(BigDecimal unitPrice) {
-      this.unitPrice = unitPrice;
     }
   }
 }

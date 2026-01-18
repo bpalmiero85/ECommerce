@@ -1,0 +1,171 @@
+* {
+  box-sizing: border-box;
+}
+
+.orders-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  width: 80vw;
+  max-width: 900px;
+  margin: 25px auto 40px;
+
+  background: white;
+  border-radius: 10px;
+  padding: 15px;
+
+  z-index: 1;
+}
+.orders-item-meta {
+  font-size: 1rem;
+  color: black;
+  white-space: nowrap;
+}
+
+.orders-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.orders-title {
+  margin: 0;
+}
+
+.orders-refresh {
+  padding: 6px 14px;
+  border: 1px solid #888;
+  background: #bd6dfa;
+  color: white;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.orders-refresh:hover {
+  filter: brightness(0.95);
+}
+
+.orders-error {
+  color: red;
+  margin-top: 4px;
+}
+
+.orders-empty {
+  padding: 10px 0;
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.orders-card {
+  border: 1px solid rgba(121, 2, 206, 0.25);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  overflow: hidden;
+  width: 100%;
+}
+
+.orders-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  background: rgba(189, 109, 250, 0.18);
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(121, 2, 206, 0.18);
+}
+
+.orders-card-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: rgb(121, 2, 206);
+}
+
+.orders-card-status {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: rgb(141, 0, 127);
+}
+
+.orders-card-body {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.orders-field {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+.orders-field-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  opacity: 0.75;
+  color: rgb(121, 2, 206);
+}
+
+.orders-field-value {
+  font-size: 1rem;
+  color: rgb(141, 0, 127);
+  word-break: break-word;
+  text-align: left;
+}
+
+.orders-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 12px 12px;
+}
+
+.orders-card-actions button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(121, 2, 206, 0.35);
+  background: rgba(189, 109, 250, 0.25);
+  cursor: pointer;
+}
+
+.orders-card-actions button:hover {
+  filter: brightness(0.95);
+}
+
+.orders-items {
+  margin: 0;
+  padding: 0 12px 12px 28px;
+}
+
+.orders-item {
+  margin: 6px 0;
+}
+
+.orders-item-meta {
+  margin-left: 6px;
+  opacity: 0.85;
+}
+
+@media (max-width: 520px) {
+  .orders-panel {
+    width: 92vw;
+    padding: 12px;
+  }
+
+  .orders-field {
+    grid-template-columns: 1fr;
+  }
+
+  .orders-field-label {
+    margin-bottom: -4px;
+  }
+}

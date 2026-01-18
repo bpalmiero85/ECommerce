@@ -50,15 +50,26 @@ public class OrderController {
 
   @PostMapping(consumes = "application/json")
   public Order createOrder(@RequestBody CreateOrderRequest req) {
-    // default if not sent
     OrderStatus status = (req.getStatus() == null) ? OrderStatus.PAID : req.getStatus();
+
+    BigDecimal shippingTotal = (req.getShippingTotal() == null) ? BigDecimal.ZERO : req.getShippingTotal();
+    BigDecimal taxTotal = (req.getTaxTotal() == null) ? BigDecimal.ZERO : req.getTaxTotal();
+    BigDecimal discountTotal = (req.getDiscountTotal() == null) ? BigDecimal.ZERO : req.getDiscountTotal();
+
+    // This param exists in your OrderService signature but is not used
+    // (subtotalIgnored).
+    // Keep it stable. (You can pass req.getTotal() too, but it’s ignored anyway.)
+    BigDecimal subtotalIgnored = BigDecimal.ZERO;
 
     return orderService.createOrderWithItems(
         req.getName(),
         req.getEmail(),
-        req.getTotal(),
+        subtotalIgnored,
         status,
-        req.getItems());
+        req.getItems(),
+        shippingTotal,
+        taxTotal,
+        discountTotal);
   }
 
   @Getter
@@ -66,9 +77,16 @@ public class OrderController {
   public static class CreateOrderRequest {
     private String name;
     private String email;
+
+    // NOT used by OrderService (subtotalIgnored).
     private BigDecimal total;
+
     private OrderStatus status;
-    private List<OrderItem> items; // <-- this makes your JSON work
+    private List<OrderItem> items;
+
+    private BigDecimal shippingTotal;
+    private BigDecimal taxTotal;
+    private BigDecimal discountTotal;
   }
 
   @GetMapping("/all")

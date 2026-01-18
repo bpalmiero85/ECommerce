@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import emailjs from "@emailjs/browser";
+import "../styles/OrdersPage.css";
 
 const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8080";
 
@@ -402,24 +403,28 @@ export default function OrdersPage() {
   }
 
   return (
-    <div style={{ maxWidth: 1100, margin: "0 auto", padding: 16 }}>
-      <h1>Orders</h1>
+    <div className="orders-panel">
+      <div className="orders-panel-header">
+        <h1 className="orders-title">Orders</h1>
+
+        <button type="button" className="orders-refresh" onClick={fetchOrders}>
+          Refresh
+        </button>
+      </div>
+
       <div className="choose-order-status">
         <button
           type="button"
           style={{ backgroundColor: "lightBlue" }}
-          onClick={() => {
-            handleChooseOrderStatus("active");
-          }}
+          onClick={() => handleChooseOrderStatus("active")}
         >
           ACTIVE
         </button>
+
         <button
           type="button"
           style={{ backgroundColor: "lightblue" }}
-          onClick={() => {
-            handleChooseOrderStatus("shipped");
-          }}
+          onClick={() => handleChooseOrderStatus("shipped")}
         >
           SHIPPED
         </button>
@@ -427,179 +432,162 @@ export default function OrdersPage() {
         <button
           type="button"
           style={{ backgroundColor: "lightBlue" }}
-          onClick={() => {
-            handleChooseOrderStatus("completed");
-          }}
+          onClick={() => handleChooseOrderStatus("completed")}
         >
           COMPLETED
         </button>
+
         <button
           type="button"
           style={{ backgroundColor: "lightBlue" }}
-          onClick={() => {
-            handleChooseOrderStatus("cancelled");
-          }}
+          onClick={() => handleChooseOrderStatus("cancelled")}
         >
           CANCELLED
         </button>
+
         <button
           type="button"
           style={{ backgroundColor: "lightBlue" }}
-          onClick={() => {
-            handleChooseOrderStatus("archived");
-          }}
+          onClick={() => handleChooseOrderStatus("archived")}
         >
           ARCHIVED
         </button>
       </div>
 
-      {error && <div style={{ color: "red", marginBottom: 12 }}>{error}</div>}
-
-      <button type="button" onClick={fetchOrders} style={{ marginBottom: 12 }}>
-        Refresh
-      </button>
+      {error && <div className="orders-error">{error}</div>}
 
       {orders.length === 0 ? (
-        <div>No orders yet.</div>
+        <div className="orders-empty">No orders yet.</div>
       ) : (
-        <div
-          style={{
-            width: "100%",
-            overflowX: "auto",
-            WebkitOverflowScrolling: "touch",
-          }}
-        >
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "collapse",
-              minWidth: 900,
-            }}
-          >
-            <thead>
-              <tr style={{ textAlign: "left" }}>
-                <th style={{ padding: "12px 20px" }}>Actions</th>
-                <th style={{ padding: "12px 20px" }}>Order ID</th>
-                <th style={{ padding: "12px 20px" }}>Name</th>
-                <th style={{ padding: "12px 20px" }}>Email</th>
-                <th style={{ padding: "12px 20px" }}>Total</th>
-                <th style={{ padding: "12px 20px" }}>Status</th>
-                {orderStatus !== "active" && (
-                  <th style={{ padding: "12px 20px" }}>Tracking</th>
-                )}
-                <th style={{ padding: "12px 20px" }}>Created</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((o) => (
-                <React.Fragment key={o.orderId}>
-                  <tr
-                    style={{
-                      borderTop: "1px solid #ddd",
-                      fontSize: "18px",
-                      color: "white",
-                    }}
-                  >
-                    {/* Actions */}
-                    <td style={{ padding: "12px 20px" }}>
-                      {o.orderStatus === "PAID" && (
-                        <button onClick={() => handleMarkShipped(o)}>
-                          Mark shipped
-                        </button>
-                      )}
+        <div className="orders-list">
+          {orders.map((o) => {
+            console.log("order keys:", Object.keys(o));
 
-                      {orderStatus === "shipped" &&
-                        o.orderStatus === "SHIPPED" &&
-                        o.trackingNumber &&
-                        !o.deliveredAt && (
-                          <>
-                            <button
-                              style={{ marginLeft: 8 }}
-                              onClick={() => handleResendTracking(o)}
-                            >
-                              Resend tracking
-                            </button>
-                            <button onClick={() => handleMarkDelivered(o)}>
-                              Mark delivered
-                            </button>
-                          </>
-                        )}
-                      {orderStatus === "completed" &&
-                        o.orderStatus === "DELIVERED" && (
-                          <button
-                            style={{ marginLeft: 8 }}
-                            onClick={() => handleArchiveOrder(o)}
-                          >
-                            Archive
-                          </button>
-                        )}
-                    </td>
+            return (
+              <div key={o.orderId} className="orders-card">
+                <div className="orders-card-header">
+                  <div className="orders-card-title">Order #{o.orderId}</div>
+                  <div className="orders-card-status">{o.orderStatus}</div>
+                </div>
 
-                    {/* Order ID */}
-                    <td style={{ padding: "12px 20px" }}>{o.orderId}</td>
+                <div className="orders-card-body">
+                  <div className="orders-field">
+                    <span className="orders-field-label">Name</span>
+                    <span className="orders-field-value">{o.orderName}</span>
+                  </div>
 
-                    {/* Name */}
-                    <td style={{ padding: "12px 20px" }}>{o.orderName}</td>
+                  <div className="orders-field">
+                    <span className="orders-field-label">Email</span>
+                    <span className="orders-field-value">{o.orderEmail}</span>
+                  </div>
 
-                    {/* Email */}
-                    <td style={{ padding: "12px 20px" }}>{o.orderEmail}</td>
+                  <div className="orders-field">
+                    <span className="orders-field-label">Subtotal</span>
+                    <span className="orders-field-value">
+                      ${Number(o.subtotal ?? 0).toFixed(2)}
+                    </span>
+                  </div>
 
-                    {/* Total */}
-                    <td style={{ padding: "12px 20px" }}>
-                      ${Number(o.orderTotal).toFixed(2)}
-                    </td>
+                  <div className="orders-field">
+                    <span className="orders-field-label">Tax</span>
+                    <span className="orders-field-value">
+                      ${Number(o.taxTotal ?? 0).toFixed(2)}
+                    </span>
+                  </div>
 
-                    {/* Status */}
-                    <td style={{ padding: "12px 20px" }}>{o.orderStatus}</td>
+                  <div className="orders-field">
+                    <span className="orders-field-label">Shipping</span>
+                    <span className="orders-field-value">
+                      ${Number(o.shippingTotal ?? 0).toFixed(2)}
+                    </span>
+                  </div>
 
-                    {/* Tracking */}
-                    {orderStatus !== "active" && (
-                      <td style={{ padding: "12px 20px" }}>
-                        {o.trackingNumber &&
-                          (o.orderStatus === "SHIPPED" ||
-                            o.orderStatus === "DELIVERED") && (
-                            <>
-                              <div>{o.carrier}</div>
-                              <div style={{ fontSize: 12, color: "#ccc" }}>
-                                {o.trackingNumber}
-                              </div>
-                            </>
-                          )}
-                      </td>
-                    )}
-                    {/* Created */}
-                    <td style={{ padding: "12px 20px" }}>
-                      {o.createdAt
-                        ? new Date(o.createdAt).toLocaleString()
-                        : ""}
-                    </td>
-                  </tr>
-                  {o.items && o.items.length > 0 && (
-                    <tr>
-                      <td colSpan="8" style={{ padding: "12px 20px" }}>
-                        <ul style={{ margin: "6px 0 12px 20px" }}>
-                          {o.items.map((it) => (
-                            <li key={it.id}>
-                              <button
-                                className="order-product-button"
-                                onClick={() => openItemModal(it)}
-                              >
-                                {it.productName}
-                              </button>{" "}
-                              × {it.quantity} @ $
-                              {Number(it.unitPrice).toFixed(2)}
-                            </li>
-                          ))}
-                        </ul>
-                      </td>
-                    </tr>
+                  <div className="orders-field">
+                    <span className="orders-field-label">Discount</span>
+                    <span className="orders-field-value">
+                      -${Number(o.discountTotal ?? 0).toFixed(2)}
+                    </span>
+                  </div>
+
+                  <div className="orders-field">
+                    <span className="orders-field-label">Customer Paid</span>
+                    <span className="orders-field-value">
+                      ${Number(o.orderTotal ?? 0).toFixed(2)}
+                    </span>
+                  </div>
+
+                  {orderStatus !== "active" && o.trackingNumber && (
+                    <div className="orders-field">
+                      <span className="orders-field-label">Tracking</span>
+                      <span className="orders-field-value">
+                        {o.carrier} • {o.trackingNumber}
+                      </span>
+                    </div>
                   )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
+                </div>
+
+                <div className="orders-card-actions">
+                  {o.orderStatus === "PAID" && (
+                    <button type="button" onClick={() => handleMarkShipped(o)}>
+                      Mark shipped
+                    </button>
+                  )}
+
+                  {orderStatus === "shipped" &&
+                    o.orderStatus === "SHIPPED" &&
+                    o.trackingNumber &&
+                    !o.deliveredAt && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => handleResendTracking(o)}
+                        >
+                          Resend tracking
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleMarkDelivered(o)}
+                        >
+                          Mark delivered
+                        </button>
+                      </>
+                    )}
+
+                  {orderStatus === "completed" &&
+                    o.orderStatus === "DELIVERED" && (
+                      <button
+                        type="button"
+                        onClick={() => handleArchiveOrder(o)}
+                      >
+                        Archive
+                      </button>
+                    )}
+                </div>
+
+                {o.items?.length > 0 && (
+                  <ul className="orders-items">
+                    {o.items.map((it) => (
+                      <li key={it.id} className="orders-item">
+                        <button
+                          type="button"
+                          className="order-product-button"
+                          onClick={() => openItemModal(it)}
+                        >
+                          {it.productName}
+                        </button>
+                        <span className="orders-item-meta">
+                          × {it.quantity} @ ${Number(it.unitPrice).toFixed(2)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
+
       {isItemModalOpen && selectedItem && (
         <div
           role="dialog"
@@ -612,7 +600,7 @@ export default function OrdersPage() {
             right: 0,
             bottom: 0,
             width: "100vw",
-            height: "100dvh", // ✅ key for mobile centering
+            height: "100dvh",
             background: "rgba(0,0,0,0.6)",
             display: "flex",
             alignItems: "center",
@@ -648,11 +636,10 @@ export default function OrdersPage() {
                 X
               </button>
             </div>
+
             <div style={{ marginTop: 12 }}>
               <img
-                src={`${API_BASE}/api/product/${
-                  selectedItem.productId
-                }/picture?version=${Date.now()}`}
+                src={`${API_BASE}/api/product/${selectedItem.productId}/picture?version=${Date.now()}`}
                 alt={selectedItem.productName}
                 style={{
                   width: "100%",
@@ -665,6 +652,7 @@ export default function OrdersPage() {
                   e.currentTarget.style.display = "none";
                 }}
               />
+
               <div style={{ marginTop: 10, fontSize: 18, color: "black" }}>
                 <div>
                   <strong>Product ID:</strong> {selectedItem.productId}

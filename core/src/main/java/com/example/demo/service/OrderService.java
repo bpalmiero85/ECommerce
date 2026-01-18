@@ -39,8 +39,8 @@ public class OrderService {
   }
 
   @Transactional
-  public Order createOrderWithItems(String name, String email, BigDecimal total, OrderStatus status,
-      List<OrderItem> items) {
+  public Order createOrderWithItems(String name, String email, BigDecimal subtotalIgnored, OrderStatus status,
+      List<OrderItem> items, BigDecimal shippingTotal, BigDecimal taxTotal, BigDecimal discountTotal) {
 
     if (items == null || items.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order must contain at least one item");
@@ -50,6 +50,9 @@ public class OrderService {
     order.setOrderName(name);
     order.setOrderEmail(email);
     order.setOrderStatus(status);
+    order.setShippingTotal(shippingTotal != null ? shippingTotal : BigDecimal.ZERO);
+    order.setTaxTotal(taxTotal != null ? taxTotal : BigDecimal.ZERO);
+    order.setDiscountTotal(discountTotal != null ? discountTotal : BigDecimal.ZERO);
 
     BigDecimal subtotal = BigDecimal.ZERO;
 
@@ -81,14 +84,6 @@ public class OrderService {
     // ✅ set order money fields AFTER loop
     order.setSubtotal(subtotal);
 
-    // If these are not being sent yet, force them to 0 so math is stable
-    if (order.getShippingTotal() == null)
-      order.setShippingTotal(BigDecimal.ZERO);
-    if (order.getTaxTotal() == null)
-      order.setTaxTotal(BigDecimal.ZERO);
-    if (order.getDiscountTotal() == null)
-      order.setDiscountTotal(BigDecimal.ZERO);
-
     // ✅ total = subtotal + shipping + tax - discount
     order.setOrderTotal(
         order.getSubtotal()
@@ -106,11 +101,8 @@ public class OrderService {
   @Transactional(readOnly = true)
   public List<Order> getAllActiveOrders() {
     return orderRepository.findWithItemsByStatuses(
-      List.of(OrderStatus.PAID, OrderStatus.SHIPPED, OrderStatus.DELIVERED)
-    );
+        List.of(OrderStatus.PAID, OrderStatus.SHIPPED, OrderStatus.DELIVERED));
   }
-
-  
 
   public List<Order> getShippedOrders() {
     return findOrderByStatus(OrderStatus.SHIPPED);

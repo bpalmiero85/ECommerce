@@ -138,7 +138,6 @@ const Product = ({
       }
 
       const ids = Array.isArray(payload?.ids) ? payload.ids : [];
-      // Coerce to strings to avoid number/string mismatches
       const hit = ids.map(String).includes(String(id));
       if (hit) onReserved?.(id);
     }
