@@ -415,7 +415,7 @@ export default function OrdersPage() {
       <div className="choose-order-status">
         <button
           type="button"
-          style={{ backgroundColor: "lightBlue" }}
+          style={{ backgroundColor: "lightBlue", margin: "3px", padding: "3px" }}
           onClick={() => handleChooseOrderStatus("active")}
         >
           ACTIVE
@@ -423,7 +423,7 @@ export default function OrdersPage() {
 
         <button
           type="button"
-          style={{ backgroundColor: "lightblue" }}
+          style={{ backgroundColor: "lightblue", margin: "3px", padding: "3px" }}
           onClick={() => handleChooseOrderStatus("shipped")}
         >
           SHIPPED
@@ -431,7 +431,7 @@ export default function OrdersPage() {
 
         <button
           type="button"
-          style={{ backgroundColor: "lightBlue" }}
+          style={{ backgroundColor: "lightBlue", margin: "3px", padding: "3px" }}
           onClick={() => handleChooseOrderStatus("completed")}
         >
           COMPLETED
@@ -439,7 +439,7 @@ export default function OrdersPage() {
 
         <button
           type="button"
-          style={{ backgroundColor: "lightBlue" }}
+          style={{ backgroundColor: "lightBlue", margin: "3px", padding: "3px" }}
           onClick={() => handleChooseOrderStatus("cancelled")}
         >
           CANCELLED
@@ -447,7 +447,7 @@ export default function OrdersPage() {
 
         <button
           type="button"
-          style={{ backgroundColor: "lightBlue" }}
+          style={{ backgroundColor: "lightBlue", margin: "3px", padding: "3px" }}
           onClick={() => handleChooseOrderStatus("archived")}
         >
           ARCHIVED

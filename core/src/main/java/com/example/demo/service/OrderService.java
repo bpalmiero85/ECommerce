@@ -105,7 +105,7 @@ public class OrderService {
   @Transactional(readOnly = true)
   public List<Order> getAllActiveOrders() {
     return orderRepository.findWithItemsByStatuses(
-        List.of(OrderStatus.PAID, OrderStatus.SHIPPED, OrderStatus.DELIVERED));
+        List.of(OrderStatus.PAID));
   }
 
   public List<Order> getShippedOrders() {
