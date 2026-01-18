@@ -462,126 +462,143 @@ export default function OrdersPage() {
       {orders.length === 0 ? (
         <div>No orders yet.</div>
       ) : (
-        <table width="100%" style={{ borderCollapse: "collapse" }}>
-          <thead>
-            <tr style={{ textAlign: "left" }}>
-              <th style={{ padding: "12px 20px" }}>Actions</th>
-              <th style={{ padding: "12px 20px" }}>Order ID</th>
-              <th style={{ padding: "12px 20px" }}>Name</th>
-              <th style={{ padding: "12px 20px" }}>Email</th>
-              <th style={{ padding: "12px 20px" }}>Total</th>
-              <th style={{ padding: "12px 20px" }}>Status</th>
-              {orderStatus !== "active" && (
-                <th style={{ padding: "12px 20px" }}>Tracking</th>
-              )}
-              <th style={{ padding: "12px 20px" }}>Created</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((o) => (
-              <React.Fragment key={o.orderId}>
-                <tr
-                  style={{
-                    borderTop: "1px solid #ddd",
-                    fontSize: "18px",
-                    color: "white",
-                  }}
-                >
-                  {/* Actions */}
-                  <td style={{ padding: "12px 20px" }}>
-                    {o.orderStatus === "PAID" && (
-                      <button onClick={() => handleMarkShipped(o)}>
-                        Mark shipped
-                      </button>
-                    )}
-
-                    {orderStatus === "shipped" &&
-                      o.orderStatus === "SHIPPED" &&
-                      o.trackingNumber &&
-                      !o.deliveredAt && (
-                        <>
-                          <button
-                            style={{ marginLeft: 8 }}
-                            onClick={() => handleResendTracking(o)}
-                          >
-                            Resend tracking
-                          </button>
-                          <button onClick={() => handleMarkDelivered(o)}>
-                            Mark delivered
-                          </button>
-                        </>
-                      )}
-                    {orderStatus === "completed" &&
-                      o.orderStatus === "DELIVERED" && (
-                        <button
-                          style={{ marginLeft: 8 }}
-                          onClick={() => handleArchiveOrder(o)}
-                        >
-                          Archive
+        <div
+          style={{
+            width: "100%",
+            overflowX: "auto",
+            WebkitOverflowScrolling: "touch",
+          }}
+        >
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              minWidth: 900,
+            }}
+          >
+            <thead>
+              <tr style={{ textAlign: "left" }}>
+                <th style={{ padding: "12px 20px" }}>Actions</th>
+                <th style={{ padding: "12px 20px" }}>Order ID</th>
+                <th style={{ padding: "12px 20px" }}>Name</th>
+                <th style={{ padding: "12px 20px" }}>Email</th>
+                <th style={{ padding: "12px 20px" }}>Total</th>
+                <th style={{ padding: "12px 20px" }}>Status</th>
+                {orderStatus !== "active" && (
+                  <th style={{ padding: "12px 20px" }}>Tracking</th>
+                )}
+                <th style={{ padding: "12px 20px" }}>Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((o) => (
+                <React.Fragment key={o.orderId}>
+                  <tr
+                    style={{
+                      borderTop: "1px solid #ddd",
+                      fontSize: "18px",
+                      color: "white",
+                    }}
+                  >
+                    {/* Actions */}
+                    <td style={{ padding: "12px 20px" }}>
+                      {o.orderStatus === "PAID" && (
+                        <button onClick={() => handleMarkShipped(o)}>
+                          Mark shipped
                         </button>
                       )}
-                  </td>
 
-                  {/* Order ID */}
-                  <td style={{ padding: "12px 20px" }}>{o.orderId}</td>
-
-                  {/* Name */}
-                  <td style={{ padding: "12px 20px" }}>{o.orderName}</td>
-
-                  {/* Email */}
-                  <td style={{ padding: "12px 20px" }}>{o.orderEmail}</td>
-
-                  {/* Total */}
-                  <td style={{ padding: "12px 20px" }}>
-                    ${Number(o.orderTotal).toFixed(2)}
-                  </td>
-
-                  {/* Status */}
-                  <td style={{ padding: "12px 20px" }}>{o.orderStatus}</td>
-
-                  {/* Tracking */}
-                  {orderStatus !== "active" && (
-                    <td style={{ padding: "12px 20px" }}>
-                      {o.trackingNumber &&
-                        (o.orderStatus === "SHIPPED" ||
-                          o.orderStatus === "DELIVERED") && (
+                      {orderStatus === "shipped" &&
+                        o.orderStatus === "SHIPPED" &&
+                        o.trackingNumber &&
+                        !o.deliveredAt && (
                           <>
-                            <div>{o.carrier}</div>
-                            <div style={{ fontSize: 12, color: "#ccc" }}>
-                              {o.trackingNumber}
-                            </div>
+                            <button
+                              style={{ marginLeft: 8 }}
+                              onClick={() => handleResendTracking(o)}
+                            >
+                              Resend tracking
+                            </button>
+                            <button onClick={() => handleMarkDelivered(o)}>
+                              Mark delivered
+                            </button>
                           </>
                         )}
+                      {orderStatus === "completed" &&
+                        o.orderStatus === "DELIVERED" && (
+                          <button
+                            style={{ marginLeft: 8 }}
+                            onClick={() => handleArchiveOrder(o)}
+                          >
+                            Archive
+                          </button>
+                        )}
                     </td>
-                  )}
-                  {/* Created */}
-                  <td style={{ padding: "12px 20px" }}>
-                    {o.createdAt ? new Date(o.createdAt).toLocaleString() : ""}
-                  </td>
-                </tr>
-                {o.items && o.items.length > 0 && (
-                  <tr>
-                    <td colSpan="8" style={{ padding: "12px 20px" }}>
-                      <ul style={{ margin: "6px 0 12px 20px" }}>
-                        {o.items.map((it) => (
-                          <li key={it.id}>
-                            <button
-                              className="order-product-button"
-                              onClick={() => openItemModal(it)}
-                            >
-                              {it.productName}
-                            </button>{" "}
-                            × {it.quantity} @ ${Number(it.unitPrice).toFixed(2)}
-                          </li>
-                        ))}
-                      </ul>
+
+                    {/* Order ID */}
+                    <td style={{ padding: "12px 20px" }}>{o.orderId}</td>
+
+                    {/* Name */}
+                    <td style={{ padding: "12px 20px" }}>{o.orderName}</td>
+
+                    {/* Email */}
+                    <td style={{ padding: "12px 20px" }}>{o.orderEmail}</td>
+
+                    {/* Total */}
+                    <td style={{ padding: "12px 20px" }}>
+                      ${Number(o.orderTotal).toFixed(2)}
+                    </td>
+
+                    {/* Status */}
+                    <td style={{ padding: "12px 20px" }}>{o.orderStatus}</td>
+
+                    {/* Tracking */}
+                    {orderStatus !== "active" && (
+                      <td style={{ padding: "12px 20px" }}>
+                        {o.trackingNumber &&
+                          (o.orderStatus === "SHIPPED" ||
+                            o.orderStatus === "DELIVERED") && (
+                            <>
+                              <div>{o.carrier}</div>
+                              <div style={{ fontSize: 12, color: "#ccc" }}>
+                                {o.trackingNumber}
+                              </div>
+                            </>
+                          )}
+                      </td>
+                    )}
+                    {/* Created */}
+                    <td style={{ padding: "12px 20px" }}>
+                      {o.createdAt
+                        ? new Date(o.createdAt).toLocaleString()
+                        : ""}
                     </td>
                   </tr>
-                )}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
+                  {o.items && o.items.length > 0 && (
+                    <tr>
+                      <td colSpan="8" style={{ padding: "12px 20px" }}>
+                        <ul style={{ margin: "6px 0 12px 20px" }}>
+                          {o.items.map((it) => (
+                            <li key={it.id}>
+                              <button
+                                className="order-product-button"
+                                onClick={() => openItemModal(it)}
+                              >
+                                {it.productName}
+                              </button>{" "}
+                              × {it.quantity} @ $
+                              {Number(it.unitPrice).toFixed(2)}
+                            </li>
+                          ))}
+                        </ul>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       {isItemModalOpen && selectedItem && (
         <div
@@ -590,7 +607,12 @@ export default function OrdersPage() {
           onClick={closeItemModal}
           style={{
             position: "fixed",
-            inset: 0,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: "100vw",
+            height: "100dvh", // ✅ key for mobile centering
             background: "rgba(0,0,0,0.6)",
             display: "flex",
             alignItems: "center",
@@ -607,6 +629,9 @@ export default function OrdersPage() {
               maxWidth: 520,
               width: "100%",
               padding: 16,
+              maxHeight: "90dvh",
+              overflowY: "auto",
+              boxSizing: "border-box",
             }}
           >
             <div
