@@ -103,13 +103,14 @@ public class OrderService {
     return orderRepository.findAllByOrderByCreatedAtDesc();
   }
 
+  @Transactional(readOnly = true)
   public List<Order> getAllActiveOrders() {
-    List<OrderStatus> status = List.of(OrderStatus.DELIVERED, OrderStatus.CANCELLED, OrderStatus.SHIPPED,
-        OrderStatus.ARCHIVED);
-    List<Order> order = orderRepository.findAllByOrderStatusNotInOrderByCreatedAtAsc(status);
-    return order;
-
+    return orderRepository.findWithItemsByStatuses(
+      List.of(OrderStatus.PAID, OrderStatus.SHIPPED, OrderStatus.DELIVERED)
+    );
   }
+
+  
 
   public List<Order> getShippedOrders() {
     return findOrderByStatus(OrderStatus.SHIPPED);
@@ -162,9 +163,9 @@ public class OrderService {
     return orderRepository.save(order);
   }
 
+  @Transactional(readOnly = true)
   public List<Order> findOrderByStatus(OrderStatus status) {
-    List<Order> order = orderRepository.findByOrderStatusOrderByCreatedAtAsc(status);
-    return order;
+    return orderRepository.findWithItemsByStatus(status);
 
   }
 

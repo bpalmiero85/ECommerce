@@ -21,7 +21,6 @@ public class OrderItem {
 
   @ManyToOne(optional = false, fetch = FetchType.LAZY)
   @JoinColumn(name = "order_id")
-  @JsonBackReference
   @JsonIgnore
   private Order order;
 

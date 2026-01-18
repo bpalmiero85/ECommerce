@@ -24,15 +24,15 @@ export default function OrdersPage() {
     if (!t) return "";
     if (c.includes("usps"))
       return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${encodeURIComponent(
-        t
+        t,
       )}`;
     if (c.includes("ups"))
       return `https://www.ups.com/track?loc=en_US&tracknum=${encodeURIComponent(
-        t
+        t,
       )}`;
     if (c.includes("fedex"))
       return `https://www.fedex.com/fedextrack/?trknbr=${encodeURIComponent(
-        t
+        t,
       )}`;
 
     return "";
@@ -40,19 +40,19 @@ export default function OrdersPage() {
 
   const orderStatusEndpoint = useCallback(() => {
     if (orderStatus === "active") {
-      return "http://localhost:8080/api/admin/orders/status/active";
+      return `${API_BASE}/api/admin/orders/status/active`;
     }
     if (orderStatus === "shipped") {
-      return "http://localhost:8080/api/admin/orders/status/shipped";
+      return `${API_BASE}/api/admin/orders/status/shipped`;
     }
     if (orderStatus === "completed") {
-      return "http://localhost:8080/api/admin/orders/status/completed";
+      return `${API_BASE}/api/admin/orders/status/completed`;
     }
     if (orderStatus === "cancelled") {
-      return "http://localhost:8080/api/admin/orders/status/cancelled";
+      return `${API_BASE}/api/admin/orders/status/cancelled`;
     }
     if (orderStatus === "archived") {
-      return "http://localhost:8080/api/admin/orders/status/archived";
+      return `${API_BASE}/api/admin/orders/status/archived`;
     }
     return null;
   }, [orderStatus]);
@@ -79,6 +79,15 @@ export default function OrdersPage() {
     return btoa(`${username}:${password}`);
   }, []);
 
+  const verifyAuth = useCallback(async (token) => {
+    const res = await fetch(`${API_BASE}/api/admin/orders/status/active`, {
+      method: "GET",
+      headers: { Authorization: `Basic ${token}` },
+      credentials: "include",
+    });
+    return res.ok;
+  }, []);
+
   useEffect(() => {
     if (auth) return;
     if (authAttempted) return;
@@ -86,27 +95,55 @@ export default function OrdersPage() {
     setAuthAttempted(true);
 
     const token = promptForAuth();
-    if (token) {
-      setAuthFailed(false);
-      setAuth(token);
-    } else {
+    if (!token) {
       setAuthFailed(true);
       setAuth(null);
+      setAuthVerified(false);
+      return;
     }
-  }, [auth, authAttempted, promptForAuth]);
+
+    (async () => {
+      const ok = await verifyAuth(token);
+
+      if (!ok) {
+        setAuthFailed(true);
+        setAuth(null);
+        setAuthVerified(false);
+        return;
+      }
+      setAuthFailed(false);
+      setAuth(token);
+      setAuthVerified(true);
+    })();
+  }, [auth, authAttempted, promptForAuth, verifyAuth]);
 
   const authedFetch = useCallback(
     async (url, options = {}) => {
       if (!auth) throw new Error("Missing admin authorization");
+      if (!url) throw new Error("Orders URL is null/undefined");
 
       const headers = new Headers(options.headers || {});
       headers.set("Authorization", `Basic ${auth}`);
 
-      const res = await fetch(url, {
-        ...options,
-        headers,
-        credentials: "include",
-      });
+      console.log("[authedFetch] URL:", url);
+      console.log(
+        "[authedFetch] Auth header starts with:",
+        `Basic ${String(auth).slice(0, 6)}...`,
+      );
+
+      let res;
+      try {
+        res = await fetch(url, {
+          ...options,
+          headers,
+          credentials: "include",
+        });
+      } catch (err) {
+        console.error("[authedFetch] FETCH THREW:", err);
+        throw err;
+      }
+
+      console.log("[authedFetch] status:", res.status);
 
       if (res.status === 401) {
         const token = promptForAuth();
@@ -118,11 +155,14 @@ export default function OrdersPage() {
 
         const retryHeaders = new Headers(options.headers || {});
         retryHeaders.set("Authorization", `Basic ${token}`);
+
         const retryRes = await fetch(url, {
           ...options,
           headers: retryHeaders,
           credentials: "include",
         });
+
+        console.log("[authedFetch] retry status:", retryRes.status);
 
         if (retryRes.status === 401) {
           setAuthFailed(true);
@@ -132,13 +172,12 @@ export default function OrdersPage() {
 
         setAuthFailed(false);
         setAuth(token);
-
         return retryRes;
       }
 
       return res;
     },
-    [auth, promptForAuth]
+    [auth, promptForAuth],
   );
 
   const handleMarkShipped = async (order) => {
@@ -157,13 +196,13 @@ export default function OrdersPage() {
             carrier,
             trackingNumber,
           }),
-        }
+        },
       );
       if (!res.ok) return;
       const updated = await res.json().catch(() => null);
 
       const resolvedEmail = String(
-        (updated && updated.orderEmail) || (order && order.orderEmail) || ""
+        (updated && updated.orderEmail) || (order && order.orderEmail) || "",
       ).trim();
 
       if (!resolvedEmail) {
@@ -172,7 +211,9 @@ export default function OrdersPage() {
           orderEmail: order?.orderEmail,
           orderId,
         });
-        throw new Error("Cannot send shipping email: customer email is missing.");
+        throw new Error(
+          "Cannot send shipping email: customer email is missing.",
+        );
       }
 
       await emailjs.send(
@@ -186,10 +227,10 @@ export default function OrdersPage() {
           tracking_number: updated?.trackingNumber ?? trackingNumber,
           tracking_url: buildTrackingUrl(
             updated?.carrier ?? carrier,
-            updated?.trackingNumber ?? trackingNumber
+            updated?.trackingNumber ?? trackingNumber,
           ),
         },
-        EMAILJS_PUBLIC_KEY
+        EMAILJS_PUBLIC_KEY,
       );
       await fetchOrders();
       console.log("ship payload:", { orderId, carrier, trackingNumber });
@@ -213,7 +254,7 @@ export default function OrdersPage() {
           body: JSON.stringify({
             status: "DELIVERED",
           }),
-        }
+        },
       );
 
       if (!res.ok) return;
@@ -239,7 +280,7 @@ export default function OrdersPage() {
           tracking_number: order.trackingNumber,
           tracking_url: buildTrackingUrl(order.carrier, order.trackingNumber),
         },
-        EMAILJS_PUBLIC_KEY
+        EMAILJS_PUBLIC_KEY,
       );
       alert(`Tracking email resent to ${order.orderEmail}`);
     } catch (e) {
@@ -258,7 +299,7 @@ export default function OrdersPage() {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: "ARCHIVED" }),
-        }
+        },
       );
       if (!res.ok) throw new Error("Failed to archive order");
       await fetchOrders();
@@ -271,21 +312,26 @@ export default function OrdersPage() {
   const fetchOrders = useCallback(async () => {
     try {
       setError(null);
-      const res = await authedFetch(orderStatusEndpoint(), {
-        method: "GET",
-      });
+
+      const url = orderStatusEndpoint();
+      const res = await authedFetch(url, { method: "GET" });
+
+      if (res.status === 401 || res.status === 403) {
+        setAuthVerified(false);
+        setAuthFailed(true);
+        setAuth(null);
+        return;
+      }
 
       if (!res.ok) throw new Error(`Failed to load orders (${res.status})`);
 
-      const data = await res.json();
-      setOrders(data);
+      const text = await res.text();
+      const data = text ? JSON.parse(text) : [];
+      setOrders(Array.isArray(data) ? data : []);
       setAuthVerified(true);
     } catch (e) {
-      console.error(e);
-      setError(e.message || "Failed to load orders.");
-
-      setAuthFailed(true);
-      setAuth(null);
+      console.error("[fetchOrders] error:", e);
+      setError(e?.message || "Failed to load orders.");
     }
   }, [authedFetch, orderStatusEndpoint]);
 
@@ -318,6 +364,7 @@ export default function OrdersPage() {
             type="button"
             onClick={() => {
               setAuthFailed(false);
+              setAuthVerified(false);
               setAuth(null);
               setAuthAttempted(false);
               setError(null);
@@ -330,7 +377,6 @@ export default function OrdersPage() {
       </div>
     );
   }
-  
 
   if (!authVerified) {
     return (
