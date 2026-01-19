@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Creepster&family=Griffy&family=Nosifer&family=Butcherman&display=swap");
 
+
 html,
 body {
   height: 100%;
@@ -54,15 +55,51 @@ body {
 .cart-modal {
   display: flex;
   flex-direction: column;
-  position: absolute;
+  position: relative;
+  width: min(520px, 92vw);
   z-index: 1000;
-  width: 100%;
   height: fit-content;
+  overflow-y: auto;
+  max-height: 90vh;
   margin: 0 auto;
   opacity: 1;
   border-radius: 20px;
   padding: 20px;
   background-color: rgb(255, 255, 255);
+}
+
+.order-confirmation {
+  display: flex;
+  flex-direction: column;
+  border: 3px solid rgb(166, 0, 255);
+  position: relative;
+  z-index: 1000;
+  width: min(1000px, 92vw);
+  height: fit-content;
+  max-height: 90vh;
+  overflow-y: auto;
+  margin: 0 auto;
+  opacity: 1;
+  border-radius: 20px;
+  padding: 20px;
+  background-color: rgb(246, 179, 255);
+  background-image: radial-gradient(circle, rgb(255, 192, 242), rgb(255, 113, 255));
+}
+
+.thank-you {
+  font-size: 2rem;
+  font-family: "Montserrat", sans-serif;
+}
+
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
 }
 
 .cart-modal-cancel-button button {
@@ -1662,4 +1699,21 @@ body {
   display: inline-flex;
   align-items: center;
   line-height: 1;
+}
+
+@media (max-width: 460px) {
+  .order-confirmation {
+    padding: 10px;
+    max-width: 100%;
+    width: fit-content;
+  }
+  .thank-you {
+    font-size: 1.3rem !important;
+  }
+}
+
+@media (max-width: 780px) {
+  .thank-you {
+    font-size: 1.5rem;
+  }
 }

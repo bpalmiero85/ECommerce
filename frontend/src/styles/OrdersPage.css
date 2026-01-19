@@ -31,7 +31,19 @@
 }
 
 .orders-title {
+  color: black;
   margin: 0;
+}
+
+.orders-header-button:hover {
+  background-color: rgb(193, 32, 169) !important;
+  color: white;
+  cursor: pointer;
+}
+
+.orders-header-button.active {
+  background-color: rgb(193, 32, 169) !important;
+  color: white;
 }
 
 .orders-refresh {
@@ -134,11 +146,14 @@
   border-radius: 6px;
   border: 1px solid rgba(121, 2, 206, 0.35);
   background: rgba(189, 109, 250, 0.25);
-  cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
 .orders-card-actions button:hover {
+  background-color: purple;
+  color: white;
   filter: brightness(0.95);
+  cursor: pointer;
 }
 
 .orders-items {

@@ -48,19 +48,19 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   const subtotal = cartItems.reduce(
     (sum, i) =>
       sum + (Number(i.price) || 0) * (Number(i.qty ?? i.quantity ?? 1) || 0),
-    0
+    0,
   );
 
   const modalInCartQty = selectedProduct
     ? cartItems.reduce(
         (sum, item) =>
           item.id === selectedProduct.id ? sum + (item.qty ?? 1) : sum,
-        0
+        0,
       )
     : 0;
 
   const modalAvailableQty = selectedProduct
-    ? availableById[selectedProduct.id] ?? selectedProduct.quantity
+    ? (availableById[selectedProduct.id] ?? selectedProduct.quantity)
     : 0;
   const modalImageUrl = selectedProduct
     ? `http://localhost:8080/api/product/${selectedProduct.id}/picture?version=${selectedProduct.pictureVersion}`
@@ -86,7 +86,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
         for (let i = 0; i < take; i++) {
           const r = await fetch(
             `http://localhost:8080/api/cart/${selectedProduct.id}/add?qty=1`,
-            { method: "POST", credentials: "include" }
+            { method: "POST", credentials: "include" },
           );
           if (!r.ok) throw new Error(`reserve failed ${r.status}`);
         }
@@ -95,13 +95,15 @@ const ProductPage = ({ products: externalProducts = [] }) => {
         for (let i = 0; i < -delta; i++) {
           const r = await fetch(
             `http://localhost:8080/api/cart/${selectedProduct.id}/remove?qty=1`,
-            { method: "POST", credentials: "include" }
+            { method: "POST", credentials: "include" },
           );
           if (!r.ok) throw new Error(`unreserve failed ${r.status}`);
         }
 
         window.dispatchEvent(
-          new CustomEvent("inventory:changed", { detail: [selectedProduct.id] })
+          new CustomEvent("inventory:changed", {
+            detail: [selectedProduct.id],
+          }),
         );
       }
 
@@ -144,7 +146,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
     const API = process.env.REACT_APP_BASE || "http://localhost:8080";
     const resp = await fetch(
       `${API}/api/inventory/${id}/available?_=${Date.now()}`,
-      { cache: "no-store", credentials: "include" }
+      { cache: "no-store", credentials: "include" },
     );
     if (!resp.ok) return;
     const qty = await resp.json();
@@ -173,11 +175,11 @@ const ProductPage = ({ products: externalProducts = [] }) => {
         const product = await response.json();
         const hasNew = product.some((p) => p?.newArrival === true);
         const categoriesSet = new Set(
-          product.map((p) => String(p.category).trim()).filter(Boolean)
+          product.map((p) => String(p.category).trim()).filter(Boolean),
         );
         const categoriesArray = [...categoriesSet];
         const sorted = categoriesArray.sort((a, b) =>
-          a.localeCompare(b, undefined, { sensitivity: "base" })
+          a.localeCompare(b, undefined, { sensitivity: "base" }),
         );
 
         // put "New Arrivals" at the front only if any exist
@@ -264,7 +266,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
       if (!logo.dataset.effectAdded) {
         logo.addEventListener("click", function () {
           const qty = Number(
-            this.closest(".product-item-container")?.dataset.qty || "0"
+            this.closest(".product-item-container")?.dataset.qty || "0",
           );
           if (qty <= 0) return;
           this.style.transform = "scale(0.95)";
@@ -280,7 +282,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
       if (!card.dataset.effectAdded) {
         card.addEventListener("mouseenter", function () {
           const qty = Number(
-            this.closest(".product-item-container")?.dataset.qty || "0"
+            this.closest(".product-item-container")?.dataset.qty || "0",
           );
           if (qty <= 0) return;
           const sparkles = ["✨", "⭐", "✦", "✧"];
@@ -310,23 +312,29 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   return (
     <div className="product-page-container" ref={checkoutRef}>
       {isCartShown && (
-        <div className="cart-modal">
-          <div className="cart-modal-inner">
-            <button onClick={handleCancelCart} className="cancel-cart-x">
-              <strong>X</strong>
-            </button>
-            <ShoppingCart succeeded={checkoutSucceeded} />
-            <div className="checkout-page">
-              <CheckoutPage onSuccess={() => setCheckoutSucceeded(true)} />
-              <div className="cart-modal-cancel-button">
-                <button type="button" onClick={handleCancelCart}>
-                  Close
-                </button>
+        <div className="modal-backdrop" onClick={handleCancelCart}>
+          <div
+            className={checkoutSucceeded ? "order-confirmation" : "cart-modal"}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="cart-modal-inner">
+              <button onClick={handleCancelCart} className="cancel-cart-x">
+                <strong>X</strong>
+              </button>
+              <ShoppingCart succeeded={checkoutSucceeded} />
+              <div className="checkout-page">
+                <CheckoutPage onSuccess={() => setCheckoutSucceeded(true)} />
+                <div className="cart-modal-cancel-button">
+                  <button type="button" onClick={handleCancelCart}>
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
+
       <div className="banner-nav-container">
         <svg
           className="banner"
@@ -884,8 +892,8 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                       {modalAvailableQty === 0
                         ? "Sold Out"
                         : modalSaving
-                        ? "Adding..."
-                        : "Add to cart"}
+                          ? "Adding..."
+                          : "Add to cart"}
                     </button>
                   ) : (
                     <div

@@ -426,7 +426,7 @@ export default function CheckoutPage({ onSuccess }) {
     <div className="empty-cart-message">
       {succeeded ? (
         <>
-          <div style={{ fontSize: "2rem" }}>Thank you for your order! 🖤✨</div>
+          <div style={{ fontSize: "2rem" }}><h2 className="thank-you">Thank you for your order! 🖤✨</h2>
 
           {savedOrder?.orderId && (
             <div
@@ -436,7 +436,7 @@ export default function CheckoutPage({ onSuccess }) {
                 position: "relative",
               }}
             >
-              <strong>Order #:</strong> {savedOrder.orderId}
+              <h3 className="thank-you"><strong>Order #:</strong></h3> {savedOrder.orderId}
             </div>
           )}
 
@@ -448,10 +448,11 @@ export default function CheckoutPage({ onSuccess }) {
                 position: "relative",
               }}
             >
-              We sent a confirmation email to{" "}
-              <strong>{savedOrder.orderEmail}</strong>.
+              <p className="thank-you">&hearts;We sent a confirmation email to{" "}
+              <strong>{savedOrder.orderEmail}</strong>&hearts;</p>
             </div>
           )}
+          </div>
 
           <div
             style={{
@@ -461,7 +462,7 @@ export default function CheckoutPage({ onSuccess }) {
               position: "relative",
             }}
           >
-            (If you don&apos;t see it, check spam/promotions.)
+            <p className="thank-you">(If you don&apos;t see it, check spam/promotions)</p>
           </div>
         </>
       ) : (
