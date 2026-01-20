@@ -48,7 +48,7 @@ public class CartService {
     }
   }
 
-  private void touch(String sessionId) {
+  public void touch(String sessionId) {
     lastTouched.put(sessionId, System.currentTimeMillis());
   }
 

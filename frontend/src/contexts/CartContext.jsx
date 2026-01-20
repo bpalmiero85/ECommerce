@@ -1,4 +1,3 @@
-// src/contexts/CartContext.jsx
 import {
   createContext,
   useContext,
@@ -61,6 +60,46 @@ function loadInitial() {
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
+
+  useEffect(() => {
+    if (cartItems.length === 0) return;
+
+    let hadActivity = false;
+    let timer = null;
+
+    const mark = () => {
+      hadActivity = true;
+    };
+
+    const ping = async () => {
+      if (!hadActivity) return;
+      hadActivity = false;
+
+      try {
+        await fetch("http://localhost:8080/api/cart/touch", {
+          method: "POST",
+          credentials: "include",
+          cache: "no-store",
+        });
+      } catch {
+        // ignore
+      }
+    };
+
+    timer = setInterval(ping, 60_000);
+
+    const events = ["mousemove", "keydown", "click", "scroll", "focus"];
+    events.forEach((ev) =>
+      window.addEventListener(ev, mark, { passive: true }),
+    );
+
+    mark();
+
+    return () => {
+      clearInterval(timer);
+      events.forEach((ev) => window.removeEventListener(ev, mark));
+    };
+  }, [cartItems.length]);
 
   useEffect(() => {
     function onStorage(e) {

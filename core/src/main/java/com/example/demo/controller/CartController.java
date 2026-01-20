@@ -72,4 +72,9 @@ public class CartController {
     return removed;
   }
 
+  @PostMapping("/touch")
+  public void touchCart(HttpSession session) {
+    cartService.touch(session.getId());
+  }
+
 }

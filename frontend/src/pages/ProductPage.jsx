@@ -739,7 +739,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
               <button
                 onClick={handleClickCart}
                 className="btn btn-sm btn-ghost relative"
-                style={{ color: "white", left: "150px" }}
+                style={{ color: "white" }}
               >
                 🛒
                 <span className="cart-badge">{totalItems}</span>

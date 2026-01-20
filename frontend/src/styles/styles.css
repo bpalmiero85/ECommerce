@@ -478,7 +478,6 @@ p {
 .nav {
   display: flex;
   flex: 1;
-  margin-left: clamp(1px, 6vw, -35px);
   min-width: 100%;
   font-size: clamp(1rem, 3vw, 1.6rem);
   justify-content: center;
@@ -502,7 +501,7 @@ p {
   display: flex;
   flex-shrink: 1;
   position: absolute;
-  margin-left: clamp(150%, 2vw, 170%);
+  margin-left: clamp(180%, 2vw, 170%);
   margin-top: clamp(0.7px, 1vh, 5px) !important;
   width: 100%;
   height: auto;
@@ -893,16 +892,42 @@ p {
 }
 
 @media (max-width: 785px) {
+  .nav {
+    min-width: 0;
+    width: 100%;
+    margin-left: 0;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 0 10px;
+    flex-wrap: nowrap;
+    align-items: center;
+    font-size: clamp(0.9rem, 3.2vw, 1.1rem);
+  }
+
+  .nav a {
+    padding-left: 50px;
+    padding-right: 10px;
+    white-space: nowrap;
+  }
+
   .nav-actions {
     position: static;
     margin-left: 0;
     width: auto;
-    justify-content: center;
-    margin-top: 15px;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .dropdown-button {
+    font-size: inherit;
   }
 
   .hero-content {
     margin-top: -35px;
+  }
+
+  .dropdown {
+    margin-left: 50px;
   }
 }
 
