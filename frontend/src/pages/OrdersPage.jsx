@@ -527,6 +527,37 @@ export default function OrdersPage() {
                   </div>
 
                   <div className="orders-field">
+                    <span className="orders-field-label">Address Line 1</span>
+                    <span className="orders-field-value">
+                      {o.shippingAddress1}
+                    </span>
+                  </div>
+
+                  <div className="orders-field">
+                    <span className="orders-field-label">Address Line 2</span>
+                    <span className="orders-field-value">
+                      {o.shippingAddress2}
+                    </span>
+                  </div>
+
+                  <div className="orders-field">
+                    <span className="orders-field-label">City</span>
+                    <span className="orders-field-value">{o.shippingCity}</span>
+                  </div>
+
+                  <div className="orders-field">
+                    <span className="orders-field-label">State</span>
+                    <span className="orders-field-value">
+                      {o.shippingState}
+                    </span>
+                  </div>
+
+                  <div className="orders-field">
+                    <span className="orders-field-label">ZIP</span>
+                    <span className="orders-field-value">{o.shippingZip}</span>
+                  </div>
+
+                  <div className="orders-field">
                     <span className="orders-field-label">Subtotal</span>
                     <span className="orders-field-value">
                       ${Number(o.subtotal ?? 0).toFixed(2)}

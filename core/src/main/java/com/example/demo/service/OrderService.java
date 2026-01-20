@@ -39,7 +39,7 @@ public class OrderService {
   }
 
   @Transactional
-  public Order createOrderWithItems(String name, String email, BigDecimal subtotalIgnored, OrderStatus status,
+  public Order createOrderWithItems(String name, String email, String address1, String address2, String city, String state, String zip, BigDecimal subtotalIgnored, OrderStatus status,
       List<OrderItem> items, BigDecimal shippingTotal, BigDecimal taxTotal, BigDecimal discountTotal) {
 
     if (items == null || items.isEmpty()) {
@@ -49,6 +49,11 @@ public class OrderService {
     Order order = new Order();
     order.setOrderName(name);
     order.setOrderEmail(email);
+    order.setShippingAddress1(address1);
+    order.setShippingAddress2(address2);
+    order.setShippingCity(city);
+    order.setShippingState(state);
+    order.setShippingZip(zip);
     order.setOrderStatus(status);
     order.setShippingTotal(shippingTotal != null ? shippingTotal : BigDecimal.ZERO);
     order.setTaxTotal(taxTotal != null ? taxTotal : BigDecimal.ZERO);

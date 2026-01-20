@@ -260,6 +260,11 @@ export default function CheckoutPage({ onSuccess }) {
       const payload = {
         name,
         email,
+        shippingAddress1: addressLine1,
+        shippingAddress2: addressLine2,
+        shippingCity: city,
+        shippingState: inferStateFromZip(destinationZip),
+        shippingZip: destinationZip,
         status: "PAID",
         shippingTotal,
         taxTotal,

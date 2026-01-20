@@ -64,6 +64,12 @@ public class OrderController {
     return orderService.createOrderWithItems(
         req.getName(),
         req.getEmail(),
+        req.getShippingAddress1(),
+        req.getShippingAddress2(),
+        req.getShippingCity(),
+        req.getShippingState(),
+        req.getShippingZip(),
+
         subtotalIgnored,
         status,
         req.getItems(),
@@ -77,6 +83,11 @@ public class OrderController {
   public static class CreateOrderRequest {
     private String name;
     private String email;
+    private String shippingAddress1;
+    private String shippingAddress2;
+    private String shippingCity;
+    private String shippingState;
+    private String shippingZip;
 
     // NOT used by OrderService (subtotalIgnored).
     private BigDecimal total;

@@ -55,6 +55,11 @@ public class OrderPublicController {
     Order saved = orderService.createOrderWithItems(
         req.getName(),
         req.getEmail(),
+        req.getShippingAddress1(),
+        req.getShippingAddress2(),
+        req.getShippingCity(),
+        req.getShippingState(),
+        req.getShippingZip(),
         BigDecimal.ZERO,
         status,
         items,
