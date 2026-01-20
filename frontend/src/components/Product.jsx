@@ -22,7 +22,7 @@ const Product = ({
   const cartItems = Array.isArray(rawItems) ? rawItems : [];
   const inCartQty = cartItems.reduce(
     (sum, item) => (item.id === id ? sum + (item.qty ?? 1) : sum),
-    0
+    0,
   );
   const [isOpen, setIsOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -44,7 +44,6 @@ const Product = ({
 
     const max = quantity + inCartQty;
     if (nextQty > max) nextQty = max;
-
     if (nextQty === inCartQty) return;
 
     setSaving(true);
@@ -53,44 +52,27 @@ const Product = ({
 
       if (delta > 0) {
         const take = Math.min(delta, quantity);
-
-        // accumulate how many were taken in THIS depletion run
         depletionTakeRef.current += take;
 
-        for (let i = 0; i < take; i++) {
-          const r = await fetch(
-            `http://localhost:8080/api/cart/${id}/add?qty=1`,
-            { method: "POST", credentials: "include" }
-          );
-          if (!r.ok) throw new Error(`reserve failed ${r.status}`);
-        }
-
-        // if this click depleted the remaining stock, show message using total taken
         if (take > 0 && take === quantity) {
           const taken = depletionTakeRef.current;
           showTempMessage(
-            taken === 1 ? "You got the last one!" : "You got the last ones!"
+            taken === 1 ? "You got the last one!" : "You got the last ones!",
           );
           depletionTakeRef.current = 0;
         }
       } else {
         depletionTakeRef.current = 0;
-        for (let i = 0; i < -delta; i++) {
-          const r = await fetch(
-            `http://localhost:8080/api/cart/${id}/remove?qty=1`,
-            { method: "POST", credentials: "include" }
-          );
-          if (!r.ok) throw new Error(`unreserve failed ${r.status}`);
-        }
         setIsLastItemShown(false);
         setMessage("");
-        window.dispatchEvent(
-          new CustomEvent("inventory:changed", { detail: [id] })
-        );
       }
 
-      // sync global cart and trigger stock refresh
-      setItemQty(id, nextQty, { name, price, imageUrl, available: quantity });
+      await setItemQty(id, nextQty, {
+        name,
+        price,
+        imageUrl,
+        available: quantity,
+      });
       onReserved?.(id);
     } catch (err) {
       console.error(err);
@@ -99,7 +81,6 @@ const Product = ({
       setSaving(false);
     }
   }
-
   const showTempMessage = (text) => {
     setMessage(text);
     setIsLastItemShown(true);
@@ -110,7 +91,6 @@ const Product = ({
       setIsOpen(false);
     }
   };
-
 
   useEffect(() => {
     const prev = prevInCartQtyForCheckRef.current;
@@ -312,8 +292,8 @@ const Product = ({
                     ? `${inCartQty} in your cart`
                     : "Sold Out"
                   : saving
-                  ? "Adding..."
-                  : "Add to cart"}
+                    ? "Adding..."
+                    : "Add to cart"}
               </button>
             ) : (
               <div className="qty-inline" onMouseDownCapture={stopAll}>

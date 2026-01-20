@@ -3,6 +3,7 @@ package com.example.demo.service;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 /**
@@ -28,6 +29,29 @@ public class CartService {
   /** sessionId -> (productId -> qty) */
   private final Map<String, Map<Long, Integer>> carts = new ConcurrentHashMap<>();
 
+  /** map for activity timestamps */
+  private final Map<String, Long> lastTouched = new ConcurrentHashMap<>();
+
+  /** cart reserve time */
+  private static final long CART_TTL_MS = 20 * 60 * 1000;
+
+  /** scheduled activity sweep */
+  @Scheduled(fixedRate = 60_000)
+  public void expireAbandonedCarts() {
+    long now = System.currentTimeMillis();
+    for (Map.Entry<String, Long> e : lastTouched.entrySet()) {
+      String sid = e.getKey();
+      long last = e.getValue();
+      if (now - last > CART_TTL_MS) {
+        releaseAll(sid);
+      }
+    }
+  }
+
+  private void touch(String sessionId) {
+    lastTouched.put(sessionId, System.currentTimeMillis());
+  }
+
   /** Constructs the cart service with the shared inventory bean */
   public CartService(InventoryMemory inventory) {
     this.inventory = inventory;
@@ -46,6 +70,7 @@ public class CartService {
    *         {@code false} if out of stock
    */
   public boolean addOne(String sessionId, long productId) {
+    touch(sessionId);
     // 1) Reserve from inventory first. If reservation fails, do not modify the
     // cart.
     boolean reserved = inventory.reserveOne(productId);
@@ -65,6 +90,7 @@ public class CartService {
   }
 
   public boolean removeOne(String sessionId, long productId) {
+    touch(sessionId);
     Map<Long, Integer> cart = carts.get(sessionId);
     if (cart == null || !cart.containsKey(productId)) {
       return false;
@@ -85,7 +111,17 @@ public class CartService {
     return true;
   }
 
+  public int getQty(String sessionId, long productId) {
+    touch(sessionId);
+    Map<Long, Integer> cart = carts.get(sessionId);
+    if (cart == null) {
+      return 0;
+    }
+    return cart.getOrDefault(productId, 0);
+  }
+
   public Map<Long, Integer> getItems(String sessionId) {
+    touch(sessionId);
     Map<Long, Integer> cart = carts.get(sessionId);
     if (cart == null || cart.isEmpty()) {
       return Map.of();
@@ -106,6 +142,7 @@ public class CartService {
       }
     }
     carts.remove(sessionId);
+    lastTouched.remove(sessionId);
   }
 
 }

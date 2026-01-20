@@ -41,7 +41,7 @@ function migrateItem(raw) {
         raw.inventory ??
         raw.quantityAvailable ??
         raw.quantity ??
-        Number.POSITIVE_INFINITY
+        Number.POSITIVE_INFINITY,
     ),
   };
 }
@@ -60,7 +60,7 @@ function loadInitial() {
 }
 
 export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState(() => loadInitial());
+  const [cartItems, setCartItems] = useState([]);
 
   useEffect(() => {
     function onStorage(e) {
@@ -104,28 +104,25 @@ export function CartProvider({ children }) {
   }
 
   async function clearCartAndRelease(reason = "manual") {
-    const snapshot = cartItems.map((i) => ({
-      id: i.id,
-      qty: i.qty ?? 1,
-    }));
+    const API = process.env.REACT_APP_BASE || "http://localhost:8080";
+    const ids = cartItems.map((i) => i.id);
+
+    const resp = await fetch(`${API}/api/cart/clear`, {
+      method: "POST",
+      credentials: "include",
+    });
+    if (!resp.ok) throw new Error(`clear failed ${resp.status}`);
+
     setCartItems([]);
-
+    window.dispatchEvent(new CustomEvent("inventory:changed", { detail: ids }));
     try {
-      await Promise.allSettled(snapshot.map((it) => releaseQty(it.id, it.qty)));
-      const ids = snapshot.map((it) => it.id);
-      window.dispatchEvent(
-        new CustomEvent("inventory:changed", { detail: ids })
+      localStorage.setItem(
+        "inventory:broadcast",
+        JSON.stringify({ ids, ts: Date.now() }),
       );
+    } catch {}
 
-      try {
-        localStorage.setItem(
-          "inventory:broadcast",
-          JSON.stringify({ ids, ts: Date.now() })
-        );
-      } catch {}
-    } catch (e) {
-      console.error("clearCartAndRelease error", e);
-    }
+    await refreshCart();
   }
 
   function clearCartAfterPayment() {
@@ -148,27 +145,47 @@ export function CartProvider({ children }) {
     });
   };
 
-  const setItemQty = (id, nextQty, fallback = {}) => {
+  const setItemQty = async (id, nextQty, fallback = {}) => {
+    const API = process.env.REACT_APP_BASE || "http://localhost:8080";
+
+    const current = cartItems.find((p) => p.id === id)?.qty ?? 0;
+    const target = Math.max(0, Number(nextQty) || 0);
+    const delta = target - current;
+
+    if (delta === 0) return;
+
+    const url =
+      delta > 0
+        ? `${API}/api/cart/${id}/add?qty=${delta}`
+        : `${API}/api/cart/${id}/remove?qty=${Math.abs(delta)}`;
+
+    const resp = await fetch(url, { method: "POST", credentials: "include" });
+    if (!resp.ok) throw new Error(`cart update failed ${resp.status}`);
+
     setCartItems((prev) => {
-      const qty = Math.max(0, Number(nextQty) || 0);
       const idx = prev.findIndex((p) => p.id === id);
 
-      if (idx === -1) {
-        if (qty <= 0) return prev;
-        // add new entry using fallback data
-        const item = migrateItem({ id, qty, ...fallback });
+      if (idx === -1 && target > 0) {
+        const item = migrateItem({ id, qty: target, ...fallback });
         return item ? [...prev, item] : prev;
       }
-      if (qty <= 0) {
-        // remove item
+
+      if (idx !== -1 && target <= 0) {
         const copy = [...prev];
         copy.splice(idx, 1);
         return copy;
       }
-      const copy = [...prev];
-      copy[idx] = { ...copy[idx], qty };
-      return copy;
+
+      if (idx !== -1) {
+        const copy = [...prev];
+        copy[idx] = { ...copy[idx], qty: target, ...fallback };
+        return copy;
+      }
+
+      return prev;
     });
+
+    await refreshCart();
   };
 
   const removeFromCart = (id) =>
@@ -176,9 +193,39 @@ export function CartProvider({ children }) {
 
   const clearCart = () => setCartItems([]);
 
-  const IDLE_MS = 15 * 60 * 1000;
+  const IDLE_MS = 20 * 60 * 1000;
   const lastActivity = useRef(null);
   const idleTimer = useRef(null);
+
+  async function refreshCart() {
+    const API = process.env.REACT_APP_BASE || "http://localhost:8080";
+    const resp = await fetch(`${API}/api/cart`, { credentials: "include" });
+    const serverCart = resp.ok ? await resp.json() : {};
+    console.log("[refreshCart] server cart ->", serverCart);
+
+    setCartItems((prev) => {
+      const prevById = new Map(prev.map((p) => [String(p.id), p]));
+      const next = Object.entries(serverCart || {})
+        .map(([idStr, qty]) => {
+          const prevItem = prevById.get(String(idStr));
+          return migrateItem({
+            id: Number(idStr),
+            qty: Number(qty) || 0,
+            name: prevItem?.name ?? "",
+            price: prevItem?.price ?? 0,
+            imageUrl: prevItem?.imageUrl ?? "",
+            available: prevItem?.available ?? Number.POSITIVE_INFINITY,
+          });
+        })
+        .filter(Boolean);
+
+      console.log("[refreshCart] cartItems set to ->", next);
+      return next;
+    });
+  }
+  useEffect(() => {
+    refreshCart();
+  }, []);
 
   useEffect(() => {
     const bump = () => {
@@ -199,7 +246,7 @@ export function CartProvider({ children }) {
 
     const events = ["mousemove", "keydown", "click", "scroll", "focus"];
     events.forEach((ev) =>
-      window.addEventListener(ev, bump, { passive: true })
+      window.addEventListener(ev, bump, { passive: true }),
     );
 
     return () => {
@@ -252,7 +299,7 @@ export function CartProvider({ children }) {
       clearCartAndRelease,
       clearCartAfterPayment,
     }),
-    [cartItems]
+    [cartItems],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

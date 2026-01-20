@@ -5,35 +5,14 @@ import "../styles/ShoppingCart.css";
 const ShoppingCart = ({ succeeded = false }) => {
   const { cartItems, setItemQty } = useContext(CartContext);
 
-  const handleDecrement = async (productId, qty) => {
-    const response = await fetch(
-      `http://localhost:8080/api/cart/${productId}/remove?qty=1`,
-      { method: "POST", credentials: "include" }
-    );
-    if (!response.ok) {
-      throw new Error("Something went wrong. Please try again.");
-    }
-    const data = await response.json();
-
-    if (typeof data !== "number") {
-      console.error("Unexpected response from /remove: ", data);
-    }
+  const handleDecrement = (productId, qty) => {
     setItemQty(productId, qty - 1);
     window.dispatchEvent(
-      new CustomEvent("inventory:changed", { detail: [productId] })
+      new CustomEvent("inventory:changed", { detail: [productId] }),
     );
   };
 
-  const handleIncrement = async (productId, qty) => {
-    const response = await fetch(
-      `http://localhost:8080/api/cart/${productId}/add?qty=1`,
-      { method: "POST", credentials: "include" }
-    );
-    if (!response.ok) {
-      throw new Error("Something went wrong. Please try again.");
-    }
-    const data = await response.json();
-    if (typeof data !== "number" || data <= 0) return;
+  const handleIncrement = (productId, qty) => {
     setItemQty(productId, qty + 1);
   };
 
@@ -77,7 +56,7 @@ const ShoppingCart = ({ succeeded = false }) => {
                     aria-label={`Increase ${item.name}`}
                     onClick={() => handleIncrement(item.id, qty)}
                   >
-                     + 
+                    +
                   </button>
                 </div>
 

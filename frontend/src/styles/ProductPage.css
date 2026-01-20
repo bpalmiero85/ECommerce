@@ -430,6 +430,10 @@ body {
   position: absolute;
   bottom: 2px;
 }
+
+.in-cart-wrap {
+  white-space: nowrap;
+}
 .product-card img {
   transition: opacity 0.2s ease;
 }

@@ -415,8 +415,16 @@ export default function OrdersPage() {
       <div className="choose-order-status">
         <button
           type="button"
-          className={orderStatus === "active" ? "orders-header-button active" : "orders-header-button"}
-          style={{ backgroundColor: "lightBlue", margin: "3px", padding: "3px" }}
+          className={
+            orderStatus === "active"
+              ? "orders-header-button active"
+              : "orders-header-button"
+          }
+          style={{
+            backgroundColor: "lightBlue",
+            margin: "3px",
+            padding: "3px",
+          }}
           onClick={() => handleChooseOrderStatus("active")}
         >
           ACTIVE
@@ -424,8 +432,16 @@ export default function OrdersPage() {
 
         <button
           type="button"
-          className={orderStatus === "shipped" ? "orders-header-button active" : "orders-header-button"}
-          style={{ backgroundColor: "lightblue", margin: "3px", padding: "3px" }}
+          className={
+            orderStatus === "shipped"
+              ? "orders-header-button active"
+              : "orders-header-button"
+          }
+          style={{
+            backgroundColor: "lightblue",
+            margin: "3px",
+            padding: "3px",
+          }}
           onClick={() => handleChooseOrderStatus("shipped")}
         >
           SHIPPED
@@ -433,8 +449,16 @@ export default function OrdersPage() {
 
         <button
           type="button"
-          className={orderStatus === "completed" ? "orders-header-button active" : "orders-header-button"}
-          style={{ backgroundColor: "lightBlue", margin: "3px", padding: "3px" }}
+          className={
+            orderStatus === "completed"
+              ? "orders-header-button active"
+              : "orders-header-button"
+          }
+          style={{
+            backgroundColor: "lightBlue",
+            margin: "3px",
+            padding: "3px",
+          }}
           onClick={() => handleChooseOrderStatus("completed")}
         >
           COMPLETED
@@ -442,8 +466,16 @@ export default function OrdersPage() {
 
         <button
           type="button"
-          className={orderStatus === "cancelled" ? "orders-header-button active" : "orders-header-button"}
-          style={{ backgroundColor: "lightBlue", margin: "3px", padding: "3px" }}
+          className={
+            orderStatus === "cancelled"
+              ? "orders-header-button active"
+              : "orders-header-button"
+          }
+          style={{
+            backgroundColor: "lightBlue",
+            margin: "3px",
+            padding: "3px",
+          }}
           onClick={() => handleChooseOrderStatus("cancelled")}
         >
           CANCELLED
@@ -451,8 +483,16 @@ export default function OrdersPage() {
 
         <button
           type="button"
-          className={orderStatus === "archived" ? "orders-header-button active" : "orders-header-button"}
-          style={{ backgroundColor: "lightBlue", margin: "3px", padding: "3px" }}
+          className={
+            orderStatus === "archived"
+              ? "orders-header-button active"
+              : "orders-header-button"
+          }
+          style={{
+            backgroundColor: "lightBlue",
+            margin: "3px",
+            padding: "3px",
+          }}
           onClick={() => handleChooseOrderStatus("archived")}
         >
           ARCHIVED
