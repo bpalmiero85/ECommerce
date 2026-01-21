@@ -269,42 +269,6 @@ export default function OrdersPage() {
     }
   };
 
-  useEffect(() => {
-    if (!auth) return;
-
-    const startPolling = () => {
-      if (pollingRef.current) return; // already running
-      fetchCounts(); // immediate fetch
-      pollingRef.current = setInterval(fetchCounts, 3000);
-    };
-
-    const stopPolling = () => {
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-        pollingRef.current = null;
-      }
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        stopPolling();
-      } else {
-        startPolling();
-      }
-    };
-
-    if (!document.hidden) {
-      startPolling();
-    }
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      stopPolling();
-    };
-  }, [auth, fetchCounts]);
-
   const handleMarkDelivered = async (order) => {
     const confirm = window.confirm("Are you sure you want to mark delivered?");
 
@@ -362,6 +326,74 @@ export default function OrdersPage() {
       alert("Failed to resend tracking email.");
     }
   };
+  const fetchOrders = useCallback(async () => {
+    try {
+      setError(null);
+
+      const url = orderStatusEndpoint();
+      const res = await authedFetch(url, { method: "GET" });
+
+      if (res.status === 401 || res.status === 403) {
+        setAuthVerified(false);
+        setAuthFailed(true);
+        setAuth(null);
+        return;
+      }
+
+      if (!res.ok) throw new Error(`Failed to load orders (${res.status})`);
+
+      const text = await res.text();
+      const data = text ? JSON.parse(text) : [];
+      setOrders(Array.isArray(data) ? data : []);
+      setAuthVerified(true);
+    } catch (e) {
+      console.error("[fetchOrders] error:", e);
+      setError(e?.message || "Failed to load orders.");
+    }
+  }, [authedFetch, orderStatusEndpoint]);
+
+  const refreshOrdersAndCounts = useCallback(async () => {
+    await fetchCounts();
+
+    await fetchOrders();
+  }, [fetchCounts, fetchOrders]);
+
+  useEffect(() => {
+    if (!auth) return;
+
+    const startPolling = () => {
+      if (pollingRef.current) return;
+      refreshOrdersAndCounts();
+      pollingRef.current = setInterval(refreshOrdersAndCounts, 3000);
+    };
+
+    const stopPolling = () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) stopPolling();
+      else startPolling();
+    };
+
+    // start right away (if visible)
+    if (!document.hidden) startPolling();
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      stopPolling();
+    };
+  }, [auth, refreshOrdersAndCounts]);
+
+  useEffect(() => {
+    if (!auth) return;
+    fetchOrders();
+  }, [auth, orderStatus, fetchOrders]);
 
   const handleArchiveOrder = async (order) => {
     const confirm = window.confirm(
@@ -389,37 +421,6 @@ export default function OrdersPage() {
       setError(e.message || "Failed to archive order");
     }
   };
-
-  const fetchOrders = useCallback(async () => {
-    try {
-      setError(null);
-
-      const url = orderStatusEndpoint();
-      const res = await authedFetch(url, { method: "GET" });
-
-      if (res.status === 401 || res.status === 403) {
-        setAuthVerified(false);
-        setAuthFailed(true);
-        setAuth(null);
-        return;
-      }
-
-      if (!res.ok) throw new Error(`Failed to load orders (${res.status})`);
-
-      const text = await res.text();
-      const data = text ? JSON.parse(text) : [];
-      setOrders(Array.isArray(data) ? data : []);
-      setAuthVerified(true);
-    } catch (e) {
-      console.error("[fetchOrders] error:", e);
-      setError(e?.message || "Failed to load orders.");
-    }
-  }, [authedFetch, orderStatusEndpoint]);
-
-  useEffect(() => {
-    if (!auth) return;
-    fetchOrders();
-  }, [auth, orderStatus, fetchOrders]);
 
   if (authFailed) {
     return (

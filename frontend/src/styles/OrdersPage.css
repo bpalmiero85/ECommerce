@@ -197,6 +197,10 @@
   opacity: 0.85;
 }
 
+@media (max-width: 460px) {
+  
+}
+
 @media (max-width: 520px) {
   .orders-panel {
     width: 92vw;
@@ -209,5 +213,10 @@
 
   .orders-field-label {
     margin-bottom: -4px;
+  }
+
+  .orders-header-button {
+    font-size: 0.7rem !important;
+    white-space: nowrap !important;
   }
 }
