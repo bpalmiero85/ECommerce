@@ -35,6 +35,31 @@
   margin: 0;
 }
 
+.orders-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(45%, -45%); /* makes it hang off */
+  z-index: 10;
+
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: #59ff00;
+  color: black;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+.orders-header-button {
+  position: relative;
+}
+
 .orders-header-button:hover {
   background-color: rgb(193, 32, 169) !important;
   color: white;

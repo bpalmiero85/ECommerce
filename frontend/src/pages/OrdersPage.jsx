@@ -14,6 +14,9 @@ export default function OrdersPage() {
   const [authFailed, setAuthFailed] = useState(false);
   const [authVerified, setAuthVerified] = useState(false);
   const [authAttempted, setAuthAttempted] = useState(false);
+  const [activeOrdersCount, setActiveOrdersCount] = useState(0);
+  const [shippedOrdersCount, setShippedOrdersCount] = useState(0);
+  const pollingRef = React.useRef(null);
   const SHIPPING_TEMPLATE_ID = "template_wqi7wms";
   const EMAILJS_SERVICE_ID = "service_1wp75sm";
   const EMAILJS_PUBLIC_KEY = "ZkQfANdcZnMH2U1KL";
@@ -181,7 +184,30 @@ export default function OrdersPage() {
     [auth, promptForAuth],
   );
 
+  const fetchCounts = useCallback(async () => {
+    const [activeRes, shippedRes] = await Promise.all([
+      authedFetch(`${API_BASE}/api/admin/orders/status/active`),
+      authedFetch(`${API_BASE}/api/admin/orders/status/shipped`),
+    ]);
+
+    const active = activeRes.ok
+      ? JSON.parse((await activeRes.text()) || "[]")
+      : [];
+    const shipped = shippedRes.ok
+      ? JSON.parse((await shippedRes.text()) || "[]")
+      : [];
+
+    setActiveOrdersCount(Array.isArray(active) ? active.length : 0);
+    setShippedOrdersCount(Array.isArray(shipped) ? shipped.length : 0);
+  }, [authedFetch]);
+
   const handleMarkShipped = async (order) => {
+    const confirm = window.confirm("Are you sure you want to mark shipped?");
+
+    if (!confirm) {
+      return;
+    }
+
     const orderId = order.orderId;
     const carrier = window.prompt("Carrier (ex: USPS, FedEx):") || "";
     const trackingNumber = window.prompt("Tracking Number:") || "";
@@ -243,7 +269,49 @@ export default function OrdersPage() {
     }
   };
 
+  useEffect(() => {
+    if (!auth) return;
+
+    const startPolling = () => {
+      if (pollingRef.current) return; // already running
+      fetchCounts(); // immediate fetch
+      pollingRef.current = setInterval(fetchCounts, 3000);
+    };
+
+    const stopPolling = () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopPolling();
+      } else {
+        startPolling();
+      }
+    };
+
+    if (!document.hidden) {
+      startPolling();
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      stopPolling();
+    };
+  }, [auth, fetchCounts]);
+
   const handleMarkDelivered = async (order) => {
+    const confirm = window.confirm("Are you sure you want to mark delivered?");
+
+    if (!confirm) {
+      return;
+    }
+
     const orderId = order.orderId;
 
     try {
@@ -269,6 +337,11 @@ export default function OrdersPage() {
   };
 
   const handleResendTracking = async (order) => {
+    const confirm = window.confirm("Resend tracking (shipping) email?");
+
+    if (!confirm) {
+      return;
+    }
     try {
       await emailjs.send(
         EMAILJS_SERVICE_ID,
@@ -291,6 +364,13 @@ export default function OrdersPage() {
   };
 
   const handleArchiveOrder = async (order) => {
+    const confirm = window.confirm(
+      "Are you sure you want to archive this order?",
+    );
+
+    if (!confirm) {
+      return;
+    }
     const orderId = order.orderId;
 
     try {
@@ -428,6 +508,9 @@ export default function OrdersPage() {
           onClick={() => handleChooseOrderStatus("active")}
         >
           ACTIVE
+          {activeOrdersCount > 0 && (
+            <span className="orders-badge">{activeOrdersCount}</span>
+          )}
         </button>
 
         <button
@@ -445,6 +528,9 @@ export default function OrdersPage() {
           onClick={() => handleChooseOrderStatus("shipped")}
         >
           SHIPPED
+          {shippedOrdersCount > 0 && (
+            <span className="orders-badge">{shippedOrdersCount}</span>
+          )}
         </button>
 
         <button
