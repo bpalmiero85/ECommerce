@@ -16,6 +16,8 @@ export default function OrdersPage() {
   const [authAttempted, setAuthAttempted] = useState(false);
   const [activeOrdersCount, setActiveOrdersCount] = useState(0);
   const [shippedOrdersCount, setShippedOrdersCount] = useState(0);
+  const isRefreshingRef = React.useRef(false);
+  const initialLoadedRef = React.useRef(false);
   const pollingRef = React.useRef(null);
   const SHIPPING_TEMPLATE_ID = "template_wqi7wms";
   const EMAILJS_SERVICE_ID = "service_1wp75sm";
@@ -129,12 +131,6 @@ export default function OrdersPage() {
       const headers = new Headers(options.headers || {});
       headers.set("Authorization", `Basic ${auth}`);
 
-      console.log("[authedFetch] URL:", url);
-      console.log(
-        "[authedFetch] Auth header starts with:",
-        `Basic ${String(auth).slice(0, 6)}...`,
-      );
-
       let res;
       try {
         res = await fetch(url, {
@@ -146,8 +142,6 @@ export default function OrdersPage() {
         console.error("[authedFetch] FETCH THREW:", err);
         throw err;
       }
-
-      console.log("[authedFetch] status:", res.status);
 
       if (res.status === 401) {
         const token = promptForAuth();
@@ -165,8 +159,6 @@ export default function OrdersPage() {
           headers: retryHeaders,
           credentials: "include",
         });
-
-        console.log("[authedFetch] retry status:", retryRes.status);
 
         if (retryRes.status === 401) {
           setAuthFailed(true);
@@ -353,9 +345,15 @@ export default function OrdersPage() {
   }, [authedFetch, orderStatusEndpoint]);
 
   const refreshOrdersAndCounts = useCallback(async () => {
-    await fetchCounts();
+    if (isRefreshingRef.current) return;
+    isRefreshingRef.current = true;
 
-    await fetchOrders();
+    try {
+      await fetchCounts();
+      await fetchOrders();
+    } finally {
+      isRefreshingRef.current = false;
+    }
   }, [fetchCounts, fetchOrders]);
 
   useEffect(() => {
@@ -363,7 +361,6 @@ export default function OrdersPage() {
 
     const startPolling = () => {
       if (pollingRef.current) return;
-      refreshOrdersAndCounts();
       pollingRef.current = setInterval(refreshOrdersAndCounts, 3000);
     };
 
@@ -376,15 +373,23 @@ export default function OrdersPage() {
 
     const handleVisibilityChange = () => {
       if (document.hidden) stopPolling();
-      else startPolling();
+      else if (initialLoadedRef.current) startPolling();
     };
+    let cancelled = false;
 
-    // start right away (if visible)
-    if (!document.hidden) startPolling();
+    (async () => {
+      await refreshOrdersAndCounts();
+      if (cancelled) return;
+
+      initialLoadedRef.current = true;
+
+      if (!document.hidden) startPolling();
+    })();
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
+      cancelled = true;
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       stopPolling();
     };
@@ -392,8 +397,9 @@ export default function OrdersPage() {
 
   useEffect(() => {
     if (!auth) return;
-    fetchOrders();
-  }, [auth, orderStatus, fetchOrders]);
+    if (!initialLoadedRef.current) return;
+    refreshOrdersAndCounts();
+  }, [auth, orderStatus, refreshOrdersAndCounts]);
 
   const handleArchiveOrder = async (order) => {
     const confirm = window.confirm(
@@ -583,8 +589,6 @@ export default function OrdersPage() {
       ) : (
         <div className="orders-list">
           {orders.map((o) => {
-            console.log("order keys:", Object.keys(o));
-
             return (
               <div key={o.orderId} className="orders-card">
                 <div className="orders-card-header">

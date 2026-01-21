@@ -327,6 +327,7 @@ p {
 
 .cart-header-text {
   margin-top: -45px;
+  text-shadow: none;
   color: rgb(247, 0, 255);
 }
 
@@ -515,8 +516,8 @@ p {
   right: -0.5rem;
   min-width: 1.25rem;
   height: 1.25rem;
-  background: var(--neon-purple);
-  color: white;
+  background: rgb(174, 0, 0);
+  color: rgb(255, 255, 255);
   border-radius: 9999px;
   display: flex;
   align-items: center;

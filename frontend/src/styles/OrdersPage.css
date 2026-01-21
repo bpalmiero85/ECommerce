@@ -73,15 +73,19 @@
 
 .orders-refresh {
   padding: 6px 14px;
-  border: 1px solid #888;
+  border: 1px solid #5a0083;
   background: #bd6dfa;
-  color: white;
+  color: rgb(255, 255, 255);
   cursor: pointer;
   border-radius: 6px;
 }
 
 .orders-refresh:hover {
-  filter: brightness(0.95);
+  filter: brightness(0.90);
+}
+
+.orders-refresh:active {
+  scale: 1.05;
 }
 
 .orders-error {
@@ -134,7 +138,7 @@
 }
 
 .orders-header-button {
-  margin: 3px;
+  margin: 2px;
 }
 
 .orders-card-body {
@@ -208,16 +212,7 @@
   }
 }
 
-@media (max-width: 370px) {
-   .choose-order-status {
-    display: flex;
-    flex-wrap: nowrap;
-    justify-content: space-between;
-    margin: 0 !important;
-  }
-}
-
-@media (max-width: 390px) {
+@media (max-width: 540px) {
   .choose-order-status {
     display: flex;
     flex-wrap: nowrap;
@@ -226,18 +221,6 @@
     width: 100%;
   }
 
-  .orders-header-button {
-    font-size: 0.55rem !important;
-    padding: 2px 3px !important;
-    margin: -2px !important;
-    border: 1px solid;
-    flex: 0 0 auto;
-    line-height: 1;
-    white-space: nowrap !important;
-  }
-}
-
-@media (max-width: 540px) {
   .orders-panel {
     width: 92vw;
     padding: 12px;
@@ -254,9 +237,11 @@
   .orders-header-button {
     font-size: 0.65rem !important;
     padding: 2px 3px !important;
-    margin: 2px !important;
+    margin: 0 !important;
     border: 1px solid;
-    white-space: nowrap !important;
+    line-height: 1;
+    white-space: nowrap;
+    flex: 0 0 auto;
   }
 
   .orders-refresh {
@@ -264,5 +249,4 @@
     padding: 2px 3px !important;
     border: 2px solid purple;
   }
-
 }
