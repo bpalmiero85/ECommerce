@@ -503,8 +503,6 @@ export default function OrdersPage() {
           }
           style={{
             backgroundColor: "lightBlue",
-            margin: "3px",
-            padding: "3px",
           }}
           onClick={() => handleChooseOrderStatus("active")}
         >
@@ -523,8 +521,6 @@ export default function OrdersPage() {
           }
           style={{
             backgroundColor: "lightblue",
-            margin: "3px",
-            padding: "3px",
           }}
           onClick={() => handleChooseOrderStatus("shipped")}
         >
@@ -543,8 +539,6 @@ export default function OrdersPage() {
           }
           style={{
             backgroundColor: "lightBlue",
-            margin: "3px",
-            padding: "3px",
           }}
           onClick={() => handleChooseOrderStatus("completed")}
         >
@@ -560,8 +554,6 @@ export default function OrdersPage() {
           }
           style={{
             backgroundColor: "lightBlue",
-            margin: "3px",
-            padding: "3px",
           }}
           onClick={() => handleChooseOrderStatus("cancelled")}
         >
@@ -577,8 +569,6 @@ export default function OrdersPage() {
           }
           style={{
             backgroundColor: "lightBlue",
-            margin: "3px",
-            padding: "3px",
           }}
           onClick={() => handleChooseOrderStatus("archived")}
         >
