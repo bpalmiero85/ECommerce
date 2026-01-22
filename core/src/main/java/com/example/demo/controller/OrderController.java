@@ -134,4 +134,9 @@ public class OrderController {
   public List<Order> getArchivedOrders() {
     return orderService.getArchivedOrders();
   }
+
+  @GetMapping("/search/email/{email}")
+  public List<Order> getOrdersWithEmail(@PathVariable String email) {
+    return orderService.getOrdersWithEmail(email);
+  }
 }

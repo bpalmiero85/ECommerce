@@ -2,7 +2,6 @@ package com.example.demo.service;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -39,7 +38,8 @@ public class OrderService {
   }
 
   @Transactional
-  public Order createOrderWithItems(String name, String email, String address1, String address2, String city, String state, String zip, BigDecimal subtotalIgnored, OrderStatus status,
+  public Order createOrderWithItems(String name, String email, String address1, String address2, String city,
+      String state, String zip, BigDecimal subtotalIgnored, OrderStatus status,
       List<OrderItem> items, BigDecimal shippingTotal, BigDecimal taxTotal, BigDecimal discountTotal) {
 
     if (items == null || items.isEmpty()) {
@@ -101,6 +101,10 @@ public class OrderService {
 
   public Order save(Order order) {
     return orderRepository.save(order);
+  }
+
+  public List<Order> getOrdersWithEmail(String customerEmail) {
+    return orderRepository.findByOrderEmailIgnoreCaseOrderByCreatedAtDesc(customerEmail);
   }
 
   public List<Order> getAllOrders() {

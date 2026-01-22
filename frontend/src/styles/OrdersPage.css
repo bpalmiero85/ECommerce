@@ -31,8 +31,23 @@
 }
 
 .orders-title {
+  font-size: 2.5rem;
   color: black;
   margin: 0;
+}
+
+.orders-search-email {
+  position: relative;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: rgb(0, 0, 0);
+  margin: 0 auto;
+}
+
+.orders-title-highlight {
+  background-color: rgb(255, 255, 0);
+  color: black;
+  margin: 0 auto !important;
 }
 
 .orders-badge {
@@ -58,6 +73,7 @@
 
 .orders-header-button {
   position: relative;
+  background-color: lightblue;
 }
 
 .orders-header-button:hover {
@@ -69,6 +85,82 @@
 .orders-header-button.active {
   background-color: rgb(193, 32, 169) !important;
   color: white;
+}
+
+.orders-search-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.orders-search-label {
+  color: black;
+  font-weight: 600;
+}
+
+.orders-search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.search-input {
+  flex: 1;              /* ✅ makes input take the space */
+  min-width: 180px;
+  padding: 8px 10px;
+}
+
+.orders-search-btn,
+.orders-reset-btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(121, 2, 206, 0.35);
+  background: rgba(189, 109, 250, 0.25);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.search-button {
+  border-radius: 10px;
+  padding: 5px;
+  background-color: #e0bafd;
+}
+
+
+
+
+
+
+.orders-search-hint {
+  font-size: 1rem;
+  background-color: rgb(255, 255, 121);
+  color: black;
+  margin: 0 auto !important;
+}
+
+.search-button:hover {
+  color: white;
+  background-color: purple;
+}
+
+.search-button:active {
+  border: 2px solid greenyellow;
+}
+
+.orders-search-btn:hover,
+.orders-reset-btn:hover {
+  background-color: purple;
+  color: white;
+}
+
+.orders-search-bar input:hover {
+  border: 3px solid blue;
+}
+
+.search-input {
+  position: relative;
 }
 
 .orders-refresh {

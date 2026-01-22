@@ -16,6 +16,13 @@ export default function OrdersPage() {
   const [authAttempted, setAuthAttempted] = useState(false);
   const [activeOrdersCount, setActiveOrdersCount] = useState(0);
   const [shippedOrdersCount, setShippedOrdersCount] = useState(0);
+  const [searchResults, setSearchResults] = useState(null);
+  const [searchEmail, setSearchEmail] = useState("");
+  const [searchMeta, setSearchMeta] = useState(null);
+  const [searchLoading, setSearchLoading] = useState(null);
+  const [isSearchShown, setIsSearchShown] = useState(false);
+  const isSearching = !!searchMeta;
+  const displayOrders = Array.isArray(searchResults) ? searchResults : orders;
   const isRefreshingRef = React.useRef(false);
   const initialLoadedRef = React.useRef(false);
   const pollingRef = React.useRef(null);
@@ -66,6 +73,10 @@ export default function OrdersPage() {
   const openItemModal = (item) => {
     setSelectedItem(item);
     setIsItemModalOpen(true);
+  };
+
+  const handleToggleSearch = () => {
+    setIsSearchShown((prev) => !prev);
   };
 
   const closeItemModal = () => {
@@ -192,6 +203,42 @@ export default function OrdersPage() {
     setActiveOrdersCount(Array.isArray(active) ? active.length : 0);
     setShippedOrdersCount(Array.isArray(shipped) ? shipped.length : 0);
   }, [authedFetch]);
+
+  const clearSearch = () => {
+    setSearchResults(null);
+    setSearchMeta(null);
+    setSearchEmail("");
+    setIsSearchShown(false);
+  };
+
+  const handleSearchEmail = async (order) => {
+    if (!auth) return;
+
+    const email = (searchEmail || "").trim();
+    if (!email) {
+      clearSearch();
+      return;
+    }
+    setSearchLoading(true);
+
+    try {
+      const resp = await authedFetch(
+        `${API_BASE}/api/admin/orders/search/email/${encodeURIComponent(email)}`,
+        {
+          method: "GET",
+          credentials: "include",
+        },
+      );
+      if (!resp.ok) {
+        throw new Error(`Couldn't find orders with email: ${email}`);
+      }
+      const data = await resp.json();
+      setSearchResults(data);
+      setSearchMeta({ type: "email", value: email });
+    } finally {
+      setSearchLoading(false);
+    }
+  };
 
   const handleMarkShipped = async (order) => {
     const confirm = window.confirm("Are you sure you want to mark shipped?");
@@ -491,104 +538,174 @@ export default function OrdersPage() {
 
   return (
     <div className="orders-panel">
+      <div className="search-button-container">
+        <button
+          type="button"
+          className="search-button"
+          onClick={isSearchShown ? clearSearch : handleToggleSearch}
+        >
+          🔍 {isSearchShown ? "Hide Search" : "Search by Email"}
+        </button>
+      </div>
+      {isSearchShown && (
+        <div className="orders-search-bar">
+          <label className="orders-search-label" htmlFor="emailSearch">
+            Email Address:
+          </label>
+
+          <div className="orders-search-row">
+            <input
+              id="emailSearch"
+              type="text"
+              className="search-input"
+              value={searchEmail}
+              onChange={(e) => {
+                const next = e.target.value;
+                setSearchEmail(next);
+
+                if (!next.trim()) {
+                  setSearchResults(null);
+                  setSearchMeta(null);
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSearchEmail();
+                if (e.key === "Escape") {
+                  setIsSearchShown(false);
+                  clearSearch();
+                }
+              }}
+            />
+
+            <button
+              type="button"
+              className="orders-search-btn"
+              onClick={handleSearchEmail}
+              disabled={searchLoading}
+            >
+              Search
+            </button>
+
+            <button
+              type="button"
+              className="orders-reset-btn"
+              onClick={clearSearch}
+              disabled={searchLoading}
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="orders-panel-header">
-        <h1 className="orders-title">Orders</h1>
+        <h1 className={isSearching ? "orders-title-highlight" : "orders-title"}>
+          {isSearching ? (
+            <>
+              Showing orders for:
+              <br />
+              <span className="orders-search-email">{searchMeta.value}</span>
+            </>
+          ) : (
+            "Orders"
+          )}
+        </h1>
 
         <button type="button" className="orders-refresh" onClick={fetchOrders}>
           Refresh
         </button>
       </div>
 
-      <div className="choose-order-status">
-        <button
-          type="button"
-          className={
-            orderStatus === "active"
-              ? "orders-header-button active"
-              : "orders-header-button"
-          }
-          style={{
-            backgroundColor: "lightBlue",
-          }}
-          onClick={() => handleChooseOrderStatus("active")}
-        >
-          ACTIVE
-          {activeOrdersCount > 0 && (
-            <span className="orders-badge">{activeOrdersCount}</span>
-          )}
-        </button>
+      {!isSearchShown && (
+        <div className="choose-order-status">
+          <button
+            type="button"
+            className={
+              orderStatus === "active"
+                ? "orders-header-button active"
+                : "orders-header-button"
+            }
+            disabled={isSearching}
+            onClick={() => handleChooseOrderStatus("active")}
+          >
+            ACTIVE
+            {activeOrdersCount > 0 && (
+              <span className="orders-badge">{activeOrdersCount}</span>
+            )}
+          </button>
 
-        <button
-          type="button"
-          className={
-            orderStatus === "shipped"
-              ? "orders-header-button active"
-              : "orders-header-button"
-          }
-          style={{
-            backgroundColor: "lightblue",
-          }}
-          onClick={() => handleChooseOrderStatus("shipped")}
-        >
-          SHIPPED
-          {shippedOrdersCount > 0 && (
-            <span className="orders-badge">{shippedOrdersCount}</span>
-          )}
-        </button>
+          <button
+            type="button"
+            className={
+              orderStatus === "shipped"
+                ? "orders-header-button active"
+                : "orders-header-button"
+            }
+            disabled={isSearching}
+            onClick={() => handleChooseOrderStatus("shipped")}
+          >
+            SHIPPED
+            {shippedOrdersCount > 0 && (
+              <span className="orders-badge">{shippedOrdersCount}</span>
+            )}
+          </button>
 
-        <button
-          type="button"
-          className={
-            orderStatus === "completed"
-              ? "orders-header-button active"
-              : "orders-header-button"
-          }
-          style={{
-            backgroundColor: "lightBlue",
-          }}
-          onClick={() => handleChooseOrderStatus("completed")}
-        >
-          COMPLETED
-        </button>
+          <button
+            type="button"
+            className={
+              orderStatus === "completed"
+                ? "orders-header-button active"
+                : "orders-header-button"
+            }
+            disabled={isSearching}
+            onClick={() => handleChooseOrderStatus("completed")}
+          >
+            COMPLETED
+          </button>
 
-        <button
-          type="button"
-          className={
-            orderStatus === "cancelled"
-              ? "orders-header-button active"
-              : "orders-header-button"
-          }
-          style={{
-            backgroundColor: "lightBlue",
-          }}
-          onClick={() => handleChooseOrderStatus("cancelled")}
-        >
-          CANCELLED
-        </button>
+          <button
+            type="button"
+            className={
+              orderStatus === "cancelled"
+                ? "orders-header-button active"
+                : "orders-header-button"
+            }
+            disabled={isSearching}
+            onClick={() => handleChooseOrderStatus("cancelled")}
+          >
+            CANCELLED
+          </button>
 
-        <button
-          type="button"
-          className={
-            orderStatus === "archived"
-              ? "orders-header-button active"
-              : "orders-header-button"
-          }
-          style={{
-            backgroundColor: "lightBlue",
-          }}
-          onClick={() => handleChooseOrderStatus("archived")}
-        >
-          ARCHIVED
-        </button>
-      </div>
+          <button
+            type="button"
+            className={
+              orderStatus === "archived"
+                ? "orders-header-button active"
+                : "orders-header-button"
+            }
+            disabled={isSearching}
+            onClick={() => handleChooseOrderStatus("archived")}
+          >
+            ARCHIVED
+          </button>
+        </div>
+      )}
 
       {error && <div className="orders-error">{error}</div>}
 
-      {orders.length === 0 ? (
-        <div className="orders-empty">No orders yet.</div>
+      {isSearching && (
+        <div className="orders-search-hint">
+          Click Reset button to return to tabs.
+        </div>
+      )}
+
+      {displayOrders.length === 0 ? (
+        <div className="orders-empty">
+          {searchMeta ? "No matches for that search." : "No orders yet."}
+        </div>
       ) : (
         <div className="orders-list">
-          {orders.map((o) => {
+          {displayOrders.map((o) => {
             return (
               <div key={o.orderId} className="orders-card">
                 <div className="orders-card-header">
