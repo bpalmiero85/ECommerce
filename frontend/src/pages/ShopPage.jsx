@@ -148,7 +148,7 @@ export default function ShopPage() {
       {/* Footer */}
       <footer className="footer">
         <div>
-          <img className="gglogo" src="./gglogo.svg"></img>
+          <img alt="Goth & Glitter logo"className="gglogo" src="./gglogo.svg" />
         </div>
 
         <p className="footer-text">

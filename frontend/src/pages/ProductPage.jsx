@@ -708,8 +708,8 @@ const ProductPage = ({ products: externalProducts = [] }) => {
 
         <div className="nav-container">
           <nav className="nav">
-            <a href="/shop" style={{ "--hover-color": "var(--neon-purple)" }}>
-              Shop
+            <a href="/all" style={{ "--hover-color": "var(--neon-purple)" }}>
+              All Products
             </a>
             <div className="dropdown">
               <button className="dropdown-button">Categories ▼</button>

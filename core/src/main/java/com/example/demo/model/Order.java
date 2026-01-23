@@ -44,6 +44,15 @@ public class Order {
   private String orderName;
 
   @Column(nullable = false)
+  private boolean needsFollowUp;
+
+  @Column(columnDefinition = "TEXT")
+  private String followUpNotes;
+
+  @Column
+  private Instant followUpResolvedAt;
+
+  @Column(nullable = false)
   private String orderEmail;
 
   @Column(nullable = false, precision = 10, scale = 2)

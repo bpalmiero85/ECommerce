@@ -36,6 +36,61 @@
   margin: 0;
 }
 
+.follow-up-alert {
+  display: flex;
+  position: relative;
+  background-color: rgb(242, 242, 46);
+}
+
+.order-notes {
+  display: flex;
+  width: 100%;
+}
+.order-notes textarea {
+  width: 70vw;
+  height: 200px;
+  margin: 0 auto;
+}
+
+.follow-up-alert-text {
+  white-space: nowrap;
+  font-size: 1.2rem;
+  color: red;
+}
+
+.follow-up-alert-buttons {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+  text-align: center;
+  justify-content: flex-end;
+}
+
+.resolved-button,
+.unmark-follow-up-button {
+  display: flex;
+  border-radius: 7px;
+  white-space: nowrap;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  background-color: #e0bafd;
+  padding: 7px 5px !important;
+  height: 20px;
+  margin: 3px;
+  cursor: pointer;
+}
+
+.resolved-button:hover {
+  background-color: purple;
+  color: white;
+}
+
+.unmark-follow-up-button:hover {
+  background-color: purple;
+  color: white;
+} 
+
 .orders-search-email {
   position: relative;
   font-size: 1.4rem;
@@ -107,7 +162,7 @@
 }
 
 .search-input {
-  flex: 1;              /* ✅ makes input take the space */
+  flex: 1;           
   min-width: 180px;
   padding: 8px 10px;
 }

@@ -99,6 +99,36 @@ public class OrderService {
     return orderRepository.save(order);
   }
 
+  public List<Order> getFollowUpQueue() {
+    return orderRepository.findByNeedsFollowUpTrueAndFollowUpResolvedAtIsNullOrderByCreatedAtDesc();
+  }
+
+  public Order markFollowUp(Long orderId) {
+    Order order = orderRepository.findById(orderId)
+        .orElseThrow(() -> new RuntimeException("Order not found: Order# " + orderId));
+    order.setNeedsFollowUp(true);
+    order.setFollowUpResolvedAt(null);
+
+    return orderRepository.save(order);
+  }
+
+  public Order unmarkFollowUp(Long orderId) {
+    Order order = orderRepository.findById(orderId)
+        .orElseThrow(() -> new RuntimeException("Order not found: Order# " + orderId));
+    order.setNeedsFollowUp(false);
+    return orderRepository.save(order);
+
+  }
+
+  public Order markResolved(Long orderId) {
+    Order order = orderRepository.findById(orderId)
+        .orElseThrow(() -> new RuntimeException("Order not found: Order# " + orderId));
+    order.setNeedsFollowUp(false);
+    order.setFollowUpResolvedAt(Instant.now());
+
+    return orderRepository.save(order);
+  }
+
   public Order save(Order order) {
     return orderRepository.save(order);
   }

@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +23,24 @@ public class OrderController {
 
   public OrderController(OrderService orderService) {
     this.orderService = orderService;
+  }
+
+  @PatchMapping("/follow-up/{orderId}")
+  public ResponseEntity<Order> markFollowUp(@PathVariable Long orderId) {
+    Order updated = orderService.markFollowUp(orderId);
+    return ResponseEntity.ok(updated);
+  }
+
+  @PatchMapping("/unmark-follow-up/{orderId}")
+  public ResponseEntity<Order> unmarkFollowUp(@PathVariable Long orderId) {
+    Order updated = orderService.unmarkFollowUp(orderId);
+    return ResponseEntity.ok(updated);
+  }
+
+  @PatchMapping("/follow-up/{orderId}/resolved")
+  public ResponseEntity<Order> markResolved(@PathVariable Long orderId) {
+    Order updated = orderService.markResolved(orderId);
+    return ResponseEntity.ok(updated);
   }
 
   @PatchMapping("/{orderId}/status")
@@ -98,6 +117,7 @@ public class OrderController {
     private BigDecimal shippingTotal;
     private BigDecimal taxTotal;
     private BigDecimal discountTotal;
+
   }
 
   @GetMapping("/all")
@@ -138,5 +158,10 @@ public class OrderController {
   @GetMapping("/search/email/{email}")
   public List<Order> getOrdersWithEmail(@PathVariable String email) {
     return orderService.getOrdersWithEmail(email);
+  }
+
+  @GetMapping("api/admin/orders/follow-up")
+  public List<Order> getOrdersNeedingFollowUp() {
+    return orderService.getFollowUpQueue();
   }
 }

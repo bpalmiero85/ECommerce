@@ -240,6 +240,88 @@ export default function OrdersPage() {
     }
   };
 
+  const handleMarkFollowUp = async (order) => {
+    const orderId = order?.orderId ?? order?.id;
+    if (!orderId) {
+      console.error("Missing orderId: Check your onClick wiring.", { order });
+      alert("Could not mark follow up: missing order id");
+      return;
+    }
+    const confirm = window.confirm("Follow up with this order/customer?");
+
+    if (!confirm) return;
+
+    try {
+      const resp = await authedFetch(
+        `${API_BASE}/api/admin/orders/follow-up/${orderId}`,
+        { method: "PATCH", credentials: "include" },
+      );
+      if (!resp.ok) {
+        setError(`HTTP ${resp.status}`);
+      }
+      await fetchOrders();
+    } catch (e) {
+      console.error("Mark follow up failed", e);
+      setError(`Could not mark follow-up for order #${orderId}`);
+    }
+  };
+
+  const handleUnmarkFollowUp = async (order) => {
+    const orderId = order?.orderId ?? order?.id;
+    if (!orderId) {
+      alert("Missing order id");
+      return;
+    }
+
+    const confirm = window.confirm("Remove follow-up flag for this order?");
+    if (!confirm) return;
+
+    try {
+      const resp = await authedFetch(
+        `${API_BASE}/api/admin/orders/unmark-follow-up/${orderId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ needsFollowUp: false }),
+        },
+      );
+
+      if (!resp.ok) {
+        setError(`Failed to unmark follow-up for order #${orderId}`);
+        return;
+      }
+
+      await fetchOrders();
+    } catch (e) {
+      console.error("Unmark follow up failed:", e);
+      setError(`Could not unmark follow-up for order #${orderId}`);
+    }
+  };
+
+  const handleMarkResolved = async (order) => {
+    const orderId = order?.orderId ?? order?.id;
+    if (!orderId) {
+      alert("Missing order id");
+      return;
+    }
+
+    try {
+      const resp = await authedFetch(
+        `${API_BASE}/api/admin/orders/follow-up/${orderId}/resolved`,
+        { method: "PATCH", credentials: "include" },
+      );
+      if (!resp.ok) {
+        setError(`Failed to mark resolved for order #${orderId}`);
+      }
+      const updated = await resp.json();
+      await fetchOrders();
+      return updated;
+    } catch (e) {
+      console.error("Failed to mark resolved:", e);
+      setError(`Could not mark resolved for order #${orderId}`);
+    }
+  };
+
   const handleMarkShipped = async (order) => {
     const confirm = window.confirm("Are you sure you want to mark shipped?");
 
@@ -714,6 +796,35 @@ export default function OrdersPage() {
                 </div>
 
                 <div className="orders-card-body">
+                  <div className="follow-up">
+                    <button onClick={() => handleMarkFollowUp(o)}>
+                      Needs follow up
+                    </button>
+                    {o.needsFollowUp && !o.followUpResolvedAt && (
+                      <div className="follow-up-alert">
+                        <h3 className="follow-up-alert-text">
+                          Order is marked for follow up
+                        </h3>
+                        <div className="follow-up-alert-buttons">
+                          <div className="mark-resolved-container">
+                            <button
+                              type="button"
+                              className="unmark-follow-up-button"
+                              onClick={() => handleUnmarkFollowUp(o)}
+                            >
+                              Unmark follow up
+                            </button>
+                          </div>
+                          <button
+                            className="resolved-button"
+                            onClick={() => handleMarkResolved(o)}
+                          >
+                            Mark resolved
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   <div className="orders-field">
                     <span className="orders-field-label">Name</span>
                     <span className="orders-field-value">{o.orderName}</span>
@@ -855,6 +966,11 @@ export default function OrdersPage() {
                       </li>
                     ))}
                   </ul>
+                )}
+                {o.needsFollowUp && !o.followUpResolvedAt && (
+                  <div className="order-notes">
+                    <textarea placeholder="Type order notes here..." />
+                  </div>
                 )}
               </div>
             );

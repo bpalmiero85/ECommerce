@@ -17,7 +17,7 @@ function App() {
     <Elements stripe={stripePromise}>
       <Routes>
         <Route path="/admin" element={<AdminPage />} />
-        <Route path="/shop" element={<HomePage />} />
+        <Route path="/all" element={<HomePage />} />
         <Route path="/products" element={<ProductPage />} />
         <Route path="/cart" element={<CheckoutPage />} />
         <Route path="/featured" element={<FeaturedProductsPage />} />
