@@ -1023,10 +1023,23 @@ export default function OrdersPage() {
                     ))}
                   </ul>
                 )}
-                {o.needsFollowUp && !o.followUpResolvedAt && (
+                {((o.followUpNotes ?? "").trim() ||
+                  (orderNotes[o.orderId] ?? "").trim() ||
+                  editingNotesByOrderId[o.orderId] ||
+                  o.needsFollowUp) && (
                   <div className="order-notes">
                     {editingNotesByOrderId[o.orderId] ? (
                       <>
+                        <textarea
+                          value={orderNotes[o.orderId] ?? ""}
+                          onChange={(e) =>
+                            setOrderNotes((prev) => ({
+                              ...prev,
+                              [o.orderId]: e.target.value,
+                            }))
+                          }
+                          placeholder="Type order notes here..."
+                        />
                         <div className="order-notes-actions">
                           <button
                             type="button"
@@ -1044,17 +1057,6 @@ export default function OrdersPage() {
                             Cancel
                           </button>
                         </div>
-
-                        <textarea
-                          value={orderNotes[o.orderId] ?? ""}
-                          onChange={(e) =>
-                            setOrderNotes((prev) => ({
-                              ...prev,
-                              [o.orderId]: e.target.value,
-                            }))
-                          }
-                          placeholder="Type order notes here..."
-                        />
                       </>
                     ) : (
                       <div className="order-notes-display">

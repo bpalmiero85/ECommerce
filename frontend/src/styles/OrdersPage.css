@@ -44,7 +44,10 @@
 
 .order-notes {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
+  gap: 10px;
 }
 .order-notes textarea {
   width: 70vw;
@@ -81,30 +84,67 @@
   cursor: pointer;
 }
 
+.cancel-order-notes,
 .save-order-notes {
   display: flex;
   position: relative;
+  flex-direction: row;
   background-color: #e0bafd;
+  justify-content: space-around;
+  border-radius: 5px;
+  padding: 3px 4px;
+  margin: 0;
   cursor: pointer;
 }
 
+.order-notes textarea {
+  width: min(80vw, 700px);  
+  height: 200px;
+  margin: 0 auto;
+  display: block;
+}
+
+.save-order-notes:hover,
+.cancel-order-notes:hover {
+  color: white;
+  background-color: #9928ef;
+}
+
+.order-notes-actions {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+  gap: 10px;
+  width: 20%;
+}
+
 .edit-order-notes {
-  margin-left: 15px;
+  display: flex;
+  position: absolute;
+  cursor: pointer;
+  padding: 3px 4px;
+  border-radius: 5px;
+  background-color: rgb(208, 162, 255);
+  right: 5px;
+}
+
+.edit-order-notes:hover {
+  color: white;
+  background-color: #9f28d6;
 }
 
 .order-notes-display {
+  border-top: 1px solid rgb(250, 132, 151);
+  background-color: rgb(253, 220, 225);
+  border-radius: 0 0 10px 10px;
   display: flex;
+  width: 100%;
   position: relative;
-  margin-left: 10px;
   color: black;
 }
 .order-notes-text {
   white-space: pre-wrap;
   word-break: break-word;
-}
-
-.save-order-notes:hover {
-  background-color: purple;
 }
 
 .resolved-button:hover {
