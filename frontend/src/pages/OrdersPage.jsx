@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import emailjs from "@emailjs/browser";
 import "../styles/OrdersPage.css";
 
@@ -25,9 +25,10 @@ export default function OrdersPage() {
   const [orderNotes, setOrderNotes] = useState({});
   const isSearching = !!searchMeta;
   const displayOrders = Array.isArray(searchResults) ? searchResults : orders;
-  const isRefreshingRef = React.useRef(false);
-  const initialLoadedRef = React.useRef(false);
-  const pollingRef = React.useRef(null);
+  const isRefreshingRef = useRef(false);
+  const initialLoadedRef = useRef(false);
+  const pollingRef = useRef(null);
+  const notesTextareaRefs = useRef({});
   const SHIPPING_TEMPLATE_ID = "template_wqi7wms";
   const EMAILJS_SERVICE_ID = "service_1wp75sm";
   const EMAILJS_PUBLIC_KEY = "ZkQfANdcZnMH2U1KL";
@@ -92,6 +93,11 @@ export default function OrdersPage() {
 
   const handleSaveOrderNotes = async (order) => {
     const orderId = order?.orderId ?? "";
+    if (!orderId) return false;
+
+    const rawDraft = orderNotes[orderId] ?? "";
+    const cleanedNotes = normalizeOrderNotesForSave(rawDraft);
+
     try {
       const resp = await authedFetch(
         `${API_BASE}/api/admin/orders/follow-up/${orderId}/follow-up-notes`,
@@ -99,37 +105,127 @@ export default function OrdersPage() {
           method: "PATCH",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ followUpNotes: orderNotes[orderId] ?? "" }),
+          body: JSON.stringify({ followUpNotes: cleanedNotes }),
         },
       );
+
       if (!resp.ok) {
         setError(`HTTP ${resp.status}`);
+        return false;
       }
-      const updated = await resp.json();
-      const savedNotes = updated?.followUpNotes ?? orderNotes[orderId] ?? "";
 
-      setOrders((prev) =>
-        prev.map((o) => (o.orderId ? { ...o, followUpNotes: savedNotes } : o)),
+      const updated = await resp.json().catch(() => null);
+      const savedNotes = normalizeOrderNotesForSave(
+        updated?.followUpNotes ?? cleanedNotes,
       );
 
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.orderId === orderId ? { ...o, followUpNotes: savedNotes } : o,
+        ),
+      );
+      setOrderNotes((prev) => ({ ...prev, [orderId]: savedNotes }));
       setEditingNotesByOrderId((prev) => ({ ...prev, [orderId]: false }));
-      return updated;
+
+      return true;
     } catch (e) {
       console.error("Failed to save order notes:", e);
+      return false;
     }
+  };
+
+  const toggleNoteLine = (order, lineIndex) => {
+    const orderId = order?.orderId;
+    if (!orderId) return;
+
+    const raw = String(order.followUpNotes ?? orderNotes[orderId] ?? "");
+    const lines = raw.split("\n");
+
+    const line = lines[lineIndex] ?? "";
+
+    const checkedMatch = line.match(/^-\s*\[x\]\s*/i);
+    const listMatch = line.match(/^-\s*/);
+
+    if (!listMatch) return;
+
+    const text = line
+      .replace(/^-\s*\[x\]\s*/i, "")
+      .replace(/^-\s*/, "")
+      .trim();
+
+    lines[lineIndex] = checkedMatch ? `- ${text}` : `- [x] ${text}`;
+
+    setOrderNotes((prev) => ({
+      ...prev,
+      [orderId]: lines.join("\n"),
+    }));
+  };
+
+  const handleNotesKeyDown = (orderId, e) => {
+    if (e.key !== "Enter") return;
+
+    // Shift+Enter = allow normal newline
+    if (e.shiftKey) return;
+
+    e.preventDefault();
+
+    const textarea = e.currentTarget;
+    const value = textarea.value ?? "";
+    const start = textarea.selectionStart ?? value.length;
+    const end = textarea.selectionEnd ?? value.length;
+
+    const before = value.slice(0, start);
+    const after = value.slice(end);
+
+    if (!value.trim()) {
+      const next = "- ";
+      setOrderNotes((prev) => ({ ...prev, [orderId]: next }));
+
+      requestAnimationFrame(() => {
+        textarea.selectionStart = textarea.selectionEnd = next.length;
+      });
+      return;
+    }
+
+    const insert = "\n- ";
+    const nextValue = before + insert + after;
+
+    setOrderNotes((prev) => ({ ...prev, [orderId]: nextValue }));
+
+    const nextPos = before.length + insert.length;
+    requestAnimationFrame(() => {
+      textarea.selectionStart = textarea.selectionEnd = nextPos;
+    });
   };
 
   const handleCancelOrderNotes = (order) => {
     const orderId = order?.orderId;
     if (!orderId) return;
 
-    // revert draft back to what’s currently saved on the order
     setOrderNotes((prev) => ({
       ...prev,
       [orderId]: order.followUpNotes ?? "",
     }));
 
     setEditingNotesByOrderId((prev) => ({ ...prev, [orderId]: false }));
+  };
+
+  const normalizeOrderNotesForSave = (raw) => {
+    const s = String(raw ?? "").replace(/\r\n/g, "\n");
+
+    const lines = s.split("\n");
+
+    const cleaned = lines.filter((line) => {
+      const t = line.trim();
+      if (!t) return false;
+
+      const emptyBullet = /^-\s*(\[\s*x\s*\])?\s*$/i.test(t);
+      if (emptyBullet) return false;
+
+      return true;
+    });
+
+    return cleaned.join("\n").trim();
   };
 
   const promptForAuth = useCallback(() => {
@@ -342,10 +438,59 @@ export default function OrdersPage() {
     }
   };
 
+  const getChecklistStats = (raw) => {
+    const s = String(raw ?? "").replace(/\r\n/g, "\n");
+    const lines = s.split("\n");
+
+    let totalItems = 0;
+    let checkedItems = 0;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+
+      const isListItem = /^-\s*/.test(trimmed);
+      if (!isListItem) continue;
+
+      const emptyBullet = /^-\s*(\[\s*x\s*\])?\s*$/i.test(trimmed);
+      if (emptyBullet) continue;
+
+      totalItems += 1;
+
+      const isChecked = /^-\s*\[\s*x\s*\]\s*/i.test(trimmed);
+      if (isChecked) checkedItems += 1;
+    }
+    return {
+      totalItems,
+      checkedItems,
+      allChecked: totalItems > 0 && checkedItems === totalItems,
+    };
+  };
+
   const handleMarkResolved = async (order) => {
     const orderId = order?.orderId ?? order?.id;
     if (!orderId) {
       alert("Missing order id");
+      return;
+    }
+
+    const rawNotes = orderNotes[orderId] ?? order?.followUpNotes ?? "";
+    const { totalItems, allChecked } = getChecklistStats(rawNotes);
+
+    let message = "Mark order resolved?";
+
+    if (totalItems > 0 && !allChecked) {
+      message =
+        "All line items are not complete. Are you sure you want to mark resolved?";
+    }
+
+    const ok = window.confirm(message);
+    if (!ok) return;
+
+    const saved = await handleSaveOrderNotes(order);
+
+    if (!saved) {
+      alert("Could not save notes. Resolve cancelled.");
       return;
     }
 
@@ -354,9 +499,12 @@ export default function OrdersPage() {
         `${API_BASE}/api/admin/orders/follow-up/${orderId}/resolved`,
         { method: "PATCH", credentials: "include" },
       );
+
       if (!resp.ok) {
         setError(`Failed to mark resolved for order #${orderId}`);
+        return;
       }
+
       const updated = await resp.json();
       await fetchOrders();
       return updated;
@@ -364,6 +512,7 @@ export default function OrdersPage() {
       console.error("Failed to mark resolved:", e);
       setError(`Could not mark resolved for order #${orderId}`);
     }
+    handleSaveOrderNotes(order.orderId);
   };
 
   const handleMarkShipped = async (order) => {
@@ -1031,6 +1180,9 @@ export default function OrdersPage() {
                     {editingNotesByOrderId[o.orderId] ? (
                       <>
                         <textarea
+                          ref={(el) => {
+                            if (el) notesTextareaRefs.current[o.orderId] = el;
+                          }}
                           value={orderNotes[o.orderId] ?? ""}
                           onChange={(e) =>
                             setOrderNotes((prev) => ({
@@ -1038,6 +1190,7 @@ export default function OrdersPage() {
                               [o.orderId]: e.target.value,
                             }))
                           }
+                          onKeyDown={(e) => handleNotesKeyDown(o.orderId, e)}
                           placeholder="Type order notes here..."
                         />
                         <div className="order-notes-actions">
@@ -1060,32 +1213,100 @@ export default function OrdersPage() {
                       </>
                     ) : (
                       <div className="order-notes-display">
-                        {(
-                          o.followUpNotes ??
-                          orderNotes[o.orderId] ??
-                          ""
+                        {String(
+                          o.followUpNotes ?? orderNotes[o.orderId] ?? "",
                         ).trim() ? (
-                          <p className="order-notes-text">
-                            {o.followUpNotes ?? orderNotes[o.orderId]}
-                          </p>
+                          <div className="order-notes-text">
+                            {String(
+                              o.followUpNotes ?? orderNotes[o.orderId] ?? "",
+                            )
+                              .split("\n")
+                              .map((line, index) => {
+                                const checkedMatch =
+                                  line.match(/^-\s*\[x\]\s*/i);
+                                const listMatch = line.match(/^-\s*/);
+                                const isChecked = !!checkedMatch;
+                                const isListItem = !!listMatch;
+
+                                // Non-list lines render normally
+                                if (!isListItem) {
+                                  return (
+                                    <div
+                                      key={index}
+                                      className="order-note-line"
+                                    >
+                                      {line}
+                                    </div>
+                                  );
+                                }
+
+                                const text = line
+                                  .replace(/^-\s*\[x\]\s*/i, "")
+                                  .replace(/^-\s*/, "")
+                                  .trim();
+
+                                return (
+                                  <div
+                                    key={index}
+                                    className={`order-note-item ${isChecked ? "checked" : ""}`}
+                                    onClick={() => toggleNoteLine(o, index)}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter" || e.key === " ")
+                                        toggleNoteLine(o, index);
+                                    }}
+                                  >
+                                    <span className="checkbox">
+                                      {isChecked ? "☑" : "☐"}
+                                    </span>
+                                    <span className="text">{text}</span>
+                                  </div>
+                                );
+                              })}
+                          </div>
                         ) : (
                           <p className="order-notes-empty">No notes yet.</p>
                         )}
-
                         <button
                           type="button"
                           className="edit-order-notes"
                           onClick={() => {
-                            setOrderNotes((prev) => ({
-                              ...prev,
-                              [o.orderId]:
-                                prev[o.orderId] ?? o.followUpNotes ?? "",
-                            }));
+                            setOrderNotes((prev) => {
+                              const existing =
+                                prev[o.orderId] ?? o.followUpNotes ?? "";
+
+                              const trimmed = existing.replace(/\s*$/, "");
+
+                              if (!trimmed) {
+                                return { ...prev, [o.orderId]: "- " };
+                              }
+
+                              if (trimmed.endsWith("-")) {
+                                return { ...prev, [o.orderId]: trimmed + " " };
+                              }
+
+                              return {
+                                ...prev,
+                                [o.orderId]: `${trimmed}\n- `,
+                              };
+                            });
 
                             setEditingNotesByOrderId((prev) => ({
                               ...prev,
                               [o.orderId]: true,
                             }));
+                            const orderId = o.orderId;
+
+                            setTimeout(() => {
+                              const el = notesTextareaRefs.current[orderId];
+                              if (!el) return;
+
+                              el.focus();
+
+                              const len = el.value.length;
+                              el.setSelectionRange(len, len);
+                            }, 0);
                           }}
                         >
                           {(o.followUpNotes ?? "").trim()

@@ -98,7 +98,7 @@
 }
 
 .order-notes textarea {
-  width: min(80vw, 700px);  
+  width: min(80vw, 700px);
   height: 200px;
   margin: 0 auto;
   display: block;
@@ -155,7 +155,7 @@
 .unmark-follow-up-button:hover {
   background-color: purple;
   color: white;
-} 
+}
 
 .orders-search-email {
   position: relative;
@@ -228,7 +228,7 @@
 }
 
 .search-input {
-  flex: 1;           
+  flex: 1;
   min-width: 180px;
   padding: 8px 10px;
 }
@@ -248,11 +248,6 @@
   padding: 5px;
   background-color: #e0bafd;
 }
-
-
-
-
-
 
 .orders-search-hint {
   font-size: 1rem;
@@ -294,7 +289,7 @@
 }
 
 .orders-refresh:hover {
-  filter: brightness(0.90);
+  filter: brightness(0.9);
 }
 
 .orders-refresh:active {
