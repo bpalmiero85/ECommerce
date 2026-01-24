@@ -1,7 +1,6 @@
 package com.example.demo.controller;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +33,13 @@ public class OrderController {
   @PatchMapping("/unmark-follow-up/{orderId}")
   public ResponseEntity<Order> unmarkFollowUp(@PathVariable Long orderId) {
     Order updated = orderService.unmarkFollowUp(orderId);
+    return ResponseEntity.ok(updated);
+  }
+
+  @PatchMapping("/follow-up/{orderId}/follow-up-notes")
+  public ResponseEntity<Order> saveFollowUpNotes(@PathVariable Long orderId, @RequestBody Map<String, String> body) {
+    String followUpNotes = body.get("followUpNotes");
+    Order updated = orderService.saveFollowUpNotes(orderId, followUpNotes);
     return ResponseEntity.ok(updated);
   }
 

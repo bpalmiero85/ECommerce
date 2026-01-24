@@ -81,6 +81,32 @@
   cursor: pointer;
 }
 
+.save-order-notes {
+  display: flex;
+  position: relative;
+  background-color: #e0bafd;
+  cursor: pointer;
+}
+
+.edit-order-notes {
+  margin-left: 15px;
+}
+
+.order-notes-display {
+  display: flex;
+  position: relative;
+  margin-left: 10px;
+  color: black;
+}
+.order-notes-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.save-order-notes:hover {
+  background-color: purple;
+}
+
 .resolved-button:hover {
   background-color: purple;
   color: white;

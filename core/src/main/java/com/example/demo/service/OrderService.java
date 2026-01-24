@@ -117,7 +117,14 @@ public class OrderService {
         .orElseThrow(() -> new RuntimeException("Order not found: Order# " + orderId));
     order.setNeedsFollowUp(false);
     return orderRepository.save(order);
+  }
 
+  public Order saveFollowUpNotes(Long orderId, String followUpNotes) {
+    Order order = orderRepository.findById(orderId)
+        .orElseThrow(() -> new RuntimeException("Order not found: Order# " + orderId));
+    order.setFollowUpNotes(followUpNotes);
+
+    return orderRepository.save(order);
   }
 
   public Order markResolved(Long orderId) {

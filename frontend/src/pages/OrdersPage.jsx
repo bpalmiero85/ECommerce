@@ -21,6 +21,8 @@ export default function OrdersPage() {
   const [searchMeta, setSearchMeta] = useState(null);
   const [searchLoading, setSearchLoading] = useState(null);
   const [isSearchShown, setIsSearchShown] = useState(false);
+  const [editingNotesByOrderId, setEditingNotesByOrderId] = useState({});
+  const [orderNotes, setOrderNotes] = useState({});
   const isSearching = !!searchMeta;
   const displayOrders = Array.isArray(searchResults) ? searchResults : orders;
   const isRefreshingRef = React.useRef(false);
@@ -86,6 +88,48 @@ export default function OrdersPage() {
 
   const handleChooseOrderStatus = (status) => {
     setOrderStatus(status);
+  };
+
+  const handleSaveOrderNotes = async (order) => {
+    const orderId = order?.orderId ?? "";
+    try {
+      const resp = await authedFetch(
+        `${API_BASE}/api/admin/orders/follow-up/${orderId}/follow-up-notes`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ followUpNotes: orderNotes[orderId] ?? "" }),
+        },
+      );
+      if (!resp.ok) {
+        setError(`HTTP ${resp.status}`);
+      }
+      const updated = await resp.json();
+      const savedNotes = updated?.followUpNotes ?? orderNotes[orderId] ?? "";
+
+      setOrders((prev) =>
+        prev.map((o) => (o.orderId ? { ...o, followUpNotes: savedNotes } : o)),
+      );
+
+      setEditingNotesByOrderId((prev) => ({ ...prev, [orderId]: false }));
+      return updated;
+    } catch (e) {
+      console.error("Failed to save order notes:", e);
+    }
+  };
+
+  const handleCancelOrderNotes = (order) => {
+    const orderId = order?.orderId;
+    if (!orderId) return;
+
+    // revert draft back to what’s currently saved on the order
+    setOrderNotes((prev) => ({
+      ...prev,
+      [orderId]: order.followUpNotes ?? "",
+    }));
+
+    setEditingNotesByOrderId((prev) => ({ ...prev, [orderId]: false }));
   };
 
   const promptForAuth = useCallback(() => {
@@ -447,6 +491,7 @@ export default function OrdersPage() {
       alert("Failed to resend tracking email.");
     }
   };
+
   const fetchOrders = useCallback(async () => {
     try {
       setError(null);
@@ -467,6 +512,15 @@ export default function OrdersPage() {
       const data = text ? JSON.parse(text) : [];
       setOrders(Array.isArray(data) ? data : []);
       setAuthVerified(true);
+      setOrderNotes((prev) => ({
+        ...Object.fromEntries(
+          (Array.isArray(data) ? data : []).map((o) => [
+            o.orderId,
+            o.followUpNotes ?? "",
+          ]),
+        ),
+        ...prev,
+      }));
     } catch (e) {
       console.error("[fetchOrders] error:", e);
       setError(e?.message || "Failed to load orders.");
@@ -817,7 +871,9 @@ export default function OrdersPage() {
                           </div>
                           <button
                             className="resolved-button"
-                            onClick={() => handleMarkResolved(o)}
+                            onClick={() => {
+                              handleMarkResolved(o);
+                            }}
                           >
                             Mark resolved
                           </button>
@@ -969,7 +1025,73 @@ export default function OrdersPage() {
                 )}
                 {o.needsFollowUp && !o.followUpResolvedAt && (
                   <div className="order-notes">
-                    <textarea placeholder="Type order notes here..." />
+                    {editingNotesByOrderId[o.orderId] ? (
+                      <>
+                        <div className="order-notes-actions">
+                          <button
+                            type="button"
+                            className="save-order-notes"
+                            onClick={() => handleSaveOrderNotes(o)}
+                          >
+                            Save
+                          </button>
+
+                          <button
+                            type="button"
+                            className="cancel-order-notes"
+                            onClick={() => handleCancelOrderNotes(o)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+
+                        <textarea
+                          value={orderNotes[o.orderId] ?? ""}
+                          onChange={(e) =>
+                            setOrderNotes((prev) => ({
+                              ...prev,
+                              [o.orderId]: e.target.value,
+                            }))
+                          }
+                          placeholder="Type order notes here..."
+                        />
+                      </>
+                    ) : (
+                      <div className="order-notes-display">
+                        {(
+                          o.followUpNotes ??
+                          orderNotes[o.orderId] ??
+                          ""
+                        ).trim() ? (
+                          <p className="order-notes-text">
+                            {o.followUpNotes ?? orderNotes[o.orderId]}
+                          </p>
+                        ) : (
+                          <p className="order-notes-empty">No notes yet.</p>
+                        )}
+
+                        <button
+                          type="button"
+                          className="edit-order-notes"
+                          onClick={() => {
+                            setOrderNotes((prev) => ({
+                              ...prev,
+                              [o.orderId]:
+                                prev[o.orderId] ?? o.followUpNotes ?? "",
+                            }));
+
+                            setEditingNotesByOrderId((prev) => ({
+                              ...prev,
+                              [o.orderId]: true,
+                            }));
+                          }}
+                        >
+                          {(o.followUpNotes ?? "").trim()
+                            ? "Edit"
+                            : "Add notes"}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
