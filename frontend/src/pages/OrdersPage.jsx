@@ -28,6 +28,7 @@ export default function OrdersPage() {
   const isRefreshingRef = useRef(false);
   const initialLoadedRef = useRef(false);
   const pollingRef = useRef(null);
+  const pollAbortRef = useRef(null);
   const notesTextareaRefs = useRef({});
   const SHIPPING_TEMPLATE_ID = "template_wqi7wms";
   const EMAILJS_SERVICE_ID = "service_1wp75sm";
@@ -87,8 +88,47 @@ export default function OrdersPage() {
     setSelectedItem(null);
   };
 
+  const ensureTrailingBullet = (raw) => {
+    const s = String(raw ?? "").replace(/\r\n/g, "\n");
+
+    if (!s.trim()) return "- ";
+
+    if (/\n-\s*(\[\s*x\s*\]\s*)?$/.test(s)) return s;
+
+    return s.endsWith("\n") ? `${s}- ` : `${s}\n- `;
+  };
+
   const handleChooseOrderStatus = (status) => {
     setOrderStatus(status);
+  };
+
+  const toggleXOnCurrentLine = (value, cursorPos) => {
+    const s = String(value ?? "").replace(/\r\n/g, "\n");
+    const pos = Math.max(0, Math.min(cursorPos ?? 0, s.length));
+
+    const lineStart = s.lastIndexOf("\n", pos - 1) + 1;
+    const lineEnd = s.indexOf("\n", pos);
+    const end = lineEnd === -1 ? s.length : lineEnd;
+
+    const line = s.slice(lineStart, end);
+    const trimmed = line.trim();
+
+    if (!trimmed) return s;
+
+    const hasBracketX = /^-\s*\[\s*x\s*\]\s*/i.test(trimmed);
+    const hasBang = /^-\s*!\s+/i.test(trimmed);
+
+    const isChecked = hasBracketX || hasBang;
+
+    const bare = trimmed
+      .replace(/^-\s*\[\s*x\s*\]\s*/i, "")
+      .replace(/^-\s*!\s+/i, "")
+      .replace(/^-\s*/, "")
+      .trim();
+
+    const nextLine = isChecked ? `- ${bare}` : `- [x] ${bare}`;
+
+    return s.slice(0, lineStart) + nextLine + s.slice(end);
   };
 
   const handleSaveOrderNotes = async (order) => {
@@ -143,17 +183,17 @@ export default function OrdersPage() {
 
     const line = lines[lineIndex] ?? "";
 
-    const checkedMatch = line.match(/^-\s*\[x\]\s*/i);
-    const listMatch = line.match(/^-\s*/);
-
-    if (!listMatch) return;
+    const hasBracketX = /^-\s*\[\s*x\s*\]\s*/i.test(line);
+    const hasBang = /^-\s*!\s*/i.test(line);
+    const isChecked = hasBracketX || hasBang;
 
     const text = line
-      .replace(/^-\s*\[x\]\s*/i, "")
+      .replace(/^-\s*\[\s*x\s*\]\s*/i, "")
+      .replace(/^-\s*!\s*/i, "")
       .replace(/^-\s*/, "")
       .trim();
 
-    lines[lineIndex] = checkedMatch ? `- ${text}` : `- [x] ${text}`;
+    lines[lineIndex] = isChecked ? `- ${text}` : `- [x] ${text}`;
 
     setOrderNotes((prev) => ({
       ...prev,
@@ -162,9 +202,27 @@ export default function OrdersPage() {
   };
 
   const handleNotesKeyDown = (orderId, e) => {
-    if (e.key !== "Enter") return;
+    // Ctrl/Cmd + Enter toggles [x] on current line
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
 
-    // Shift+Enter = allow normal newline
+      const textarea = e.currentTarget;
+      const value = textarea.value ?? "";
+      const cursor = textarea.selectionStart ?? value.length;
+
+      const nextValue = toggleXOnCurrentLine(value, cursor);
+
+      setOrderNotes((prev) => ({ ...prev, [orderId]: nextValue }));
+
+      // keep cursor in same place (best-effort)
+      requestAnimationFrame(() => {
+        textarea.selectionStart = textarea.selectionEnd = cursor;
+      });
+      return;
+    }
+
+    // normal Enter behavior (your existing logic)
+    if (e.key !== "Enter") return;
     if (e.shiftKey) return;
 
     e.preventDefault();
@@ -180,7 +238,6 @@ export default function OrdersPage() {
     if (!value.trim()) {
       const next = "- ";
       setOrderNotes((prev) => ({ ...prev, [orderId]: next }));
-
       requestAnimationFrame(() => {
         textarea.selectionStart = textarea.selectionEnd = next.length;
       });
@@ -282,12 +339,15 @@ export default function OrdersPage() {
       const headers = new Headers(options.headers || {});
       headers.set("Authorization", `Basic ${auth}`);
 
+      const { signal, ...rest } = options;
+
       let res;
       try {
         res = await fetch(url, {
-          ...options,
+          ...rest,
           headers,
           credentials: "include",
+          signal,
         });
       } catch (err) {
         console.error("[authedFetch] FETCH THREW:", err);
@@ -306,9 +366,10 @@ export default function OrdersPage() {
         retryHeaders.set("Authorization", `Basic ${token}`);
 
         const retryRes = await fetch(url, {
-          ...options,
+          ...rest,
           headers: retryHeaders,
           credentials: "include",
+          signal,
         });
 
         if (retryRes.status === 401) {
@@ -327,22 +388,25 @@ export default function OrdersPage() {
     [auth, promptForAuth],
   );
 
-  const fetchCounts = useCallback(async () => {
-    const [activeRes, shippedRes] = await Promise.all([
-      authedFetch(`${API_BASE}/api/admin/orders/status/active`),
-      authedFetch(`${API_BASE}/api/admin/orders/status/shipped`),
-    ]);
+  const fetchCounts = useCallback(
+    async ({ signal } = {}) => {
+      const [activeRes, shippedRes] = await Promise.all([
+        authedFetch(`${API_BASE}/api/admin/orders/status/active`, { signal }),
+        authedFetch(`${API_BASE}/api/admin/orders/status/shipped`, { signal }),
+      ]);
 
-    const active = activeRes.ok
-      ? JSON.parse((await activeRes.text()) || "[]")
-      : [];
-    const shipped = shippedRes.ok
-      ? JSON.parse((await shippedRes.text()) || "[]")
-      : [];
+      const active = activeRes.ok
+        ? JSON.parse((await activeRes.text()) || "[]")
+        : [];
+      const shipped = shippedRes.ok
+        ? JSON.parse((await shippedRes.text()) || "[]")
+        : [];
 
-    setActiveOrdersCount(Array.isArray(active) ? active.length : 0);
-    setShippedOrdersCount(Array.isArray(shipped) ? shipped.length : 0);
-  }, [authedFetch]);
+      setActiveOrdersCount(Array.isArray(active) ? active.length : 0);
+      setShippedOrdersCount(Array.isArray(shipped) ? shipped.length : 0);
+    },
+    [authedFetch],
+  );
 
   const clearSearch = () => {
     setSearchResults(null);
@@ -641,48 +705,60 @@ export default function OrdersPage() {
     }
   };
 
-  const fetchOrders = useCallback(async () => {
-    try {
-      setError(null);
+  const fetchOrders = useCallback(
+    async ({ signal } = {}) => {
+      try {
+        setError(null);
 
-      const url = orderStatusEndpoint();
-      const res = await authedFetch(url, { method: "GET" });
+        const url = orderStatusEndpoint();
+        const res = await authedFetch(url, { method: "GET", signal });
 
-      if (res.status === 401 || res.status === 403) {
-        setAuthVerified(false);
-        setAuthFailed(true);
-        setAuth(null);
-        return;
+        if (res.status === 401 || res.status === 403) {
+          setAuthVerified(false);
+          setAuthFailed(true);
+          setAuth(null);
+          return;
+        }
+
+        if (!res.ok) throw new Error(`Failed to load orders (${res.status})`);
+
+        const text = await res.text();
+        const data = text ? JSON.parse(text) : [];
+        setOrders(Array.isArray(data) ? data : []);
+        setAuthVerified(true);
+        setOrderNotes((prev) => ({
+          ...Object.fromEntries(
+            (Array.isArray(data) ? data : []).map((o) => [
+              o.orderId,
+              o.followUpNotes ?? "",
+            ]),
+          ),
+          ...prev,
+        }));
+      } catch (e) {
+        if (e?.name === "AbortError") return;
+        console.error("[fetchOrders] error:", e);
+        setError(e?.message || "Failed to load orders.");
       }
+    },
+    [authedFetch, orderStatusEndpoint],
+  );
 
-      if (!res.ok) throw new Error(`Failed to load orders (${res.status})`);
-
-      const text = await res.text();
-      const data = text ? JSON.parse(text) : [];
-      setOrders(Array.isArray(data) ? data : []);
-      setAuthVerified(true);
-      setOrderNotes((prev) => ({
-        ...Object.fromEntries(
-          (Array.isArray(data) ? data : []).map((o) => [
-            o.orderId,
-            o.followUpNotes ?? "",
-          ]),
-        ),
-        ...prev,
-      }));
-    } catch (e) {
-      console.error("[fetchOrders] error:", e);
-      setError(e?.message || "Failed to load orders.");
-    }
-  }, [authedFetch, orderStatusEndpoint]);
+  const pollingAbortRef = useRef(null);
 
   const refreshOrdersAndCounts = useCallback(async () => {
     if (isRefreshingRef.current) return;
     isRefreshingRef.current = true;
 
+    if (pollingAbortRef.current) pollingAbortRef.current.abort();
+    const controller = new AbortController();
+    pollingAbortRef.current = controller;
+
     try {
-      await fetchCounts();
-      await fetchOrders();
+      await fetchCounts({ signal: controller.signal });
+      await fetchOrders({ signal: controller.signal });
+    } catch (e) {
+      if (e.name !== "AbortError") console.error(e);
     } finally {
       isRefreshingRef.current = false;
     }
@@ -691,9 +767,11 @@ export default function OrdersPage() {
   useEffect(() => {
     if (!auth) return;
 
+    const abortRef = pollingAbortRef;
+
     const startPolling = () => {
       if (pollingRef.current) return;
-      pollingRef.current = setInterval(refreshOrdersAndCounts, 3000);
+      pollingRef.current = setInterval(refreshOrdersAndCounts, 6000);
     };
 
     const stopPolling = () => {
@@ -722,6 +800,7 @@ export default function OrdersPage() {
 
     return () => {
       cancelled = true;
+      if (abortRef.current) abortRef.current.abort();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       stopPolling();
     };
@@ -895,10 +974,6 @@ export default function OrdersPage() {
             "Orders"
           )}
         </h1>
-
-        <button type="button" className="orders-refresh" onClick={fetchOrders}>
-          Refresh
-        </button>
       </div>
 
       {!isSearchShown && (
@@ -980,9 +1055,14 @@ export default function OrdersPage() {
 
       {isSearching && (
         <div className="orders-search-hint">
-          Click Reset button to return to tabs.
+          Click Reset button to return to all orders.
         </div>
       )}
+      <div className="refresh-button-container">
+        <button type="button" className="orders-refresh" onClick={fetchOrders}>
+          Refresh Orders List
+        </button>
+      </div>
 
       {displayOrders.length === 0 ? (
         <div className="orders-empty">
@@ -1172,10 +1252,7 @@ export default function OrdersPage() {
                     ))}
                   </ul>
                 )}
-                {((o.followUpNotes ?? "").trim() ||
-                  (orderNotes[o.orderId] ?? "").trim() ||
-                  editingNotesByOrderId[o.orderId] ||
-                  o.needsFollowUp) && (
+                {o.needsFollowUp && (
                   <div className="order-notes">
                     {editingNotesByOrderId[o.orderId] ? (
                       <>
@@ -1184,12 +1261,13 @@ export default function OrdersPage() {
                             if (el) notesTextareaRefs.current[o.orderId] = el;
                           }}
                           value={orderNotes[o.orderId] ?? ""}
-                          onChange={(e) =>
+                          onChange={(e) => {
+                            const next = e.target.value;
                             setOrderNotes((prev) => ({
                               ...prev,
-                              [o.orderId]: e.target.value,
-                            }))
-                          }
+                              [o.orderId]: next,
+                            }));
+                          }}
                           onKeyDown={(e) => handleNotesKeyDown(o.orderId, e)}
                           placeholder="Type order notes here..."
                         />
@@ -1222,13 +1300,14 @@ export default function OrdersPage() {
                             )
                               .split("\n")
                               .map((line, index) => {
-                                const checkedMatch =
-                                  line.match(/^-\s*\[x\]\s*/i);
-                                const listMatch = line.match(/^-\s*/);
-                                const isChecked = !!checkedMatch;
-                                const isListItem = !!listMatch;
+                                const hasBracketX = /^-\s*\[\s*x\s*\]\s*/i.test(
+                                  line,
+                                );
+                                const hasBang = /^-\s*!\s*/i.test(line); // supports "!yes" and "! yes"
+                                const isChecked = hasBracketX || hasBang;
 
-                                // Non-list lines render normally
+                                const isListItem = /^-\s*/.test(line);
+
                                 if (!isListItem) {
                                   return (
                                     <div
@@ -1241,7 +1320,8 @@ export default function OrdersPage() {
                                 }
 
                                 const text = line
-                                  .replace(/^-\s*\[x\]\s*/i, "")
+                                  .replace(/^-\s*\[\s*x\s*\]\s*/i, "")
+                                  .replace(/^-\s*!\s*/i, "")
                                   .replace(/^-\s*/, "")
                                   .trim();
 
@@ -1258,7 +1338,7 @@ export default function OrdersPage() {
                                     }}
                                   >
                                     <span className="checkbox">
-                                      {isChecked ? "☑" : "☐"}
+                                      {isChecked ? "✅" : "☐"}
                                     </span>
                                     <span className="text">{text}</span>
                                   </div>
@@ -1272,38 +1352,27 @@ export default function OrdersPage() {
                           type="button"
                           className="edit-order-notes"
                           onClick={() => {
-                            setOrderNotes((prev) => {
-                              const existing =
-                                prev[o.orderId] ?? o.followUpNotes ?? "";
+                            const orderId = o.orderId;
 
-                              const trimmed = existing.replace(/\s*$/, "");
+                            const nextText = ensureTrailingBullet(
+                              orderNotes[orderId] ?? o.followUpNotes ?? "",
+                            );
 
-                              if (!trimmed) {
-                                return { ...prev, [o.orderId]: "- " };
-                              }
-
-                              if (trimmed.endsWith("-")) {
-                                return { ...prev, [o.orderId]: trimmed + " " };
-                              }
-
-                              return {
-                                ...prev,
-                                [o.orderId]: `${trimmed}\n- `,
-                              };
-                            });
+                            setOrderNotes((prev) => ({
+                              ...prev,
+                              [orderId]: nextText,
+                            }));
 
                             setEditingNotesByOrderId((prev) => ({
                               ...prev,
-                              [o.orderId]: true,
+                              [orderId]: true,
                             }));
-                            const orderId = o.orderId;
 
                             setTimeout(() => {
                               const el = notesTextareaRefs.current[orderId];
                               if (!el) return;
 
                               el.focus();
-
                               const len = el.value.length;
                               el.setSelectionRange(len, len);
                             }, 0);

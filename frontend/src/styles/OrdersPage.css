@@ -42,6 +42,10 @@
   background-color: rgb(242, 242, 46);
 }
 
+.checkbox {
+  margin-right: 7px;
+}
+
 .order-notes {
   display: flex;
   flex-direction: column;
@@ -49,14 +53,20 @@
   width: 100%;
   gap: 10px;
 }
+
 .order-notes textarea {
   width: 70vw;
   height: 200px;
   margin: 0 auto;
 }
 
+.text {
+  font-size: 1.1rem;
+}
+
 .follow-up-alert-text {
   white-space: nowrap;
+  margin: 0 auto;
   font-size: 1.2rem;
   color: red;
 }
@@ -165,6 +175,10 @@
   margin: 0 auto;
 }
 
+.orders-panel-header {
+  display: flex;
+}
+
 .orders-title-highlight {
   background-color: rgb(255, 255, 0);
   color: black;
@@ -250,8 +264,8 @@
 }
 
 .orders-search-hint {
+  display: flex;
   font-size: 1rem;
-  background-color: rgb(255, 255, 121);
   color: black;
   margin: 0 auto !important;
 }
@@ -279,13 +293,22 @@
   position: relative;
 }
 
+.refresh-button-container {
+  display: flex;
+  position: relative;
+  justify-content: flex-end;
+}
+
 .orders-refresh {
+  display: flex;
+  flex-direction: column;
   padding: 6px 14px;
   border: 1px solid #5a0083;
   background: #bd6dfa;
   color: rgb(255, 255, 255);
   cursor: pointer;
   border-radius: 6px;
+  margin: 0 !important;
 }
 
 .orders-refresh:hover {
@@ -413,10 +436,35 @@
   opacity: 0.85;
 }
 
-@media (max-width: 345px) {
+@media (max-width: 385px) {
   .choose-order-status {
     display: flex;
     flex-wrap: wrap;
+  }
+  .follow-up-alert-buttons {
+    width: 100%;
+    margin: 20px 0;
+    position: absolute;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 700px) {
+   .follow-up-alert-buttons {
+    width: 100%;
+    top: 8px;
+    margin: 20px 0 10px;
+    display: flex;
+    position: absolute;
+    justify-content: center;
+  }
+  .follow-up-alert {
+    height: 60px;
+  }
+  .edit-order-notes {
+    height: 25px;
+    margin-left: 5px;
+    position: relative;
   }
 }
 
@@ -427,6 +475,12 @@
     justify-content: center;
     gap: 4px;
     width: 100%;
+  }
+   .follow-up-alert-buttons {
+    width: 100%;
+    margin: 20px 0;
+    position: absolute;
+    justify-content: center;
   }
 
   .orders-panel {
