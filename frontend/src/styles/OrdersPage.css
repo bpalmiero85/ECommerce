@@ -62,7 +62,9 @@
   width: 70vw;
   height: 200px;
   font-size: 1.1rem;
-  caret-color: #ff00ea;
+  background: #e88bff;
+  color: white;
+  caret-color: #001eff;
   margin: 0 auto;
 }
 

@@ -167,30 +167,34 @@ export default function OrdersPage() {
     const pos = Math.max(0, Math.min(cursorPos ?? 0, s.length));
 
     const lineStart = s.lastIndexOf("\n", pos - 1) + 1;
-    const lineEnd = s.indexOf("\n", pos);
-    const end = lineEnd === -1 ? s.length : lineEnd;
+    const lineEndIdx = s.indexOf("\n", lineStart);
+    const lineEnd = lineEndIdx === -1 ? s.length : lineEndIdx;
 
-    const line = normalizeNumberedToDash(s.slice(lineStart, end));
-    const trimmed = line.trim();
+    const originalLine = s.slice(lineStart, lineEnd);
+    const trimmed = originalLine.trim();
 
     if (!trimmed) return s;
 
-    const hasBracketX = /^-\s*\[\s*x\s*\]\s*/i.test(trimmed);
-    const hasBang = /^-\s*!\s+/i.test(trimmed);
+    const numMatch = originalLine.match(/^(\d+)\.\s*/);
+    const dashMatch = originalLine.match(/^-\s*/);
 
+    const prefix = numMatch ? `${numMatch[1]}. ` : dashMatch ? "- " : "";
+
+    const withoutPrefix = trimmed.replace(/^(\d+\.\s*|-\s*)/, "");
+
+    const hasBracketX = /^\[\s*x\s*\]\s*/i.test(withoutPrefix);
+    const hasBang = /^!\s*/i.test(withoutPrefix);
     const isChecked = hasBracketX || hasBang;
 
-    const bare = trimmed
-      .replace(/^-\s*\[\s*x\s*\]\s*/i, "")
-      .replace(/^-\s*!\s+/i, "")
-      .replace(/^-\s*/, "")
+    const text = withoutPrefix
+      .replace(/^\[\s*x\s*\]\s*/i, "")
+      .replace(/^!\s*/i, "")
       .trim();
 
-    const nextLine = isChecked ? `- ${bare}` : `- [x] ${bare}`;
+    const nextLine = isChecked ? `${prefix}${text}` : `${prefix}[x] ${text}`;
 
-    return s.slice(0, lineStart) + nextLine + s.slice(end);
+    return s.slice(0, lineStart) + nextLine + s.slice(lineEnd);
   };
-
   const handleSaveOrderNotes = async (order) => {
     const orderId = order?.orderId ?? "";
     if (!orderId) return false;
