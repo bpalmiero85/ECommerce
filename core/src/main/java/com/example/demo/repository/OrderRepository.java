@@ -42,7 +42,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findAllByOrderStatusNotInOrderByCreatedAtAsc(List<OrderStatus> statuses);
 
     @EntityGraph(attributePaths = "items")
-    List<Order> findAllByOrderByCreatedAtDesc();
+    List<Order> findAllByOrderByCreatedAtAsc();
 
     @EntityGraph(attributePaths = "items")
     List<Order> findByCreatedAtBetween(Instant start, Instant end);

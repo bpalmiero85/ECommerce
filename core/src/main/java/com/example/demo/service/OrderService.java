@@ -145,7 +145,7 @@ public class OrderService {
   }
 
   public List<Order> getAllOrders() {
-    return orderRepository.findAllByOrderByCreatedAtDesc();
+    return orderRepository.findAllByOrderByCreatedAtAsc();
   }
 
   @Transactional(readOnly = true)
