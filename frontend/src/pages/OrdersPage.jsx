@@ -1337,7 +1337,10 @@ export default function OrdersPage() {
                     ))}
                   </ul>
                 )}
-                {o.needsFollowUp && (
+                {(o.needsFollowUp ||
+                  String(
+                    o.followUpNotes ?? orderNotes[o.orderId] ?? "",
+                  ).trim()) && (
                   <div className="order-notes">
                     {editingNotesByOrderId[o.orderId] ? (
                       <>
@@ -1462,40 +1465,42 @@ export default function OrdersPage() {
                         ) : (
                           <p className="order-notes-empty">No notes yet.</p>
                         )}
-                        <button
-                          type="button"
-                          className="edit-order-notes"
-                          onClick={() => {
-                            const orderId = o.orderId;
+                        {o.needsFollowUp === true && (
+                          <button
+                            type="button"
+                            className="edit-order-notes"
+                            onClick={() => {
+                              const orderId = o.orderId;
 
-                            const nextText = ensureTrailingNumberedLine(
-                              orderNotes[orderId] ?? o.followUpNotes ?? "",
-                            );
+                              const nextText = ensureTrailingNumberedLine(
+                                orderNotes[orderId] ?? o.followUpNotes ?? "",
+                              );
 
-                            setOrderNotes((prev) => ({
-                              ...prev,
-                              [orderId]: nextText,
-                            }));
+                              setOrderNotes((prev) => ({
+                                ...prev,
+                                [orderId]: nextText,
+                              }));
 
-                            setEditingNotesByOrderId((prev) => ({
-                              ...prev,
-                              [orderId]: true,
-                            }));
+                              setEditingNotesByOrderId((prev) => ({
+                                ...prev,
+                                [orderId]: true,
+                              }));
 
-                            setTimeout(() => {
-                              const el = notesTextareaRefs.current[orderId];
-                              if (!el) return;
+                              setTimeout(() => {
+                                const el = notesTextareaRefs.current[orderId];
+                                if (!el) return;
 
-                              el.focus();
-                              const len = el.value.length;
-                              el.setSelectionRange(len, len);
-                            }, 0);
-                          }}
-                        >
-                          {(o.followUpNotes ?? "").trim()
-                            ? "Edit"
-                            : "Add notes"}
-                        </button>
+                                el.focus();
+                                const len = el.value.length;
+                                el.setSelectionRange(len, len);
+                              }, 0);
+                            }}
+                          >
+                            {(o.followUpNotes ?? "").trim()
+                              ? "Edit"
+                              : "Add notes"}
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
