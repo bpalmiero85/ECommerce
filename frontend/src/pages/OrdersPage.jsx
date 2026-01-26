@@ -55,6 +55,8 @@ export default function OrdersPage() {
     return "";
   };
 
+  const normalizeNumberedToDash = (line) => line.replace(/^\d+\.\s*/, "- ");
+
   const orderStatusEndpoint = useCallback(() => {
     if (orderStatus === "active") {
       return `${API_BASE}/api/admin/orders/status/active`;
@@ -74,6 +76,48 @@ export default function OrdersPage() {
     return null;
   }, [orderStatus]);
 
+  const applyBangShortcut = (value, cursorPos) => {
+    const s = String(value ?? "").replace(/\r\n/g, "\n");
+    const pos = Math.max(0, Math.min(cursorPos ?? 0, s.length));
+
+    const lineStart = s.lastIndexOf("\n", pos - 1) + 1;
+    const lineEndIdx = s.indexOf("\n", lineStart);
+    const lineEnd = lineEndIdx === -1 ? s.length : lineEndIdx;
+
+    const originalLine = s.slice(lineStart, lineEnd);
+
+    const numberedBang = /^(\d+)\.\s*!\s*/;
+    const dashBang = /^-\s*!\s*/;
+
+    let match;
+    let newPrefix;
+
+    if ((match = originalLine.match(numberedBang))) {
+      const num = match[1];
+      newPrefix = `${num}. [x] `;
+    } else if ((match = originalLine.match(dashBang))) {
+      newPrefix = `- [x] `;
+    } else {
+      return { nextValue: s, nextCursor: pos };
+    }
+
+    const oldPrefixLen = match[0].length;
+
+    const replacedLine = originalLine.replace(match[0], newPrefix);
+    const nextValue = s.slice(0, lineStart) + replacedLine + s.slice(lineEnd);
+
+    const offsetIntoLine = pos - lineStart;
+
+    let nextCursor = pos;
+    if (offsetIntoLine <= oldPrefixLen) {
+      nextCursor = lineStart + newPrefix.length;
+    } else {
+      nextCursor = pos + (newPrefix.length - oldPrefixLen);
+    }
+
+    return { nextValue, nextCursor };
+  };
+
   const openItemModal = (item) => {
     setSelectedItem(item);
     setIsItemModalOpen(true);
@@ -88,16 +132,32 @@ export default function OrdersPage() {
     setSelectedItem(null);
   };
 
-  const ensureTrailingBullet = (raw) => {
+  const ensureTrailingNumberedLine = (raw) => {
     const s = String(raw ?? "").replace(/\r\n/g, "\n");
 
-    if (!s.trim()) return "- ";
+    // Empty → start with 1.
+    if (!s.trim()) return "1. ";
 
-    if (/\n-\s*(\[\s*x\s*\]\s*)?$/.test(s)) return s;
+    const lines = s.split("\n");
 
-    return s.endsWith("\n") ? `${s}- ` : `${s}\n- `;
+    // If it already ends with a numbered prefix, leave it alone
+    if (/^\d+\.\s*$/.test(lines[lines.length - 1])) {
+      return s;
+    }
+
+    // Find the highest existing number
+    let max = 0;
+    for (const line of lines) {
+      const match = line.match(/^(\d+)\.\s*/);
+      if (match) {
+        max = Math.max(max, Number(match[1]));
+      }
+    }
+
+    const next = max + 1;
+
+    return s.endsWith("\n") ? `${s}${next}. ` : `${s}\n${next}. `;
   };
-
   const handleChooseOrderStatus = (status) => {
     setOrderStatus(status);
   };
@@ -110,7 +170,7 @@ export default function OrdersPage() {
     const lineEnd = s.indexOf("\n", pos);
     const end = lineEnd === -1 ? s.length : lineEnd;
 
-    const line = s.slice(lineStart, end);
+    const line = normalizeNumberedToDash(s.slice(lineStart, end));
     const trimmed = line.trim();
 
     if (!trimmed) return s;
@@ -180,20 +240,29 @@ export default function OrdersPage() {
 
     const raw = String(order.followUpNotes ?? orderNotes[orderId] ?? "");
     const lines = raw.split("\n");
-
     const line = lines[lineIndex] ?? "";
 
-    const hasBracketX = /^-\s*\[\s*x\s*\]\s*/i.test(line);
-    const hasBang = /^-\s*!\s*/i.test(line);
+    const dashPrefix = /^-\s*/;
+    const numPrefix = /^(\d+)\.\s*/;
+
+    const isListItem = dashPrefix.test(line) || numPrefix.test(line);
+    if (!isListItem) return;
+
+    const withoutPrefix = line.replace(numPrefix, "").replace(dashPrefix, "");
+
+    const hasBracketX = /^\[\s*x\s*\]\s*/i.test(withoutPrefix);
+    const hasBang = /^!\s*/i.test(withoutPrefix);
     const isChecked = hasBracketX || hasBang;
 
-    const text = line
-      .replace(/^-\s*\[\s*x\s*\]\s*/i, "")
-      .replace(/^-\s*!\s*/i, "")
-      .replace(/^-\s*/, "")
+    const text = withoutPrefix
+      .replace(/^\[\s*x\s*\]\s*/i, "")
+      .replace(/^!\s*/i, "")
       .trim();
 
-    lines[lineIndex] = isChecked ? `- ${text}` : `- [x] ${text}`;
+    const numMatch = line.match(numPrefix);
+    const prefix = numMatch ? `${numMatch[1]}. ` : "- ";
+
+    lines[lineIndex] = isChecked ? `${prefix}${text}` : `${prefix}[x] ${text}`;
 
     setOrderNotes((prev) => ({
       ...prev,
@@ -221,7 +290,7 @@ export default function OrdersPage() {
       return;
     }
 
-    // normal Enter behavior (your existing logic)
+    // normal Enter behavior (numbered lines)
     if (e.key !== "Enter") return;
     if (e.shiftKey) return;
 
@@ -235,21 +304,35 @@ export default function OrdersPage() {
     const before = value.slice(0, start);
     const after = value.slice(end);
 
+    // empty textarea → start at 1.
     if (!value.trim()) {
-      const next = "- ";
+      const next = "1. ";
       setOrderNotes((prev) => ({ ...prev, [orderId]: next }));
+
       requestAnimationFrame(() => {
         textarea.selectionStart = textarea.selectionEnd = next.length;
       });
       return;
     }
 
-    const insert = "\n- ";
-    const nextValue = before + insert + after;
+    // find last number used (search backward in the text BEFORE cursor)
+    const lines = before.split("\n");
+    let lastNum = 0;
+
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const m = lines[i].match(/^(\d+)\.\s*/);
+      if (m) {
+        lastNum = Number(m[1]);
+        break;
+      }
+    }
+
+    const nextLine = `\n${lastNum + 1}. `;
+    const nextValue = before + nextLine + after;
 
     setOrderNotes((prev) => ({ ...prev, [orderId]: nextValue }));
 
-    const nextPos = before.length + insert.length;
+    const nextPos = before.length + nextLine.length;
     requestAnimationFrame(() => {
       textarea.selectionStart = textarea.selectionEnd = nextPos;
     });
@@ -269,15 +352,17 @@ export default function OrdersPage() {
 
   const normalizeOrderNotesForSave = (raw) => {
     const s = String(raw ?? "").replace(/\r\n/g, "\n");
-
     const lines = s.split("\n");
 
     const cleaned = lines.filter((line) => {
       const t = line.trim();
       if (!t) return false;
 
-      const emptyBullet = /^-\s*(\[\s*x\s*\])?\s*$/i.test(t);
-      if (emptyBullet) return false;
+      const emptyDashBullet = /^-\s*(\[\s*x\s*\])?\s*$/i.test(t);
+      if (emptyDashBullet) return false;
+
+      const emptyNumberedLine = /^\d+\.\s*(\[\s*x\s*\])?\s*$/i.test(t);
+      if (emptyNumberedLine) return false;
 
       return true;
     });
@@ -1262,13 +1347,30 @@ export default function OrdersPage() {
                           }}
                           value={orderNotes[o.orderId] ?? ""}
                           onChange={(e) => {
-                            const next = e.target.value;
+                            const orderId = o.orderId;
+                            const textarea = e.currentTarget;
+                            const raw = textarea.value ?? "";
+                            const cursor =
+                              textarea.selectionStart ?? raw.length;
+
+                            const { nextValue, nextCursor } = applyBangShortcut(
+                              raw,
+                              cursor,
+                            );
+
                             setOrderNotes((prev) => ({
                               ...prev,
-                              [o.orderId]: next,
+                              [orderId]: nextValue,
                             }));
+
+                            requestAnimationFrame(() => {
+                              const el = notesTextareaRefs.current[orderId];
+                              if (!el) return;
+                              el.selectionStart = el.selectionEnd = nextCursor;
+                            });
                           }}
                           onKeyDown={(e) => handleNotesKeyDown(o.orderId, e)}
+                          className="order-notes-textarea"
                           placeholder="Type order notes here..."
                         />
                         <div className="order-notes-actions">
@@ -1300,13 +1402,13 @@ export default function OrdersPage() {
                             )
                               .split("\n")
                               .map((line, index) => {
-                                const hasBracketX = /^-\s*\[\s*x\s*\]\s*/i.test(
-                                  line,
-                                );
-                                const hasBang = /^-\s*!\s*/i.test(line); // supports "!yes" and "! yes"
-                                const isChecked = hasBracketX || hasBang;
+                                const dashPrefix = /^-\s*/;
+                                const numPrefix = /^(\d+)\.\s*/;
 
-                                const isListItem = /^-\s*/.test(line);
+                                const hasDash = dashPrefix.test(line);
+                                const hasNum = numPrefix.test(line);
+
+                                const isListItem = hasDash || hasNum;
 
                                 if (!isListItem) {
                                   return (
@@ -1319,10 +1421,22 @@ export default function OrdersPage() {
                                   );
                                 }
 
-                                const text = line
-                                  .replace(/^-\s*\[\s*x\s*\]\s*/i, "")
-                                  .replace(/^-\s*!\s*/i, "")
-                                  .replace(/^-\s*/, "")
+                                // Strip prefix FIRST (either "3. " or "- ")
+                                const withoutPrefix = line
+                                  .replace(numPrefix, "")
+                                  .replace(dashPrefix, "");
+
+                                // Now detect checked markers on the remainder
+                                const hasBracketX = /^\[\s*x\s*\]\s*/i.test(
+                                  withoutPrefix,
+                                );
+                                const hasBang = /^!\s*/i.test(withoutPrefix);
+                                const isChecked = hasBracketX || hasBang;
+
+                                // Strip markers so display only shows the human text
+                                const text = withoutPrefix
+                                  .replace(/^\[\s*x\s*\]\s*/i, "")
+                                  .replace(/^!\s*/i, "")
                                   .trim();
 
                                 return (
@@ -1354,7 +1468,7 @@ export default function OrdersPage() {
                           onClick={() => {
                             const orderId = o.orderId;
 
-                            const nextText = ensureTrailingBullet(
+                            const nextText = ensureTrailingNumberedLine(
                               orderNotes[orderId] ?? o.followUpNotes ?? "",
                             );
 
