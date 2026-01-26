@@ -712,7 +712,7 @@ export default function CheckoutPage({ onSuccess }) {
                           ? "Please enter a valid ZIP code to calculate shipping."
                           : !isCardComplete
                             ? "Please complete your card details."
-                            : "Please complete the form above."}
+                            : !processing ? "Please complete the form above." : ""}
           </div>
         )}
 

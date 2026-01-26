@@ -695,10 +695,41 @@ export default function OrdersPage() {
     }
 
     const orderId = order.orderId;
-    const carrier = window.prompt("Carrier (ex: USPS, FedEx):") || "";
-    const trackingNumber = window.prompt("Tracking Number:") || "";
 
-    if (carrier || trackingNumber === null) return;
+    let carrier = window.prompt("Carrier (ex: USPS, FedEx, UPS):");
+    if (carrier === null) return;
+
+    let normalizedCarrier = carrier.trim().toLowerCase();
+    while (
+      !normalizedCarrier ||
+      !["usps", "fedex", "ups"].includes(normalizedCarrier)
+    ) {
+      carrier = window.prompt(
+        "Carrier must be USPS, FedEx, or UPS. Please try again:",
+      );
+      if (carrier === null) return;
+
+      normalizedCarrier = carrier.trim().toLowerCase();
+    }
+
+    let cleanTracking = "";
+
+    while (true) {
+      const trackingNumber = window.prompt("Tracking number:");
+      if (trackingNumber === null) return;
+
+      cleanTracking = trackingNumber.trim();
+
+      if (cleanTracking.length < 8) {
+        window.alert("Tracking number must be at least <8> digits.");
+        continue;
+      }
+      const confirmed = window.confirm(
+        `Please confirm tracking number. Hit OK if correct:\n\n${cleanTracking}`,
+      );
+      if (!confirmed) continue;
+      break;
+    }
 
     try {
       const res = await authedFetch(
@@ -709,7 +740,7 @@ export default function OrdersPage() {
           body: JSON.stringify({
             status: "SHIPPED",
             carrier,
-            trackingNumber,
+            trackingNumber: cleanTracking,
           }),
         },
       );
@@ -739,16 +770,20 @@ export default function OrdersPage() {
           customer_name: (updated?.orderName ?? order.orderName) || "",
           order_id: updated?.orderId ?? order.orderId,
           carrier: updated?.carrier ?? carrier,
-          tracking_number: updated?.trackingNumber ?? trackingNumber,
+          tracking_number: updated?.trackingNumber ?? cleanTracking,
           tracking_url: buildTrackingUrl(
             updated?.carrier ?? carrier,
-            updated?.trackingNumber ?? trackingNumber,
+            updated?.trackingNumber ?? cleanTracking,
           ),
         },
         EMAILJS_PUBLIC_KEY,
       );
       await fetchOrders();
-      console.log("ship payload:", { orderId, carrier, trackingNumber });
+      console.log("ship payload:", {
+        orderId,
+        carrier,
+        trackingNumber: cleanTracking,
+      });
       console.log("shipping email sent for:", orderId);
       return res;
     } catch (e) {
@@ -1112,9 +1147,14 @@ export default function OrdersPage() {
         <h1 className={isSearching ? "orders-title-highlight" : "orders-title"}>
           {isSearching ? (
             <>
-              {searchType === "email" ? "Showing orders for " : "Showing Order # "}
+              {searchType === "email"
+                ? "Showing orders for "
+                : "Showing Order # "}
               <br />
-              <span className="orders-search-email">{searchMeta !== "email" && (" ")}{searchMeta.value}</span>
+              <span className="orders-search-email">
+                {searchMeta !== "email" && " "}
+                {searchMeta.value}
+              </span>
             </>
           ) : (
             "Orders"
