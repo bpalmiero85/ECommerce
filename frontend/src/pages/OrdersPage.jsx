@@ -711,23 +711,26 @@ export default function OrdersPage() {
 
       normalizedCarrier = carrier.trim().toLowerCase();
     }
-
+    let showError = false;
     let cleanTracking = "";
 
     while (true) {
-      const trackingNumber = window.prompt("Tracking number:");
+      let trackingNumber = window.prompt(showError ? "Tracking number must be at least <8> digits long. Please try again:" : "Tracking number:");
       if (trackingNumber === null) return;
 
       cleanTracking = trackingNumber.trim();
 
       if (cleanTracking.length < 8) {
-        window.alert("Tracking number must be at least <8> digits.");
+        showError = true;
         continue;
       }
       const confirmed = window.confirm(
         `Please confirm tracking number. Hit OK if correct:\n\n${cleanTracking}`,
       );
-      if (!confirmed) continue;
+      if (!confirmed) {
+        showError = false;
+        continue;
+      }
       break;
     }
 
