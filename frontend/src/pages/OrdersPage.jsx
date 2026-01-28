@@ -24,13 +24,13 @@ export default function OrdersPage() {
   const [searchLoading, setSearchLoading] = useState(null);
   const [isSearchShown, setIsSearchShown] = useState(false);
   const [editingNotesByOrderId, setEditingNotesByOrderId] = useState({});
+  const [labelCreatedByOrderId, setLabelCreatedByOrderId] = useState({});
   const [orderNotes, setOrderNotes] = useState({});
   const isSearching = !!searchMeta;
   const displayOrders = Array.isArray(searchResults) ? searchResults : orders;
   const isRefreshingRef = useRef(false);
   const initialLoadedRef = useRef(false);
   const pollingRef = useRef(null);
-  const pollAbortRef = useRef(null);
   const notesTextareaRefs = useRef({});
   const SHIPPING_TEMPLATE_ID = "template_wqi7wms";
   const EMAILJS_SERVICE_ID = "service_1wp75sm";
@@ -225,7 +225,6 @@ export default function OrdersPage() {
       const savedNotes = normalizeOrderNotesForSave(
         updated?.followUpNotes ?? cleanedNotes,
       );
-
       setOrders((prev) =>
         prev.map((o) =>
           o.orderId === orderId ? { ...o, followUpNotes: savedNotes } : o,
@@ -715,7 +714,11 @@ export default function OrdersPage() {
     let cleanTracking = "";
 
     while (true) {
-      let trackingNumber = window.prompt(showError ? "Tracking number must be at least <8> digits long. Please try again:" : "Tracking number:");
+      let trackingNumber = window.prompt(
+        showError
+          ? "Tracking number must be at least <8> digits long. Please try again:"
+          : "Tracking number:",
+      );
       if (trackingNumber === null) return;
 
       cleanTracking = trackingNumber.trim();
@@ -1260,6 +1263,7 @@ export default function OrdersPage() {
       ) : (
         <div className="orders-list">
           {displayOrders.map((o) => {
+            const labelCreated = labelCreatedByOrderId[o.orderId] === true;
             return (
               <div key={o.orderId} className="orders-card">
                 <div className="orders-card-header">
@@ -1386,41 +1390,87 @@ export default function OrdersPage() {
                 </div>
 
                 <div className="orders-card-actions">
-                  {o.orderStatus === "PAID" && (
-                    <button type="button" onClick={() => handleMarkShipped(o)}>
-                      Mark shipped
+                  <div className="order-label-section">
+                    <div className="order-label-status">
+                      {labelCreated && (
+                        <h3 className="label-created-alert">Label: Created</h3>
+                      )}
+                      {!labelCreated && (
+                        <h3 className="label-created-alert">
+                          Label: Not Created
+                        </h3>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const orderId = o.orderId;
+                        const labelAlreadyCreated =
+                          labelCreatedByOrderId[orderId] === true;
+
+                        if (labelAlreadyCreated) {
+                          window.alert(
+                            `A shipping label was already generated for order# ${orderId}`,
+                          );
+                          return;
+                        }
+
+                        const confirmCreate = window.confirm(
+                          "Generate shipping label for this order?",
+                        );
+
+                        if (!confirmCreate) return;
+
+                        console.log(
+                          `Setting label created true for order#: ${o.orderId}`,
+                        );
+                        setLabelCreatedByOrderId((prev) => ({
+                          ...prev,
+                          [orderId]: true,
+                        }));
+                      }}
+                    >
+                      Generate Label
                     </button>
-                  )}
-
-                  {orderStatus === "shipped" &&
-                    o.orderStatus === "SHIPPED" &&
-                    o.trackingNumber &&
-                    !o.deliveredAt && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => handleResendTracking(o)}
-                        >
-                          Resend tracking
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleMarkDelivered(o)}
-                        >
-                          Mark delivered
-                        </button>
-                      </>
-                    )}
-
-                  {orderStatus === "completed" &&
-                    o.orderStatus === "DELIVERED" && (
+                    {o.orderStatus === "PAID" && (
                       <button
                         type="button"
-                        onClick={() => handleArchiveOrder(o)}
+                        onClick={() => handleMarkShipped(o)}
                       >
-                        Archive
+                        Mark shipped
                       </button>
                     )}
+
+                    {orderStatus === "shipped" &&
+                      o.orderStatus === "SHIPPED" &&
+                      o.trackingNumber &&
+                      !o.deliveredAt && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => handleResendTracking(o)}
+                          >
+                            Resend tracking
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleMarkDelivered(o)}
+                          >
+                            Mark delivered
+                          </button>
+                        </>
+                      )}
+
+                    {orderStatus === "completed" &&
+                      o.orderStatus === "DELIVERED" && (
+                        <button
+                          type="button"
+                          onClick={() => handleArchiveOrder(o)}
+                        >
+                          Archive
+                        </button>
+                      )}
+                  </div>
                 </div>
 
                 {o.items?.length > 0 && (
