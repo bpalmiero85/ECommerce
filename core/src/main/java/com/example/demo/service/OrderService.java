@@ -3,6 +3,7 @@ package com.example.demo.service;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class OrderService {
   public OrderService(OrderRepository orderRepository, ProductRepository productRepository) {
     this.orderRepository = orderRepository;
     this.productRepository = productRepository;
+
   }
 
   public Order createOrder(String name, String email, BigDecimal total, OrderStatus status) {
@@ -152,6 +154,14 @@ public class OrderService {
   public List<Order> getAllActiveOrders() {
     return orderRepository.findWithItemsByStatuses(
         List.of(OrderStatus.PAID));
+  }
+
+  public Order generateLabel(Long orderId) {
+    Order order = orderRepository.findById(orderId).orElseThrow();
+
+    order.setLabelCreated(true);
+    return orderRepository.save(order);
+
   }
 
   public List<Order> getShippedOrders() {

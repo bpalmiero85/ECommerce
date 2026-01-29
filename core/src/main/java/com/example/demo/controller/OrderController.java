@@ -24,6 +24,12 @@ public class OrderController {
     this.orderService = orderService;
   }
 
+  @PatchMapping("/{orderId}/label")
+  public ResponseEntity<Order> markLabelCreated(@PathVariable Long orderId) {
+    Order updated = orderService.generateLabel(orderId);
+    return ResponseEntity.ok(updated);
+  }
+
   @PatchMapping("/follow-up/{orderId}")
   public ResponseEntity<Order> markFollowUp(@PathVariable Long orderId) {
     Order updated = orderService.markFollowUp(orderId);

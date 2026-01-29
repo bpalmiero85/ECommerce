@@ -49,6 +49,9 @@ public class Order {
   @Column(columnDefinition = "TEXT")
   private String followUpNotes;
 
+  @Column(nullable = false)
+  private boolean labelCreated; 
+
   @Column
   private Instant followUpResolvedAt;
 

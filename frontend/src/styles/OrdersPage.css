@@ -120,6 +120,17 @@
   cursor: pointer;
 }
 
+.generate-label-button[disabled]:hover {
+  cursor: not-allowed;
+  background: rgba(189, 109, 250, 0.25);
+  color: rgba(0, 0, 0, 0.285);
+  filter: none;
+}
+
+.generate-label-button {
+  margin-right: 5px !important;
+}
+
 .label-created-alert {
   color: black;
   font-size: 1.1rem;;
@@ -451,11 +462,16 @@
   transition: background-color 0.15s ease;
 }
 
-.orders-card-actions button:hover {
+.orders-card-actions button:not(:disabled):hover {
   background-color: purple;
   color: white;
   filter: brightness(0.95);
   cursor: pointer;
+}
+
+.pack-slip-button {
+  margin-left: 5px;
+  margin-right: 5px;
 }
 
 .orders-items {
