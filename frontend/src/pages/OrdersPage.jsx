@@ -133,100 +133,106 @@ export default function OrdersPage() {
     setSelectedItem(null);
   };
 
-  const openPackSlip = (order) => {
-    const w = window.open(
-      "",
-      "_blank",
-      "noopener,noreferrer,width=800,height=900",
-    );
-    if (!w) return;
-
-    const itemsHtml = (order.items ?? [])
-      .map(
-        (it) => `
-        <tr>
-          <td>${escapeHtml(it.productName ?? "")}</td>
-          <td style="text-align:right;">${Number(it.quantity ?? 0)}</td>
-        </tr>
-      `,
-      )
-      .join("");
-
-    const notes = String(order.followUpNotes ?? "").trim();
-
-    w.document.write(`
-    <html>
-      <head>
-        <title>Pack Slip - Order #${order.orderId}</title>
-        <style>
-          body { font-family: Arial, sans-serif; padding: 24px; color: #111; }
-          h1 { margin: 0 0 8px; font-size: 22px; }
-          .muted { color: #555; }
-          .box { border: 1px solid #ddd; border-radius: 10px; padding: 14px; margin-top: 14px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-          th, td { border-bottom: 1px solid #eee; padding: 8px 6px; }
-          th { text-align: left; }
-          .two-col { display:flex; gap: 12px; }
-          .col { flex: 1; }
-          @media print { button { display:none; } }
-        </style>
-      </head>
-      <body>
-        <h1>Goth & Glitter Pack Slip</h1>
-        <div class="muted">Order #${escapeHtml(String(order.orderId ?? ""))}</div>
-
-        <div class="two-col">
-          <div class="box col">
-            <strong>Ship To</strong><br/>
-            ${escapeHtml(order.orderName ?? "")}<br/>
-            ${escapeHtml(order.shippingAddress1 ?? "")}<br/>
-            ${escapeHtml(order.shippingAddress2 ?? "")}<br/>
-            ${escapeHtml(order.shippingCity ?? "")}, ${escapeHtml(order.shippingState ?? "")} ${escapeHtml(order.shippingZip ?? "")}
-          </div>
-
-          <div class="box col">
-            <strong>Customer</strong><br/>
-            ${escapeHtml(order.orderEmail ?? "")}<br/><br/>
-            <strong>Status</strong><br/>
-            ${escapeHtml(order.orderStatus ?? "")}
-          </div>
-        </div>
-
-        <div class="box">
-          <strong>Items</strong>
-          <table>
-            <thead>
-              <tr><th>Item</th><th style="text-align:right;">Qty</th></tr>
-            </thead>
-            <tbody>
-              ${itemsHtml || "<tr><td colspan='2'>No items</td></tr>"}
-            </tbody>
-          </table>
-        </div>
-
-        <div class="box">
-          <strong>Notes</strong><br/>
-          <div style="white-space:pre-wrap; margin-top:8px;">${escapeHtml(notes || "None")}</div>
-        </div>
-
-        <div style="margin-top:14px;">
-          <button onclick="window.print()">Print</button>
-        </div>
-      </body>
-    </html>
-  `);
-
-    w.document.close();
-  };
-
   const escapeHtml = (s) =>
     String(s ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
 
+      const openPackSlip = (order) => {
+  const itemsHtml = (order?.items ?? [])
+    .map(
+      (it) => `
+        <tr>
+          <td>${escapeHtml(it?.productName ?? "")}</td>
+          <td style="text-align:right;">${Number(it?.quantity ?? 0)}</td>
+        </tr>
+      `,
+    )
+    .join("");
+
+  const notes = String(order?.followUpNotes ?? "").trim();
+
+  const html = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Pack Slip - Order #${escapeHtml(order?.orderId ?? "")}</title>
+    <style>
+      body { font-family: Arial, sans-serif; padding: 24px; color: #111; }
+      h1 { margin: 0 0 8px; font-size: 22px; }
+      .muted { color: #555; }
+      .box { border: 1px solid #ddd; border-radius: 10px; padding: 14px; margin-top: 14px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+      th, td { border-bottom: 1px solid #eee; padding: 8px 6px; }
+      th { text-align: left; }
+      .two-col { display:flex; gap: 12px; }
+      .col { flex: 1; }
+      @media print { button { display:none; } }
+    </style>
+  </head>
+  <body>
+    <h1>Goth & Glitter Pack Slip</h1>
+    <div class="muted">Order #${escapeHtml(order?.orderId ?? "")}</div>
+
+    <div class="two-col">
+      <div class="box col">
+        <strong>Ship To</strong><br/>
+        ${escapeHtml(order?.orderName ?? "")}<br/>
+        ${escapeHtml(order?.shippingAddress1 ?? "")}<br/>
+        ${escapeHtml(order?.shippingAddress2 ?? "")}<br/>
+        ${escapeHtml(order?.shippingCity ?? "")}, ${escapeHtml(order?.shippingState ?? "")} ${escapeHtml(order?.shippingZip ?? "")}
+      </div>
+
+      <div class="box col">
+        <strong>Customer</strong><br/>
+        ${escapeHtml(order?.orderEmail ?? "")}<br/><br/>
+        <strong>Status</strong><br/>
+        ${escapeHtml(order?.orderStatus ?? "")}
+      </div>
+    </div>
+
+    <div class="box">
+      <strong>Items</strong>
+      <table>
+        <thead>
+          <tr><th>Item</th><th style="text-align:right;">Qty</th></tr>
+        </thead>
+        <tbody>
+          ${itemsHtml || "<tr><td colspan='2'>No items</td></tr>"}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="box">
+      <strong>Notes</strong>
+      <div style="white-space:pre-wrap; margin-top:8px;">
+        ${escapeHtml(notes || "None")}
+      </div>
+    </div>
+
+    <div style="margin-top:14px;">
+      <button type="button" onclick="window.print()">Print</button>
+    </div>
+  </body>
+</html>`;
+
+  const blob = new Blob([html], { type: "text/html" });
+  const url = URL.createObjectURL(blob);
+
+  const w = window.open(url, "_blank", "noopener,width=800,height=900");
+  if (!w) {
+    URL.revokeObjectURL(url);
+    alert("Pop-up blocked. Allow pop-ups for this site.");
+    return;
+  }
+
+  // Cleanup: give the browser a moment to load it, then revoke.
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+};
+  
   const ensureTrailingNumberedLine = (raw) => {
     const s = String(raw ?? "").replace(/\r\n/g, "\n");
 
@@ -1512,7 +1518,11 @@ export default function OrdersPage() {
                         </h3>
                       )}
                     </div>
-                    <button type="button" className="pack-slip-button" onClick={() => openPackSlip(o)}>
+                    <button
+                      type="button"
+                      className="pack-slip-button"
+                      onClick={() => openPackSlip(o)}
+                    >
                       Pack Slip
                     </button>
                     <button
@@ -1557,7 +1567,7 @@ export default function OrdersPage() {
                     >
                       Create Label
                     </button>
-                    
+
                     {o.orderStatus === "PAID" && (
                       <button
                         type="button"
