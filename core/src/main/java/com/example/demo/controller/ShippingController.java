@@ -3,6 +3,13 @@ package com.example.demo.controller;
 import com.example.demo.model.BaseRateOption;
 import com.example.demo.service.ShippingRateService;
 import com.example.demo.service.UspsV3Client;
+import com.example.demo.service.ShippoRateQuoteService;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -23,16 +30,14 @@ public class ShippingController {
 
   private static final Logger log = LoggerFactory.getLogger(ShippingController.class);
   private final ShippingRateService shippingRateService;
+  private final ShippoRateQuoteService shippoRateQuoteService;
 
-  public ShippingController(ShippingRateService shippingRateService) {
+  public ShippingController(ShippingRateService shippingRateService, ShippoRateQuoteService shippoRateQuoteService) {
     this.shippingRateService = shippingRateService;
+    this.shippoRateQuoteService = shippoRateQuoteService;
   }
 
-  @PostMapping(
-      path = "/rates",
-      consumes = MediaType.APPLICATION_JSON_VALUE,
-      produces = MediaType.APPLICATION_JSON_VALUE
-  )
+  @PostMapping(path = "/rates", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> getRates(@Valid @RequestBody ShippingRateRequest req) {
     try {
       BaseRateOption option = shippingRateService.getBaseRateForParcel(
@@ -40,8 +45,7 @@ public class ShippingController {
           req.getWeightOunces(),
           req.getLengthInches(),
           req.getWidthInches(),
-          req.getHeightInches()
-      );
+          req.getHeightInches());
       return ResponseEntity.ok(option);
 
     } catch (UspsV3Client.UpstreamException e) {
@@ -61,8 +65,7 @@ public class ShippingController {
   // Request DTO with simple validation
   public static class ShippingRateRequest {
 
-    @Pattern(regexp = "^[0-9]{5}(-[0-9]{4})?$",
-             message = "destinationZip must be a 5-digit or 9-digit ZIP")
+    @Pattern(regexp = "^[0-9]{5}(-[0-9]{4})?$", message = "destinationZip must be a 5-digit or 9-digit ZIP")
     private String destinationZip;
 
     @Positive(message = "weightOunces must be > 0")
@@ -77,16 +80,45 @@ public class ShippingController {
     @Positive(message = "heightInches must be > 0")
     private double heightInches;
 
-    public String getDestinationZip() { return destinationZip; }
-    public void setDestinationZip(String destinationZip) { this.destinationZip = destinationZip; }
-    public double getWeightOunces() { return weightOunces; }
-    public void setWeightOunces(double weightOunces) { this.weightOunces = weightOunces; }
-    public double getLengthInches() { return lengthInches; }
-    public void setLengthInches(double lengthInches) { this.lengthInches = lengthInches; }
-    public double getWidthInches() { return widthInches; }
-    public void setWidthInches(double widthInches) { this.widthInches = widthInches; }
-    public double getHeightInches() { return heightInches; }
-    public void setHeightInches(double heightInches) { this.heightInches = heightInches; }
+    public String getDestinationZip() {
+      return destinationZip;
+    }
+
+    public void setDestinationZip(String destinationZip) {
+      this.destinationZip = destinationZip;
+    }
+
+    public double getWeightOunces() {
+      return weightOunces;
+    }
+
+    public void setWeightOunces(double weightOunces) {
+      this.weightOunces = weightOunces;
+    }
+
+    public double getLengthInches() {
+      return lengthInches;
+    }
+
+    public void setLengthInches(double lengthInches) {
+      this.lengthInches = lengthInches;
+    }
+
+    public double getWidthInches() {
+      return widthInches;
+    }
+
+    public void setWidthInches(double widthInches) {
+      this.widthInches = widthInches;
+    }
+
+    public double getHeightInches() {
+      return heightInches;
+    }
+
+    public void setHeightInches(double heightInches) {
+      this.heightInches = heightInches;
+    }
   }
 
   // ✅ This makes validation errors show a useful JSON body instead of generic 400
@@ -98,8 +130,62 @@ public class ShippingController {
     }
     Map<String, Object> body = Map.of(
         "error", "Validation failed",
-        "fields", fieldErrors
-    );
+        "fields", fieldErrors);
     return ResponseEntity.badRequest().body(body);
+  }
+
+  // =========================
+  // SHIPPO (multi-carrier quote)
+  // =========================
+  @PostMapping(path = "/quote", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<?> getQuote(@Valid @RequestBody ShippingQuoteRequest req) {
+    return ResponseEntity.ok(
+        shippoRateQuoteService.quote(
+            req.getToName(),
+            req.getToStreet1(),
+            req.getToStreet2(),
+            req.getToCity(),
+            req.getToState(),
+            req.getToZip(),
+            req.getWeightOunces(),
+            req.getLengthInches(),
+            req.getWidthInches(),
+            req.getHeightInches()));
+  }
+
+  @Getter
+  @Setter
+  @AllArgsConstructor
+  @NoArgsConstructor
+  public static class ShippingQuoteRequest {
+
+    @Pattern(regexp = "^[A-Za-z0-9 .,'#-]{2,}$", message = "toName is required")
+    private String toName;
+
+    @Pattern(regexp = "^[A-Za-z0-9 .,'#-]{2,}$", message = "toStreet1 is required")
+    private String toStreet1;
+
+    private String toStreet2; // optional
+
+    @Pattern(regexp = "^[A-Za-z .'-]{2,}$", message = "toCity is required")
+    private String toCity;
+
+    @Pattern(regexp = "^[A-Z]{2}$", message = "toState must be 2-letter state code (e.g. OH)")
+    private String toState;
+
+    @Pattern(regexp = "^[0-9]{5}(-[0-9]{4})?$", message = "toZip must be a 5-digit or 9-digit ZIP")
+    private String toZip;
+
+    @Positive(message = "weightOunces must be > 0")
+    private double weightOunces;
+
+    @Positive(message = "lengthInches must be > 0")
+    private double lengthInches;
+
+    @Positive(message = "widthInches must be > 0")
+    private double widthInches;
+
+    @Positive(message = "heightInches must be > 0")
+    private double heightInches;
   }
 }

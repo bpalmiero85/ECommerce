@@ -61,6 +61,9 @@ export default function CheckoutPage({ onSuccess }) {
     0,
   );
 
+  // Shipping
+  const [shippingCheapest, setShippingCheapest] = useState(null);
+
   // Stripe hooks
   const stripe = useStripe();
   const elements = useElements();
@@ -371,14 +374,19 @@ export default function CheckoutPage({ onSuccess }) {
 
     try {
       const body = {
-        destinationZip: destinationZip,
+        toName: name,
+        toStreet1: addressLine1,
+        toStreet2: addressLine2 || "",
+        toCity: city,
+        toState: shippingState || inferStateFromZip(destinationZip) || "OH",
+        toZip: destinationZip,
         weightOunces: totalWeightOunces || 6,
         lengthInches: 4,
         widthInches: 3,
         heightInches: 4,
       };
 
-      const res = await fetch(`${API_BASE}/api/shipping/rates`, {
+      const res = await fetch(`${API_BASE}/api/shipping/quote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -395,16 +403,14 @@ export default function CheckoutPage({ onSuccess }) {
         );
       }
 
-      const amount =
-        typeof data.totalBasePrice === "number"
-          ? data.totalBasePrice
-          : Number(data.totalBasePrice);
+      const amount = Number(data?.cheapest?.amount);
 
       if (!amount || Number.isNaN(amount)) {
         throw new Error("No valid shipping rate returned.");
       }
 
       setShippingRate(amount);
+      setShippingCheapest(data?.cheapest || null);
     } catch (err) {
       console.error("Shipping error:", err);
       setShippingRate(null);
@@ -431,32 +437,38 @@ export default function CheckoutPage({ onSuccess }) {
     <div className="empty-cart-message">
       {succeeded ? (
         <>
-          <div style={{ fontSize: "2rem" }}><h2 className="thank-you">Thank you for your order! 🖤✨</h2>
+          <div style={{ fontSize: "2rem" }}>
+            <h2 className="thank-you">Thank you for your order! 🖤✨</h2>
 
-          {savedOrder?.orderId && (
-            <div
-              style={{
-                fontSize: "1.6rem",
-                marginTop: 20,
-                position: "relative",
-              }}
-            >
-              <h3 className="thank-you"><strong>Order #:</strong></h3> {savedOrder.orderId}
-            </div>
-          )}
+            {savedOrder?.orderId && (
+              <div
+                style={{
+                  fontSize: "1.6rem",
+                  marginTop: 20,
+                  position: "relative",
+                }}
+              >
+                <h3 className="thank-you">
+                  <strong>Order #:</strong>
+                </h3>{" "}
+                {savedOrder.orderId}
+              </div>
+            )}
 
-          {savedOrder?.orderEmail && (
-            <div
-              style={{
-                fontSize: "1.6rem",
-                marginTop: 25,
-                position: "relative",
-              }}
-            >
-              <p className="thank-you">&hearts;We sent a confirmation email to{" "}
-              <strong>{savedOrder.orderEmail}</strong>&hearts;</p>
-            </div>
-          )}
+            {savedOrder?.orderEmail && (
+              <div
+                style={{
+                  fontSize: "1.6rem",
+                  marginTop: 25,
+                  position: "relative",
+                }}
+              >
+                <p className="thank-you">
+                  &hearts;We sent a confirmation email to{" "}
+                  <strong>{savedOrder.orderEmail}</strong>&hearts;
+                </p>
+              </div>
+            )}
           </div>
 
           <div
@@ -467,7 +479,9 @@ export default function CheckoutPage({ onSuccess }) {
               position: "relative",
             }}
           >
-            <p className="thank-you">(If you don&apos;t see it, check spam/promotions)</p>
+            <p className="thank-you">
+              (If you don&apos;t see it, check spam/promotions)
+            </p>
           </div>
         </>
       ) : (
@@ -496,6 +510,28 @@ export default function CheckoutPage({ onSuccess }) {
         {shippingRate != null && (
           <div className="shipping-summary" style={{ marginTop: "10px" }}>
             <div>Shipping: ${shippingRate.toFixed(2)}</div>
+
+            {shippingCheapest && (
+              <div style={{ fontSize: "0.9rem", opacity: 0.9 }}>
+                {/* Provider (always) */}
+                <span>{shippingCheapest.provider}</span>
+
+                {/* Service name (fallback chain) */}
+                <span>
+                  {" "}
+                  •{" "}
+                  {shippingCheapest?.servicelevel?.display_name ||
+                    shippingCheapest?.servicelevel?.name ||
+                    "Shipping service"}
+                </span>
+
+                {/* ETA (only if present) */}
+                {shippingCheapest?.estimated_days != null && (
+                  <span> • ~{shippingCheapest.estimated_days} days</span>
+                )}
+              </div>
+            )}
+
             <div>
               <strong>
                 Estimated Total: $
@@ -712,7 +748,9 @@ export default function CheckoutPage({ onSuccess }) {
                           ? "Please enter a valid ZIP code to calculate shipping."
                           : !isCardComplete
                             ? "Please complete your card details."
-                            : !processing ? "Please complete the form above." : ""}
+                            : !processing
+                              ? "Please complete the form above."
+                              : ""}
           </div>
         )}
 
