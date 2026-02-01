@@ -61,9 +61,10 @@ export default function CheckoutPage({ onSuccess }) {
     0,
   );
 
-  // Shipping
+  // Shippo Shipping
   const [shippingCheapest, setShippingCheapest] = useState(null);
-
+  const [shippingOptions, setShippingOptions] = useState([]);
+  const [selectedRateId, setSelectedRateId] = useState(null);
   // Stripe hooks
   const stripe = useStripe();
   const elements = useElements();
@@ -123,14 +124,23 @@ export default function CheckoutPage({ onSuccess }) {
     if (!trimmed) {
       setShippingRate(null);
       setShippingError(null);
+      setShippingOptions([]);
+      setSelectedRateId(null);
+      setShippingCheapest(null);
       return;
     } else if (!/^\d{5}(-\d{4})?$/.test(trimmed)) {
       setShippingRate(null);
       setShippingError(null);
+      setShippingOptions([]);
+      setSelectedRateId(null);
+      setShippingCheapest(null);
       return;
     } else if (cartItems.length === 0) {
       setShippingRate(null);
       setShippingError("Your cart is empty.");
+      setShippingOptions([]);
+      setSelectedRateId(null);
+      setShippingCheapest(null);
       return;
     }
     handleCalculateShipping();
@@ -357,6 +367,30 @@ export default function CheckoutPage({ onSuccess }) {
     }
   };
 
+  const getShipScheduleNote = () => {
+    const day = new Date().getDay();
+
+    if (day === 5 || day === 6 || day === 0) {
+      return "Orders placed Fri–Sun ship Monday (next business day).";
+    }
+    return "Orders ship next business day.";
+  };
+
+  const formatTransitWithHandling = (estimatedDays) => {
+    if (estimatedDays == null) return null;
+
+    const handlingBusinessDays = 1;
+    const total = Number(estimatedDays) + handlingBusinessDays;
+
+    return (
+      <div style={{ backgroundColor: "yellow" }}>
+      <strong>
+        {" " + total + " "}business days (includes 1 business day handling)
+      </strong>
+      </div>
+    );
+  };
+
   const handleCalculateShipping = async () => {
     setShippingError(null);
 
@@ -408,9 +442,11 @@ export default function CheckoutPage({ onSuccess }) {
       if (!amount || Number.isNaN(amount)) {
         throw new Error("No valid shipping rate returned.");
       }
-
-      setShippingRate(amount);
-      setShippingCheapest(data?.cheapest || null);
+      const cheapest = data?.cheapest || null;
+      setShippingOptions(data?.options || []);
+      setShippingCheapest(cheapest);
+      setSelectedRateId(cheapest?.object_id || null);
+      setShippingRate(cheapest ? Number(cheapest.amount) : null);
     } catch (err) {
       console.error("Shipping error:", err);
       setShippingRate(null);
@@ -507,6 +543,48 @@ export default function CheckoutPage({ onSuccess }) {
           </div>
         )}
 
+        {shippingOptions.length > 0 && (
+          <div style={{ marginTop: 10 }}>
+            <div style={{ fontWeight: 600, marginBottom: 6 }}>
+              Choose shipping:
+            </div>
+
+            {shippingOptions.map((opt) => {
+              <div style={{ color: "black" }}></div>;
+              const label =
+                `${opt.provider} • ` +
+                `${opt?.servicelevel?.display_name || opt?.servicelevel?.name || "Service"} • ` +
+                `$${Number(opt.amount).toFixed(2)}` +
+                (opt.estimated_days != null
+                  ? ` • ~${opt.estimated_days} days`
+                  : "");
+
+              return (
+                <>
+                  <div>
+                  <label
+                    key={opt.object_id}
+                    style={{ display: "block", marginBottom: 6 }}
+                  >
+                    <input
+                      type="radio"
+                      name="shippingOption"
+                      checked={selectedRateId === opt.object_id}
+                      onChange={() => {
+                        setSelectedRateId(opt.object_id);
+                        setShippingRate(Number(opt.amount));
+                        setShippingCheapest(opt);
+                      }}
+                    />{" "}
+                    {label}
+                  </label>
+                  </div>
+                </>
+              );
+            })}
+          </div>
+        )}
+
         {shippingRate != null && (
           <div className="shipping-summary" style={{ marginTop: "10px" }}>
             <div>Shipping: ${shippingRate.toFixed(2)}</div>
@@ -527,8 +605,17 @@ export default function CheckoutPage({ onSuccess }) {
 
                 {/* ETA (only if present) */}
                 {shippingCheapest?.estimated_days != null && (
-                  <span> • ~{shippingCheapest.estimated_days} days</span>
+                  <span>
+                    {" "}
+                    • Delivery estimate is about
+                    {formatTransitWithHandling(shippingCheapest.estimated_days)}
+                  </span>
                 )}
+                <div
+                  style={{ fontSize: "0.85rem", opacity: 0.85, marginTop: 4 }}
+                >
+                  {getShipScheduleNote()}
+                </div>
               </div>
             )}
 
