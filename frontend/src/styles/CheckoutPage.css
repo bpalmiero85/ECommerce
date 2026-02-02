@@ -1,78 +1,471 @@
+/* =========================
+   Goth & Glitter Checkout UI
+   CheckoutPage.css (drop-in)
+   ========================= */
+
+/* kill horizontal scroll at the source */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+  scrollbar-color: rgb(161, 161, 254) rgba(0, 0, 0, 0.25);
+  scrollbar-width: thin;
+}
+
+/* safer sizing everywhere */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --gg-bg: rgba(255, 255, 255, 0.78);
+  --gg-surface: rgba(255, 255, 255, 0.92);
+  --gg-border: rgba(30, 25, 45, 0.18);
+
+  --gg-text: #14121f;
+  --gg-muted: rgba(20, 18, 31, 0.65);
+
+  --gg-accent: #6aa8ff;
+  --gg-accent-soft: rgba(106, 168, 255, 0.28);
+
+  --gg-pink: rgba(255, 122, 200, 0.18);
+  --gg-lav: rgba(185, 167, 255, 0.18);
+
+  --gg-error: #e11d48;
+
+  --gg-radius: 14px;
+  --gg-radius-sm: 10px;
+
+  --gg-shadow: 0 14px 40px rgba(12, 10, 20, 0.18);
+  --gg-shadow-soft: 0 10px 24px rgba(12, 10, 20, 0.12);
+
+  --row-gap: 10px;
+  --input-h: 42px;
+
+  /* Actions spacing */
+  --actions-gap: 14px;
+  --actions-pad-block: 18px;
+  --actions-pad-inline: 6px;
+
+  /* Button sizing */
+  --btn-font: 0.95rem;
+  --btn-pad-y: 10px;
+  --btn-pad-x: 16px;
+
+  --btn-font-mobile: 0.78rem;
+  --btn-pad-y-mobile: 7px;
+  --btn-pad-x-mobile: 12px;
+}
+
+/* =========================
+   Form shell
+   ========================= */
+
 .checkout-form {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  color: black;
-  z-index: 3000;
-}
-
-.empty-cart-message {
-  display: flex;
-  flex-direction: column;
-  font-size: 2rem;
   width: 100%;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  color: black;
+  max-width: 720px;
   margin: 0 auto;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+
+  overflow: hidden;
+  position: relative;
+  z-index: 3000;
+
+  color: var(--gg-text);
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--gg-pink),
+      var(--gg-lav),
+      rgba(106, 168, 255, 0.14)
+    ),
+    var(--gg-bg);
+
+  border: 1px solid var(--gg-border);
+  border-radius: var(--gg-radius);
+  box-shadow: var(--gg-shadow);
+  backdrop-filter: blur(10px);
+
+  padding: 18px 16px;
 }
 
+.checkout-form h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  color: var(--gg-text);
+}
+
+.checkout-form form {
+  width: 100%;
+  min-width: 0;
+}
+
+/* only inside checkout */
+.checkout-form button {
+  margin: 0 !important;
+}
+
+/* =========================
+   Payment form spacing
+   ========================= */
 
 .payment-form {
   display: flex;
   flex-direction: column;
-  margin-top: 15px;
-
+  gap: var(--row-gap);
+  width: 100%;
+  min-width: 0;
 }
 
-.payment-form-input{
-  margin-top: 10px;
-}
-
-/* Stripe wrapper */
-.StripeElement {
+.payment-form label {
   display: flex;
   flex-direction: column;
-  background-color: #f8f8f8;
-  min-width: 250px;
-  padding: 12px 0px;
-  margin: 0 auto;
-  border: 1px solid #ccd0d2;
-  border-radius: 4px;
-  transition: border-color 0.2s ease;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--gg-text);
+}
 
-  /* match your form font */
+/* =========================
+   Inputs / selects / textarea
+   ========================= */
+
+.checkout-form input,
+.checkout-form select,
+.checkout-form textarea {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: var(--input-h);
+
+  padding: 10px 12px;
+
+  border-radius: var(--gg-radius-sm);
+  border: 1px solid rgba(20, 18, 31, 0.18);
+  background: var(--gg-surface);
+
+  color: var(--gg-text);
+  font-size: 0.95rem;
+
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 120ms ease,
+    background-color 160ms ease;
+}
+
+.checkout-form input::placeholder,
+.checkout-form textarea::placeholder {
+  color: rgba(20, 18, 31, 0.45);
+  opacity: 1;
+}
+
+.checkout-form input:hover,
+.checkout-form select:hover,
+.checkout-form textarea:hover {
+  border-color: rgba(106, 168, 255, 0.8);
+  box-shadow: 0 0 0 4px var(--gg-accent-soft);
+}
+
+.checkout-form input:focus,
+.checkout-form select:focus,
+.checkout-form textarea:focus {
+  border-color: var(--gg-accent);
+  box-shadow: 0 0 0 5px var(--gg-accent-soft);
+}
+
+.checkout-form input:disabled,
+.checkout-form select:disabled,
+.checkout-form textarea:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.shipping-options {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  color: var(--gg-text);
+}
+
+/* =========================
+   Shipping summary block
+   ========================= */
+
+.shipping-summary {
+  border: 1px solid rgba(20, 18, 31, 0.12);
+  background: rgba(255, 255, 255, 0.82);
+  border-radius: var(--gg-radius-sm);
+  padding: 10px 12px;
+  box-shadow: var(--gg-shadow-soft);
+
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+
+  overflow-wrap: anywhere;
+  word-break: break-word;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.shipping-summary > div {
+  min-width: 0;
+  color: var(--gg-muted);
+}
+
+/* =========================
+   Stripe CardElement
+   ========================= */
+
+.card-element {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+
+.StripeElement {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+
+  background: var(--gg-surface);
+  border: 1px solid rgba(20, 18, 31, 0.18);
+  border-radius: var(--gg-radius-sm);
+
+  padding: 12px;
+
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 120ms ease;
+
   font-family: "Helvetica Neue", Helvetica, sans-serif;
 }
 
-/* when the CardElement is focused */
+.StripeElement:hover {
+  border-color: rgba(106, 168, 255, 0.8);
+  box-shadow: 0 0 0 4px var(--gg-accent-soft);
+}
+
 .StripeElement--focus {
-  border-color: #80bfff;
-  box-shadow: 0 0 0 1px #80bfff;
+  border-color: var(--gg-accent);
+  box-shadow: 0 0 0 5px var(--gg-accent-soft);
 }
 
-/* invalid state */
 .StripeElement--invalid {
-  border-color: red;
+  border-color: rgba(225, 29, 72, 0.9);
+  box-shadow: 0 0 0 5px rgba(225, 29, 72, 0.18);
 }
 
-.inline-card-error {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  margin-top: 6px;
-  color: red;
-  font-size: 0.9rem;
-  z-index: 10;
-}
+/* =========================
+   Errors
+   ========================= */
 
+.inline-card-error,
 .inline-invalid-email {
+  display: block;
+  padding: 8px 10px;
+
+  border-radius: 10px;
+  border: 1px solid rgba(225, 29, 72, 0.22);
+  background: rgba(225, 29, 72, 0.08);
+
+  color: var(--gg-error);
+  font-size: 0.9rem;
+  font-weight: 700;
+
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+/* =========================
+   Actions row (Pay + Clear Cart)
+   ========================= */
+
+.cart-modal-pay-button {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  position: relative;
-  margin-top: 6px;
-  color: red;
-  font-size: 0.9rem;
-  z-index: 10;
+  align-items: center;
+
+  padding: var(--actions-pad-block) var(--actions-pad-inline);
+  margin-top: 10px;
+  gap: 10px;
+}
+
+/* ✅ Use GRID for perfect “two pills” alignment without stretching */
+.checkout-actions {
+  width: 100%;
+  display: grid;
+
+  grid-template-columns: repeat(2, max-content);
+  justify-content: center;
+  align-items: center;
+
+  column-gap: var(--actions-gap);
+  row-gap: 12px;
+
+  padding: 8px 0;
+}
+
+/* ✅ Don't let this wrapper interfere with grid sizing */
+.clear-cart-button-container {
+  display: contents;
+}
+
+/* ✅ Override your global styles.css (likely button { width: 100% } ) */
+.checkout-actions .pay-button,
+.checkout-actions .clear-cart {
+  /* layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* STOP stretching, even if global css tries */
+  width: auto !important;
+  flex: 0 0 auto !important;
+
+  /* nice pill size */
+  min-width: 168px;
+  max-width: 220px;
+
+  /* visuals */
+  appearance: none;
+  border: 1px solid rgba(20, 18, 31, 0.18);
+  border-radius: 999px;
+
+  padding: var(--btn-pad-y) var(--btn-pad-x);
+  font-weight: 800;
+  letter-spacing: 0.2px;
+
+  background: linear-gradient(
+    135deg,
+    rgba(255, 122, 200, 0.22),
+    rgba(185, 167, 255, 0.2),
+    rgba(106, 168, 255, 0.18)
+  );
+
+  color: var(--gg-text);
+  box-shadow: 0 10px 20px rgba(12, 10, 20, 0.14);
+  cursor: pointer;
+
+  transition:
+    transform 120ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    filter 160ms ease;
+
+  white-space: nowrap;
+  text-align: center;
+
+  font-size: var(--btn-font);
+}
+
+.checkout-actions .pay-button:hover,
+.checkout-actions .clear-cart:hover {
+  border-color: rgba(106, 168, 255, 0.75);
+  box-shadow: 0 14px 28px rgba(12, 10, 20, 0.18);
+  transform: translateY(-1px);
+}
+
+.checkout-actions .pay-button:active,
+.checkout-actions .clear-cart:active {
+  transform: translateY(0px);
+  filter: brightness(0.98);
+}
+
+.checkout-actions .pay-button:disabled,
+.checkout-actions .clear-cart:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* =========================
+   Empty cart state
+   ========================= */
+
+.empty-cart-message {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  font-size: 1.2rem;
+  width: 100%;
+  max-width: 720px;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+
+  color: var(--gg-text);
+  margin: 0 auto;
+  padding: 18px;
+
+  background: var(--gg-bg);
+  border: 1px solid var(--gg-border);
+  border-radius: var(--gg-radius);
+  box-shadow: var(--gg-shadow);
+  backdrop-filter: blur(10px);
+}
+
+/* =========================
+   Mobile: stack + smaller buttons
+   ========================= */
+
+@media (max-width: 420px) {
+  .checkout-form {
+    width: 80vw;
+    max-width: 80vw;
+    padding: 16px 14px;
+  }
+
+  .cart-modal-pay-button {
+    padding: 16px 0 14px;
+    margin-top: 8px;
+  }
+
+  .checkout-actions {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .checkout-actions .pay-button,
+  .checkout-actions .clear-cart {
+    font-size: var(--btn-font-mobile);
+    padding: var(--btn-pad-y-mobile) var(--btn-pad-x-mobile);
+
+    width: 100% !important;
+    max-width: 260px;
+    min-width: 0;
+  }
+}
+
+/* =========================
+   HARD OVERRIDE: undo global checkout button rule
+   (fixes stretched/absolute buttons)
+   ========================= */
+
+.cart-modal-pay-button .checkout-actions button,
+.cart-modal-pay-button .checkout-actions .clear-cart {
+  position: static !important; /* kills position:absolute from styles.css */
+  display: inline-flex !important; /* keeps pill layout */
+  width: auto !important; /* prevents stretching */
+  margin: 0 !important;
 }

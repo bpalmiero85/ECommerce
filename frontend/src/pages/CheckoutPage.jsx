@@ -371,24 +371,9 @@ export default function CheckoutPage({ onSuccess }) {
     const day = new Date().getDay();
 
     if (day === 5 || day === 6 || day === 0) {
-      return "Orders placed Fri–Sun ship Monday (next business day).";
+      return "All orders ship next business day. Orders placed Fri and Sat ship Monday (next business day) unless it's a holiday.";
     }
     return "Orders ship next business day.";
-  };
-
-  const formatTransitWithHandling = (estimatedDays) => {
-    if (estimatedDays == null) return null;
-
-    const handlingBusinessDays = 1;
-    const total = Number(estimatedDays) + handlingBusinessDays;
-
-    return (
-      <div style={{ backgroundColor: "yellow" }}>
-      <strong>
-        {" " + total + " "}business days (includes 1 business day handling)
-      </strong>
-      </div>
-    );
   };
 
   const handleCalculateShipping = async () => {
@@ -525,326 +510,327 @@ export default function CheckoutPage({ onSuccess }) {
       )}
     </div>
   ) : (
-    <form
-      onSubmit={handleSubmit}
-      style={{ maxWidth: 400, margin: "0 auto" }}
-      className="checkout-form"
-    >
-      {/* Display subtotal */}
-      <div className="payment-form">
-        <h3>Subtotal: ${subtotal.toFixed(2)}</h3>
-        {shippingState === "OH" && (
-          <h3>Ohio sales tax: ${(subtotal * 0.0725).toFixed(2)}</h3>
-        )}
+    <div className="checkout-form">
+      <form onSubmit={handleSubmit}>
+        {/* Display subtotal */}
+        <div className="payment-form">
+          <h3>Subtotal: ${subtotal.toFixed(2)}</h3>
+          {shippingState === "OH" && (
+            <h3>Ohio sales tax: ${(subtotal * 0.0725).toFixed(2)}</h3>
+          )}
 
-        {shippingError && (
-          <div className="inline-card-error" style={{ marginTop: "6px" }}>
-            {shippingError}
-          </div>
-        )}
-
-        {shippingOptions.length > 0 && (
-          <div style={{ marginTop: 10 }}>
-            <div style={{ fontWeight: 600, marginBottom: 6 }}>
-              Choose shipping:
+          {shippingError && (
+            <div className="inline-card-error" style={{ marginTop: "6px" }}>
+              {shippingError}
             </div>
+          )}
 
-            {shippingOptions.map((opt) => {
-              <div style={{ color: "black" }}></div>;
-              const label =
-                `${opt.provider} • ` +
-                `${opt?.servicelevel?.display_name || opt?.servicelevel?.name || "Service"} • ` +
-                `$${Number(opt.amount).toFixed(2)}` +
-                (opt.estimated_days != null
-                  ? ` • ~${opt.estimated_days} days`
-                  : "");
-
-              return (
-                <>
-                  <div>
-                  <label
-                    key={opt.object_id}
-                    style={{ display: "block", marginBottom: 6 }}
-                  >
-                    <input
-                      type="radio"
-                      name="shippingOption"
-                      checked={selectedRateId === opt.object_id}
-                      onChange={() => {
-                        setSelectedRateId(opt.object_id);
-                        setShippingRate(Number(opt.amount));
-                        setShippingCheapest(opt);
-                      }}
-                    />{" "}
-                    {label}
-                  </label>
-                  </div>
-                </>
-              );
-            })}
-          </div>
-        )}
-
-        {shippingRate != null && (
-          <div className="shipping-summary" style={{ marginTop: "10px" }}>
-            <div>Shipping: ${shippingRate.toFixed(2)}</div>
-
-            {shippingCheapest && (
-              <div style={{ fontSize: "0.9rem", opacity: 0.9 }}>
-                {/* Provider (always) */}
-                <span>{shippingCheapest.provider}</span>
-
-                {/* Service name (fallback chain) */}
-                <span>
-                  {" "}
-                  •{" "}
-                  {shippingCheapest?.servicelevel?.display_name ||
-                    shippingCheapest?.servicelevel?.name ||
-                    "Shipping service"}
-                </span>
-
-                {/* ETA (only if present) */}
-                {shippingCheapest?.estimated_days != null && (
-                  <span>
-                    {" "}
-                    • Delivery estimate is about
-                    {formatTransitWithHandling(shippingCheapest.estimated_days)}
-                  </span>
-                )}
-                <div
-                  style={{ fontSize: "0.85rem", opacity: 0.85, marginTop: 4 }}
-                >
-                  {getShipScheduleNote()}
-                </div>
+          {shippingOptions.length > 0 && (
+            <div style={{ marginTop: 10 }}>
+              <div style={{ fontWeight: 600, marginBottom: 6 }}>
+                Choose shipping (defaults to least expensive):
               </div>
-            )}
 
+              <select
+                className="shipping-options"
+                value={selectedRateId || ""}
+                onChange={(e) => {
+                  const rateId = e.target.value;
+                  setSelectedRateId(rateId);
+
+                  const chosen =
+                    shippingOptions.find((o) => o.object_id === rateId) || null;
+
+                  if (chosen) {
+                    setShippingRate(Number(chosen.amount));
+                    setShippingCheapest(chosen);
+                  } else {
+                    setShippingRate(null);
+                    setShippingCheapest(null);
+                  }
+                }}
+              >
+                <option value="" disabled>
+                  -- choose shipping --
+                </option>
+
+                {shippingOptions.map((opt) => {
+                  const service =
+                    opt?.servicelevel?.display_name ||
+                    opt?.servicelevel?.name ||
+                    "Shipping";
+
+                  const days =
+                    opt.estimated_days != null
+                      ? ` (${opt.estimated_days}d est)`
+                      : "";
+
+                  const label = `${service} • $${Number(opt.amount).toFixed(2)}${days}`;
+
+                  return (
+                    <option key={opt.object_id} value={opt.object_id}>
+                      {label}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          )}
+
+          {shippingRate != null && (
+            <div className="shipping-summary">
+              <div style={{ fontSize: "0.95rem", opacity: 0.95 }}>
+                <strong>Shipping:</strong> ${shippingRate.toFixed(2)}
+                {shippingCheapest?.servicelevel && (
+                  <>
+                    {" "}
+                    •{" "}
+                    {shippingCheapest.servicelevel.display_name ||
+                      shippingCheapest.servicelevel.name}
+                  </>
+                )}
+                {shippingCheapest?.estimated_days != null && (
+                  <>
+                    {" "}
+                    • about {shippingCheapest.estimated_days}d (plus 1 day for
+                    handling)
+                  </>
+                )}
+              </div>
+
+              <div style={{ marginTop: 6, fontSize: "0.85rem", opacity: 0.85 }}>
+                {getShipScheduleNote()}
+              </div>
+
+              <div style={{ marginTop: 6 }}>
+                <h3>
+                  <strong>
+                    Estimated Total: $
+                    {(
+                      subtotal +
+                      (shippingState === "OH" ? subtotal * 0.0725 : 0) +
+                      shippingRate
+                    ).toFixed(2)}
+                  </strong>
+                </h3>
+              </div>
+            </div>
+          )}
+
+          {/* ✅ Keep these inputs INSIDE payment-form */}
+          <label className="payment-form-input">
+            Name:
+            <input
+              name="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </label>
+
+          <label className="payment-form-input">
+            Email:
+            <input
+              name="email"
+              type="email"
+              value={email}
+              onChange={(e) => {
+                const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                setIsEmailValid(regex.test(e.target.value));
+                setEmail(e.target.value);
+              }}
+              required
+            />
+          </label>
+
+          {!isEmailValid && email.length > 0 && (
+            <div className="inline-invalid-email">
+              Please enter a valid email address.
+            </div>
+          )}
+
+          <label>
+            Address line 1:
+            <input
+              name="addressLine1"
+              value={addressLine1}
+              onChange={(e) => setAddressLine1(e.target.value)}
+              required
+            />
+          </label>
+
+          <label>
+            Address line 2 (optional):
+            <input
+              name="addressLine2"
+              value={addressLine2}
+              onChange={(e) => setAddressLine2(e.target.value)}
+            />
+          </label>
+
+          <label>
+            City:
+            <input
+              name="city"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              required
+            />
+          </label>
+
+          <label>
+            ZIP code:
+            <input
+              name="destinationZip"
+              value={destinationZip}
+              onChange={(e) => setDestinationZip(e.target.value)}
+              required
+            />
+          </label>
+        </div>
+
+        {/* Stripe CardElement for secure card input */}
+        <div className="card-element">
+          <CardElement
+            className="StripeElement"
+            options={CARD_ELEMENT_OPTIONS}
+            onChange={(e) => {
+              console.log("Complete: ", e.complete, "Error: ", e.error);
+              setIsCardComplete(e.complete);
+              setCardError(e.error ? e.error.message : null);
+            }}
+          />
+          {cardError && <div className="inline-card-error">{cardError}</div>}
+        </div>
+
+        {/* Display Stripe or network errors */}
+        {error && <div style={{ color: "red" }}>{error}</div>}
+        {orderSaveError && (
+          <div className="inline-card-error" style={{ marginTop: "10px" }}>
             <div>
-              <strong>
-                Estimated Total: $
-                {(
-                  subtotal +
-                  (shippingState === "OH" ? subtotal * 0.0725 : 0) +
-                  shippingRate
-                ).toFixed(2)}
-              </strong>
+              Payment succeeded, but saving the order failed: {orderSaveError}
+            </div>
+
+            <button
+              type="button"
+              style={{ marginTop: "8px" }}
+              disabled={!orderPayloadToRetry || processing}
+              onClick={async () => {
+                try {
+                  setProcessing(true);
+                  setOrderSaveError(null);
+
+                  const createdOrder = await saveOrder(orderPayloadToRetry);
+
+                  const resolvedEmail = String(
+                    createdOrder?.orderEmail ||
+                      orderPayloadToRetry.email ||
+                      email ||
+                      "",
+                  ).trim();
+
+                  const resolvedName = String(
+                    createdOrder?.orderName ||
+                      orderPayloadToRetry.name ||
+                      name ||
+                      "",
+                  ).trim();
+
+                  const resolvedTotal = Number(
+                    createdOrder?.orderTotal ?? orderPayloadToRetry.total ?? 0,
+                  );
+
+                  const normalizedOrder = {
+                    ...createdOrder,
+                    orderEmail: resolvedEmail,
+                    orderName: resolvedName,
+                    orderTotal: resolvedTotal,
+                  };
+
+                  setSavedOrder(normalizedOrder);
+
+                  try {
+                    await emailjs.send(
+                      "service_1wp75sm",
+                      "template_0psmti8",
+                      {
+                        to_email: resolvedEmail,
+                        order_id: normalizedOrder.orderId,
+                        customer_name: resolvedName,
+                        order_total: `$${resolvedTotal.toFixed(2)}`,
+                      },
+                      "ZkQfANdcZnMH2U1KL",
+                    );
+                  } catch (emailErr) {
+                    console.error("EmailJS failed:", emailErr);
+                    console.error(
+                      "EmailJS details:",
+                      emailErr?.status,
+                      emailErr?.text,
+                    );
+                  }
+
+                  setSucceeded(true);
+                  clearCartAfterPayment();
+                  if (onSuccess) onSuccess();
+                } catch (err) {
+                  setOrderSaveError(err.message || "Retry failed.");
+                } finally {
+                  setProcessing(false);
+                }
+              }}
+            >
+              Retry saving order
+            </button>
+          </div>
+        )}
+
+        {/* Payment button */}
+        {/* Payment button */}
+        <div
+          className={
+            cartItems.length === 0
+              ? "cart-modal-pay-button empty"
+              : "cart-modal-pay-button"
+          }
+          onClick={() => setAttemptedPay(true)}
+        >
+          <div className="checkout-actions">
+            <button className="pay-button" type="submit" disabled={payDisabled}>
+              {processing ? "Processing..." : succeeded ? "Paid!" : "Pay"}
+            </button>
+
+            <div className="clear-cart-button-container">
+              <ClearCartButton />
             </div>
           </div>
-        )}
 
-        <label className="payment-form-input">
-          Name:
-          <br />
-          <input
-            name="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </label>
-
-        <label className="payment-form-input">
-          Email:
-          <br />
-          <input
-            name="email"
-            type="email"
-            value={email}
-            onChange={(e) => {
-              const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-              setIsEmailValid(regex.test(e.target.value));
-              setEmail(e.target.value);
-            }}
-            required
-          />
-        </label>
-        {!isEmailValid && email.length > 0 && (
-          <div className="inline-invalid-email">
-            Please enter a valid email address.
-          </div>
-        )}
-        <br />
-        {/* Collect customer details */}
-        <label>
-          Address line 1:
-          <br />
-          <input
-            name="addressLine1"
-            value={addressLine1}
-            onChange={(e) => setAddressLine1(e.target.value)}
-            required
-          ></input>
-        </label>
-        <br />
-        <label>
-          Address line 2 (optional):
-          <br />
-          <input
-            name="addressLine2"
-            value={addressLine2}
-            onChange={(e) => setAddressLine2(e.target.value)}
-          ></input>
-        </label>
-        <br />
-        <label>
-          City:
-          <br />
-          <input
-            name="city"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            required
-          ></input>
-        </label>
-        <label>
-          ZIP code:
-          <br />
-          <input
-            name="destinationZip"
-            value={destinationZip}
-            onChange={(e) => setDestinationZip(e.target.value)}
-            required
-          ></input>
-        </label>
-      </div>
-
-      {/* Stripe CardElement for secure card input */}
-      <div className="card-element">
-        <CardElement
-          className="StripeElement"
-          options={CARD_ELEMENT_OPTIONS}
-          onChange={(e) => {
-            console.log("Complete: ", e.complete, "Error: ", e.error);
-            setIsCardComplete(e.complete);
-            setCardError(e.error ? e.error.message : null);
-          }}
-        />
-        {cardError && <div className="inline-card-error">{cardError}</div>}
-      </div>
-
-      {/* Display Stripe or network errors */}
-      {error && <div style={{ color: "red" }}>{error}</div>}
-      {orderSaveError && (
-        <div className="inline-card-error" style={{ marginTop: "10px" }}>
-          <div>
-            Payment succeeded, but saving the order failed: {orderSaveError}
-          </div>
-
-          <button
-            type="button"
-            style={{ marginTop: "8px" }}
-            disabled={!orderPayloadToRetry || processing}
-            onClick={async () => {
-              try {
-                setProcessing(true);
-                setOrderSaveError(null);
-
-                const createdOrder = await saveOrder(orderPayloadToRetry);
-
-                const resolvedEmail = String(
-                  createdOrder?.orderEmail ||
-                    orderPayloadToRetry.email ||
-                    email ||
-                    "",
-                ).trim();
-
-                const resolvedName = String(
-                  createdOrder?.orderName ||
-                    orderPayloadToRetry.name ||
-                    name ||
-                    "",
-                ).trim();
-
-                const resolvedTotal = Number(
-                  createdOrder?.orderTotal ?? orderPayloadToRetry.total ?? 0,
-                );
-
-                const normalizedOrder = {
-                  ...createdOrder,
-                  orderEmail: resolvedEmail,
-                  orderName: resolvedName,
-                  orderTotal: resolvedTotal,
-                };
-
-                setSavedOrder(normalizedOrder);
-
-                try {
-                  await emailjs.send(
-                    "service_1wp75sm",
-                    "template_0psmti8",
-                    {
-                      to_email: resolvedEmail,
-                      order_id: normalizedOrder.orderId,
-                      customer_name: resolvedName,
-                      order_total: `$${resolvedTotal.toFixed(2)}`,
-                    },
-                    "ZkQfANdcZnMH2U1KL",
-                  );
-                } catch (emailErr) {
-                  console.error("EmailJS failed:", emailErr);
-                  console.error(
-                    "EmailJS details:",
-                    emailErr?.status,
-                    emailErr?.text,
-                  );
-                }
-
-                setSucceeded(true);
-                clearCartAfterPayment();
-                if (onSuccess) onSuccess();
-              } catch (err) {
-                setOrderSaveError(err.message || "Retry failed.");
-              } finally {
-                setProcessing(false);
-              }
-            }}
-          >
-            Retry saving order
-          </button>
+          {attemptedPay && payDisabled && (
+            <div className="inline-card-error" style={{ marginTop: "8px" }}>
+              {/* unchanged */}
+              {!email.trim()
+                ? "Email is required."
+                : !isEmailValid
+                  ? "Please enter a valid email address."
+                  : !name.trim()
+                    ? "Name is required."
+                    : !addressLine1
+                      ? "Address line 1 is required"
+                      : !city.trim()
+                        ? "City is required."
+                        : !destinationZip.trim()
+                          ? "ZIP code is required."
+                          : shippingRate == null
+                            ? "Please enter a valid ZIP code to calculate shipping."
+                            : !isCardComplete
+                              ? "Please complete your card details."
+                              : !processing
+                                ? "Please complete the form above."
+                                : ""}
+            </div>
+          )}
         </div>
-      )}
-
-      {/* Payment button */}
-      <div
-        className={
-          cartItems.length === 0
-            ? "cart-modal-pay-button empty"
-            : "cart-modal-pay-button"
-        }
-        onClick={() => setAttemptedPay(true)}
-      >
-        <button type="submit" disabled={payDisabled}>
-          {processing ? "Processing..." : succeeded ? "Paid!" : "Pay"}
-        </button>
-
-        {attemptedPay && payDisabled && (
-          <div className="inline-card-error" style={{ marginTop: "8px" }}>
-            {!email.trim()
-              ? "Email is required."
-              : !isEmailValid
-                ? "Please enter a valid email address."
-                : !name.trim()
-                  ? "Name is required."
-                  : !addressLine1
-                    ? "Address line 1 is required"
-                    : !city.trim()
-                      ? "City is required."
-                      : !destinationZip.trim()
-                        ? "ZIP code is required."
-                        : shippingRate == null
-                          ? "Please enter a valid ZIP code to calculate shipping."
-                          : !isCardComplete
-                            ? "Please complete your card details."
-                            : !processing
-                              ? "Please complete the form above."
-                              : ""}
-          </div>
-        )}
-
-        <div className="clear-cart-button-container">
-          <ClearCartButton />
-        </div>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 }
