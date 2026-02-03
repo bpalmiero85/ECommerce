@@ -84,7 +84,7 @@
   font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 0.02em;
-  text-decoration: none;          /* kill underline */
+  text-decoration: none; /* kill underline */
   color: rgb(121, 2, 206);
 
   background: rgba(189, 109, 250, 0.18); /* subtle header strip */
@@ -93,7 +93,7 @@
 }
 
 .metric-value {
-  font-size: 1.4rem;     
+  font-size: 1.4rem;
   font-weight: 800;
   color: rgb(141, 0, 127);
   padding: 10px 12px 14px;
@@ -169,6 +169,30 @@
   margin-top: 8px;
   padding: 6px 12px;
   cursor: pointer;
+}
+
+.label-header {
+  margin-bottom: 8px !important;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Open Sans",
+    "Helvetica Neue",
+    sans-serif;
+  font-size: 1.1rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: bold;
+  background-color: #bc6df9;
+  color: white;
+  border-radius: 10px;
+  padding: 8px 8px;
 }
 
 .product-buttons {
@@ -306,6 +330,23 @@
   margin-bottom: 10px;
   border: 1px solid;
   box-shadow: 2px 2px 4px rgb(0, 0, 0, 0.3);
+}
+
+.file-input-field {
+  display: block;
+  position: relative;
+  flex-direction: column;
+  justify-content: center;
+  width: 250px;
+  max-width: 250px;
+  margin: 0 auto;
+  align-items: center;
+  margin-bottom: 10px;
+  border: 1px solid;
+  box-shadow: 1px 1px 4px rgb(0, 0, 0, 0.3);
+  background-color: rgb(240, 199, 250);
+  font-size: 1rem;
+  color: black;
 }
 
 .product-input-field,

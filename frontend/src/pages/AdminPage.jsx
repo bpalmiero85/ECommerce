@@ -15,6 +15,7 @@ const AdminPage = () => {
   const [isEditingId, setIsEditingId] = useState(null);
   const [isPictureUploaded, setIsPictureUploaded] = useState(false);
   const [croppingStatus, setCroppingStatus] = useState(false);
+  const [mainFileKey, setMainFileKey] = useState(0);
   const [metricsRefreshKey, setMetricsRefreshKey] = useState(0);
   const [metrics, setMetrics] = useState(null);
   const [metricsLoading, setMetricsLoading] = useState(false);
@@ -703,17 +704,19 @@ const AdminPage = () => {
                   </div>
                 </div>
               </div>
-
-              <label className="custom-file-upload">
-                Upload picture
+              
+              <div className="label-header">
+              <div className="label-header">Upload Product Picture</div>
                 <input
+                  key={mainFileKey}
                   ref={mainFileRef}
                   type="file"
                   accept="image/*, .jpg, .jpeg, .png"
-                  className="product-input-field"
-                  onChange={(e) => handleFileChange(e)}
+                  className="file-input-field"
+                  onChange={handleFileChange}
                 />
-              </label>
+              
+              </div>
 
               <button className="submit" type="submit">
                 {isEditingId ? "Save Changes" : "Post"}
