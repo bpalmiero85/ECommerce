@@ -454,7 +454,7 @@ export default function CheckoutPage({ onSuccess }) {
     shippingRate == null;
 
   return cartItems.length === 0 ? (
-    <div className="empty-cart-message">
+    <div className={`empty-cart-message ${succeeded ? "success" : ""}`}>
       {succeeded ? (
         <>
           <div style={{ fontSize: "2rem" }}>

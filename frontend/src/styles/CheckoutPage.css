@@ -427,7 +427,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-
   font-size: 1.2rem;
   width: 100%;
   max-width: 720px;
@@ -444,6 +443,13 @@ body {
   border-radius: var(--gg-radius);
   box-shadow: var(--gg-shadow);
   backdrop-filter: blur(10px);
+}
+
+.empty-cart-message.success {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 /* =========================
