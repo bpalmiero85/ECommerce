@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_BASE_URL } from "../config/api";
 import ProductPage from "../pages/ProductPage.jsx";
 import "../styles/styles.css";
 import "../styles/ProductPage.css";
@@ -10,7 +11,7 @@ function FeaturedProducts() {
   useEffect(() => {
     const fetchProducts = async (category) => {
       try {
-        const url = "http://localhost:8080/api/products?featured=true";
+        const url = `${API_BASE_URL}/api/products?featured=true`;
         const response = await fetch(url);
 
         if (!response.ok) throw new Error(`Error: ${response.status}`);

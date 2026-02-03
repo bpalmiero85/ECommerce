@@ -1,14 +1,13 @@
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useState, useContext, useEffect } from "react";
 import { CartContext } from "../contexts/CartContext";
+import { API_BASE_URL, PAYMENT_API_BASE_URL } from "../config/api";
 import ClearCartButton from "../components/ClearCartButton";
 import emailjs from "@emailjs/browser";
 import "../styles/CheckoutPage.css";
 import "../styles/ProductPage.css";
 
-const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8080";
-const PAYMENT_API_BASE =
-  process.env.REACT_APP_PAYMENT_API_BASE || "http://localhost:3001";
+
 
 /**
  * CheckoutPage Component
@@ -162,7 +161,7 @@ export default function CheckoutPage({ onSuccess }) {
   };
 
   const saveOrder = async (payload) => {
-    const res = await fetch(`${API_BASE}/api/orders`, {
+    const res = await fetch(`${API_BASE_URL}/api/orders`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -229,7 +228,7 @@ export default function CheckoutPage({ onSuccess }) {
 
       // ✅ Use the SAME values for Stripe
       const piRes = await fetch(
-        `${PAYMENT_API_BASE}/api/create-payment-intent`,
+        `${PAYMENT_API_BASE_URL}/api/create-payment-intent`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -405,7 +404,7 @@ export default function CheckoutPage({ onSuccess }) {
         heightInches: 4,
       };
 
-      const res = await fetch(`${API_BASE}/api/shipping/quote`, {
+      const res = await fetch(`${API_BASE_URL}/api/shipping/quote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -510,6 +509,8 @@ export default function CheckoutPage({ onSuccess }) {
       )}
     </div>
   ) : (
+    <>
+     <div className="checkout-header">Checkout</div>
     <div className="checkout-form">
       <form onSubmit={handleSubmit}>
         {/* Display subtotal */}
@@ -682,6 +683,7 @@ export default function CheckoutPage({ onSuccess }) {
             ZIP code:
             <input
               name="destinationZip"
+              className="payment-form-input"
               value={destinationZip}
               onChange={(e) => setDestinationZip(e.target.value)}
               required
@@ -691,6 +693,7 @@ export default function CheckoutPage({ onSuccess }) {
 
         {/* Stripe CardElement for secure card input */}
         <div className="card-element">
+        <label>Card #:
           <CardElement
             className="StripeElement"
             options={CARD_ELEMENT_OPTIONS}
@@ -701,7 +704,9 @@ export default function CheckoutPage({ onSuccess }) {
             }}
           />
           {cardError && <div className="inline-card-error">{cardError}</div>}
+          </label>
         </div>
+        
 
         {/* Display Stripe or network errors */}
         {error && <div style={{ color: "red" }}>{error}</div>}
@@ -832,5 +837,6 @@ export default function CheckoutPage({ onSuccess }) {
         </div>
       </form>
     </div>
+    </>
   );
 }

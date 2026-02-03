@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useContext, useCallback } from "react";
 import { CartContext } from "../contexts/CartContext";
+import { API_BASE_URL } from "../config/api";
 import "../styles/AdminPage.css";
 import "../styles/ProductPage.css";
 import Product from "../components/Product";
@@ -63,7 +64,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
     ? (availableById[selectedProduct.id] ?? selectedProduct.quantity)
     : 0;
   const modalImageUrl = selectedProduct
-    ? `http://localhost:8080/api/product/${selectedProduct.id}/picture?version=${selectedProduct.pictureVersion}`
+    ? `${API_BASE_URL}/api/product/${selectedProduct.id}/picture?version=${selectedProduct.pictureVersion}`
     : "";
 
   async function handleModalQtyChange(nextQty) {
@@ -85,7 +86,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
         const take = Math.min(delta, modalAvailableQty);
         for (let i = 0; i < take; i++) {
           const r = await fetch(
-            `http://localhost:8080/api/cart/${selectedProduct.id}/add?qty=1`,
+            `${API_BASE_URL}/api/cart/${selectedProduct.id}/add?qty=1`,
             { method: "POST", credentials: "include" },
           );
           if (!r.ok) throw new Error(`reserve failed ${r.status}`);
@@ -94,7 +95,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
       } else {
         for (let i = 0; i < -delta; i++) {
           const r = await fetch(
-            `http://localhost:8080/api/cart/${selectedProduct.id}/remove?qty=1`,
+            `${API_BASE_URL}/api/cart/${selectedProduct.id}/remove?qty=1`,
             { method: "POST", credentials: "include" },
           );
           if (!r.ok) throw new Error(`unreserve failed ${r.status}`);
@@ -143,9 +144,8 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   }, []);
 
   async function fetchAvailable(id) {
-    const API = process.env.REACT_APP_BASE || "http://localhost:8080";
     const resp = await fetch(
-      `${API}/api/inventory/${id}/available?_=${Date.now()}`,
+      `${API_BASE_URL}/api/inventory/${id}/available?_=${Date.now()}`,
       { cache: "no-store", credentials: "include" },
     );
     if (!resp.ok) return;
@@ -165,10 +165,9 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   }, [isProductModalOpen]);
 
   useEffect(() => {
-    const API = process.env.REACT_APP_BASE || "http://localhost:8080";
     const load = async () => {
       try {
-        const response = await fetch(`${API}/api/products`);
+        const response = await fetch(`${API_BASE_URL}/api/products`);
         if (!response.ok) {
           throw new Error("error fetching products");
         }
@@ -853,7 +852,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                   <img
                     className="product-modal-image"
                     alt={selectedProduct.name}
-                    src={`http://localhost:8080/api/product/${selectedProduct.id}/picture?version=${selectedProduct.pictureVersion}`}
+                    src={`${API_BASE_URL}/api/product/${selectedProduct.id}/picture?version=${selectedProduct.pictureVersion}`}
                   />
                 </div>
               </div>

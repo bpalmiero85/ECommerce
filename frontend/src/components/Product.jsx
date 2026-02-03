@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useContext } from "react";
 import { CartContext } from "../contexts/CartContext";
+import { API_BASE_URL } from "../config/api";
 import DescriptionMore from "../components/DescriptionMore.jsx";
 import "../styles/AdminPage.css";
 import "../styles/ProductPage.css";
@@ -36,7 +37,7 @@ const Product = ({
   const prevInCartQtyRef = useRef(inCartQty);
   const prevInCartQtyForCheckRef = useRef(inCartQty);
 
-  const imageUrl = `http://localhost:8080/api/product/${id}/picture?version=${pictureVersion}`;
+  const imageUrl = `${API_BASE_URL}/api/product/${id}/picture?version=${pictureVersion}`;
 
   async function handleQtyChange(nextQty) {
     if (Number.isNaN(nextQty)) nextQty = 0;

@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
+import { API_BASE_URL } from "../config/api";
 import emailjs from "@emailjs/browser";
 import "../styles/OrdersPage.css";
 
-const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8080";
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
@@ -60,19 +60,19 @@ export default function OrdersPage() {
 
   const orderStatusEndpoint = useCallback(() => {
     if (orderStatus === "active") {
-      return `${API_BASE}/api/admin/orders/status/active`;
+      return `${API_BASE_URL}/api/admin/orders/status/active`;
     }
     if (orderStatus === "shipped") {
-      return `${API_BASE}/api/admin/orders/status/shipped`;
+      return `${API_BASE_URL}/api/admin/orders/status/shipped`;
     }
     if (orderStatus === "completed") {
-      return `${API_BASE}/api/admin/orders/status/completed`;
+      return `${API_BASE_URL}/api/admin/orders/status/completed`;
     }
     if (orderStatus === "cancelled") {
-      return `${API_BASE}/api/admin/orders/status/cancelled`;
+      return `${API_BASE_URL}/api/admin/orders/status/cancelled`;
     }
     if (orderStatus === "archived") {
-      return `${API_BASE}/api/admin/orders/status/archived`;
+      return `${API_BASE_URL}/api/admin/orders/status/archived`;
     }
     return null;
   }, [orderStatus]);
@@ -266,7 +266,7 @@ export default function OrdersPage() {
   const generateShippingLabel = async (orderId) => {
     try {
       const resp = await authedFetch(
-        `${API_BASE}/api/admin/orders/${orderId}/label`,
+        `${API_BASE_URL}/api/admin/orders/${orderId}/label`,
         {
           method: "PATCH",
           credentials: "include",
@@ -324,7 +324,7 @@ export default function OrdersPage() {
 
     try {
       const resp = await authedFetch(
-        `${API_BASE}/api/admin/orders/follow-up/${orderId}/follow-up-notes`,
+        `${API_BASE_URL}/api/admin/orders/follow-up/${orderId}/follow-up-notes`,
         {
           method: "PATCH",
           credentials: "include",
@@ -502,7 +502,7 @@ export default function OrdersPage() {
   }, []);
 
   const verifyAuth = useCallback(async (token) => {
-    const res = await fetch(`${API_BASE}/api/admin/orders/status/active`, {
+    const res = await fetch(`${API_BASE_URL}/api/admin/orders/status/active`, {
       method: "GET",
       headers: { Authorization: `Basic ${token}` },
       credentials: "include",
@@ -599,8 +599,8 @@ export default function OrdersPage() {
   const fetchCounts = useCallback(
     async ({ signal } = {}) => {
       const [activeRes, shippedRes] = await Promise.all([
-        authedFetch(`${API_BASE}/api/admin/orders/status/active`, { signal }),
-        authedFetch(`${API_BASE}/api/admin/orders/status/shipped`, { signal }),
+        authedFetch(`${API_BASE_URL}/api/admin/orders/status/active`, { signal }),
+        authedFetch(`${API_BASE_URL}/api/admin/orders/status/shipped`, { signal }),
       ]);
 
       const active = activeRes.ok
@@ -637,7 +637,7 @@ export default function OrdersPage() {
 
     try {
       const resp = await authedFetch(
-        `${API_BASE}/api/admin/orders/search/email/${encodeURIComponent(email)}`,
+        `${API_BASE_URL}/api/admin/orders/search/email/${encodeURIComponent(email)}`,
         {
           method: "GET",
           credentials: "include",
@@ -681,7 +681,7 @@ export default function OrdersPage() {
 
     try {
       const resp = await authedFetch(
-        `${API_BASE}/api/admin/orders/follow-up/${orderId}`,
+        `${API_BASE_URL}/api/admin/orders/follow-up/${orderId}`,
         { method: "PATCH", credentials: "include" },
       );
       if (!resp.ok) {
@@ -706,7 +706,7 @@ export default function OrdersPage() {
 
     try {
       const resp = await authedFetch(
-        `${API_BASE}/api/admin/orders/unmark-follow-up/${orderId}`,
+        `${API_BASE_URL}/api/admin/orders/unmark-follow-up/${orderId}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -784,7 +784,7 @@ export default function OrdersPage() {
 
     try {
       const resp = await authedFetch(
-        `${API_BASE}/api/admin/orders/follow-up/${orderId}/resolved`,
+        `${API_BASE_URL}/api/admin/orders/follow-up/${orderId}/resolved`,
         { method: "PATCH", credentials: "include" },
       );
 
@@ -856,7 +856,7 @@ export default function OrdersPage() {
 
     try {
       const res = await authedFetch(
-        `${API_BASE}/api/admin/orders/${orderId}/status`,
+        `${API_BASE_URL}/api/admin/orders/${orderId}/status`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -926,7 +926,7 @@ export default function OrdersPage() {
 
     try {
       const res = await authedFetch(
-        `${API_BASE}/api/admin/orders/${orderId}/status`,
+        `${API_BASE_URL}/api/admin/orders/${orderId}/status`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -1092,7 +1092,7 @@ export default function OrdersPage() {
 
     try {
       const res = await authedFetch(
-        `${API_BASE}/api/admin/orders/${orderId}/status`,
+        `${API_BASE_URL}/api/admin/orders/${orderId}/status`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -1852,7 +1852,7 @@ export default function OrdersPage() {
 
             <div style={{ marginTop: 12 }}>
               <img
-                src={`${API_BASE}/api/product/${selectedItem.productId}/picture?version=${Date.now()}`}
+                src={`${API_BASE_URL}/api/product/${selectedItem.productId}/picture?version=${Date.now()}`}
                 alt={selectedItem.productName}
                 style={{
                   width: "100%",

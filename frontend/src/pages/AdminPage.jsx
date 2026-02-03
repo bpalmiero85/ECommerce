@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { API_BASE_URL } from "../config/api";
 import "../styles/AdminPage.css";
 import "../styles/ProductPage.css";
 import "../styles/DescriptionMore.css";
@@ -65,7 +66,7 @@ const AdminPage = () => {
 
   const verifyAuth = useCallback(async (token) => {
     const res = await fetch(
-      "http://localhost:8080/api/admin/products/sold-out",
+      `${API_BASE_URL}/api/admin/products/sold-out`,
       {
         method: "GET",
         headers: { Authorization: `Basic ${token}` },
@@ -133,7 +134,7 @@ const AdminPage = () => {
         setMetricsLoading(true);
 
         const res = await authedFetch(
-          "http://localhost:8080/api/admin/metrics/summary",
+          `${API_BASE_URL}/api/admin/metrics/summary`,
           { method: "GET" },
         );
 
@@ -195,7 +196,7 @@ const AdminPage = () => {
 
   const fetchProducts = useCallback(async () => {
     try {
-      const base = "http://localhost:8080/api/products";
+      const base = `${API_BASE_URL}/api/products`;
       const qs =
         filterCategory && filterCategory.trim()
           ? `?category=${encodeURIComponent(
@@ -209,12 +210,12 @@ const AdminPage = () => {
         response = await fetch(url, { method: "GET", cache: "no-store" });
       } else if (activeTab === "low-stock") {
         response = await authedFetch(
-          "http://localhost:8080/api/admin/products/low-stock",
+          `${API_BASE_URL}/api/admin/products/low-stock`,
           { method: "GET" },
         );
       } else if (activeTab === "sold-out") {
         response = await authedFetch(
-          "http://localhost:8080/api/admin/products/sold-out",
+          `${API_BASE_URL}/api/admin/products/sold-out`,
           { method: "GET" },
         );
       }
@@ -254,7 +255,7 @@ const AdminPage = () => {
 
     try {
       const response = await authedFetch(
-        "http://localhost:8080/api/admin/product",
+        `${API_BASE_URL}/api/admin/product`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -324,7 +325,7 @@ const AdminPage = () => {
       formData.append("file", file);
 
       const response = await authedFetch(
-        `http://localhost:8080/api/admin/product/${productId}/uploadPicture`,
+        `${API_BASE_URL}/api/admin/product/${productId}/uploadPicture`,
         { method: "POST", body: formData },
       );
 
@@ -347,7 +348,7 @@ const AdminPage = () => {
 
     try {
       const response = await authedFetch(
-        `http://localhost:8080/api/admin/products/${id}`,
+        `${API_BASE_URL}/api/admin/products/${id}`,
         {
           method: "DELETE",
         },
@@ -390,7 +391,7 @@ const AdminPage = () => {
 
     try {
       const response = await authedFetch(
-        `http://localhost:8080/api/admin/products/${id}`,
+        `${API_BASE_URL}/api/admin/products/${id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -781,7 +782,7 @@ const AdminPage = () => {
                         key={`pic-${product.id}-${
                           product.pictureVersion || product.pictureType
                         }`}
-                        src={`http://localhost:8080/api/product/${
+                        src={`${API_BASE_URL}/api/product/${
                           product.id
                         }/picture?version=${
                           product.pictureVersion || Date.now()

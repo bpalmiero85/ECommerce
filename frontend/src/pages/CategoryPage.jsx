@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
+import { API_BASE_URL } from "../config/api";
 import ProductPage from "./ProductPage.jsx";
 import "../styles/styles.css";
 import "../styles/ProductPage.css";
@@ -111,8 +112,8 @@ function Category() {
           SLUG_TO_CATEGORY[slugValue] ?? slugValue.replace(/-/g, " ");
         const url =
           slugValue === "new-arrivals"
-            ? "http://localhost:8080/api/products?newArrival=true"
-            : `http://localhost:8080/api/products?category=${encodeURIComponent(
+            ? `${API_BASE_URL}/api/products?newArrival=true`
+            : `${API_BASE_URL}/api/products?category=${encodeURIComponent(
                 mappedCategory
               )}`;
         const response = await fetch(url);

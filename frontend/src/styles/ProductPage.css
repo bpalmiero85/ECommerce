@@ -82,7 +82,6 @@ body {
   opacity: 1;
   border-radius: 20px;
   padding: 20px;
-  background-color: rgb(246, 179, 255);
   background-image: radial-gradient(circle, rgb(255, 192, 242), rgb(255, 113, 255));
 }
 

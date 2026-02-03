@@ -7,6 +7,8 @@ import {
   useRef,
 } from "react";
 
+import { API_BASE_URL } from "../config/api";
+
 const noop = () => {};
 const defaultValue = {
   cartItems: [],
@@ -62,7 +64,7 @@ export function CartProvider({ children }) {
       hadActivity = false;
 
       try {
-        await fetch("http://localhost:8080/api/cart/touch", {
+        await fetch(`${API_BASE_URL}/api/cart/touch`, {
           method: "POST",
           credentials: "include",
           cache: "no-store",
@@ -88,10 +90,9 @@ export function CartProvider({ children }) {
   }, [cartItems.length]);
 
   async function clearCartAndRelease(reason = "manual") {
-    const API = process.env.REACT_APP_BASE || "http://localhost:8080";
     const ids = cartItems.map((i) => i.id);
 
-    const resp = await fetch(`${API}/api/cart/clear`, {
+    const resp = await fetch(`${API_BASE_URL}/api/cart/clear`, {
       method: "POST",
       credentials: "include",
     });
@@ -112,7 +113,6 @@ export function CartProvider({ children }) {
   }
 
   const setItemQty = async (id, nextQty, fallback = {}) => {
-    const API = process.env.REACT_APP_BASE || "http://localhost:8080";
 
     const current = cartItems.find((p) => p.id === id)?.qty ?? 0;
     const target = Math.max(0, Number(nextQty) || 0);
@@ -122,8 +122,8 @@ export function CartProvider({ children }) {
 
     const url =
       delta > 0
-        ? `${API}/api/cart/${id}/add?qty=${delta}`
-        : `${API}/api/cart/${id}/remove?qty=${Math.abs(delta)}`;
+        ? `${API_BASE_URL}/api/cart/${id}/add?qty=${delta}`
+        : `${API_BASE_URL}/api/cart/${id}/remove?qty=${Math.abs(delta)}`;
 
     const resp = await fetch(url, { method: "POST", credentials: "include" });
     if (!resp.ok) throw new Error(`cart update failed ${resp.status}`);
@@ -162,8 +162,7 @@ export function CartProvider({ children }) {
   const idleTimer = useRef(null);
 
   async function refreshCart() {
-    const API = process.env.REACT_APP_BASE || "http://localhost:8080";
-    const resp = await fetch(`${API}/api/cart`, { 
+    const resp = await fetch(`${API_BASE_URL}/api/cart`, { 
       credentials: "include",
       cache: "no-store",
     });

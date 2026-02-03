@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef, useCallback } from "react";
+import { API_BASE_URL } from "../config/api";
 import Cropper from "react-easy-crop";
 import "../styles/AdminPage.css";
 
@@ -72,7 +73,7 @@ const ProductPicture = ({
     const fetchProducts = async () => {
       try {
       const response = await fetch(
-        `http://localhost:8080/api/products/${productId}`, {
+        `${API_BASE_URL}/api/products/${productId}`, {
           method: "GET",
           credentials: "include",
         }
@@ -121,7 +122,7 @@ const ProductPicture = ({
         formData.append("name", product.name);
 
         const response = await fetch(
-          `http://localhost:8080/api/products/${productId}/uploadPicture`,
+          `${API_BASE_URL}/api/products/${productId}/uploadPicture`,
           {
             method: "POST",
             body: formData,
@@ -177,7 +178,7 @@ const ProductPicture = ({
           ) : product?.productPicture ? (
             <div className="product-picture">
               <img
-                src={`http://localhost:8080/api/products/${productId}/${product.productPicture}?version=${pictureVersion}`}
+                src={`${API_BASE_URL}/api/products/${productId}/${product.productPicture}?version=${pictureVersion}`}
                 alt="Product Picture"
                 className="current-product-picture"
               />
