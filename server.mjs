@@ -3,8 +3,6 @@ import express from 'express';
 import Stripe from 'stripe';
 import cors from 'cors';
 
-console.log("STRIPE_SECRET_KEY from env:", process.env.STRIPE_SECRET_KEY);
-
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const app = express();
