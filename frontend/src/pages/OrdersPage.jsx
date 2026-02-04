@@ -1176,7 +1176,7 @@ export default function OrdersPage() {
           className="search-button"
           onClick={isSearchShown ? clearSearch : handleToggleSearch}
         >
-          🔍 Search {isSearchShown ? "Hide Search" : "Search"}
+          🔍 {isSearchShown ? "Hide Search" : "Search"}
         </button>
       </div>
       {isSearchShown && (
@@ -1390,9 +1390,11 @@ export default function OrdersPage() {
 
                 <div className="orders-card-body">
                   <div className="follow-up">
+                  {!o.needsFollowUp && (
                     <button onClick={() => handleMarkFollowUp(o)}>
                       Needs follow up
                     </button>
+                  )}
                     {o.needsFollowUp && !o.followUpResolvedAt && (
                       <div className="follow-up-alert">
                         <h3 className="follow-up-alert-text">
