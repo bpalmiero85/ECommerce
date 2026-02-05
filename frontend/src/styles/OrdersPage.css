@@ -696,6 +696,42 @@
 }
 }
 
+
+@media (max-width: 700px) {
+  .follow-up-alert {
+    grid-template-columns: 1fr;
+    height: fit-content;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .follow-up-alert-text {
+    white-space: normal;
+    margin: 0;
+  }
+
+  .follow-up-alert-buttons {
+    justify-content: center;
+    position: relative;
+    margin-top: -30px;
+    width: 75%;
+    flex-wrap: nowrap;
+  }
+
+  .resolved-button {
+    justify-content: center;
+    font-size: 0.85rem !important;
+    position: relative;
+    margin: 0;
+    width: fit-content;
+    flex-wrap: nowrap;
+  }
+
+  .unmark-follow-up-button {
+    font-size: 0.85rem !important;
+  }
+}
+
 @media (max-width: 600px) {
   .choose-order-status {
     display: flex;
@@ -741,72 +777,40 @@
     border: 2px solid purple;
   }
 
-  .orders-search-bar {
-    gap: 6px;
-    padding: 6px 0;
-  }
-
-  .orders-search-label {
-    font-size: 0.9rem;
-    line-height: 1.1;
-    margin: 0;
-  }
-
   .orders-search-row {
+    display: flex;
     flex-wrap: wrap;
-    gap: 6px;
     align-items: center;
+    gap: 6px;
   }
 
+  /* Email + Order# stay on the first row */
+  .orders-search-row .orders-search-btn:nth-of-type(1),
+  .orders-search-row .orders-search-btn:nth-of-type(2) {
+    flex: 0 0 auto;
+    font-size: 0.65rem;
+    padding: 4px 6px;
+  }
 
+  /* Input drops to next row when needed */
   .search-input {
-    flex: 1 0 100%;
-    min-width: 0;        
+    flex: 1 1 100%;
+    min-width: 0;
     height: 30px;
     padding: 4px 8px;
     font-size: 0.9rem;
   }
 
-
-  .orders-search-btn,
-  .orders-reset-btn {
-    padding: 4px 8px;
+  /* Search + Reset sit directly to the right of the input (same row) */
+  .orders-search-row .orders-search-btn:nth-of-type(3),
+  .orders-search-row .orders-reset-btn {
+    flex: 0 0 auto;
     font-size: 0.75rem;
-    line-height: 1;
-  }
-}
-
-@media (max-width: 700px) {
-  .follow-up-alert {
-    grid-template-columns: 1fr;
-    height: fit-content;
-    justify-items: center;
-    text-align: center;
+    padding: 4px 8px;
   }
 
-  .follow-up-alert-text {
-    white-space: normal;
-    margin: 0;
-  }
-
-  .follow-up-alert-buttons {
-    justify-content: center;
-    position: relative;
-    margin-top: -30px;
-    width: 75%;
-    flex-wrap: nowrap;
-  }
-
-  .resolved-button {
-    justify-content: center;
-    font-size: 0.85rem !important;
-    position: relative;
-    margin: 0;
-    width: fit-content;
-    flex-wrap: nowrap;
-  }
-
-  .unmark-follow-up-button {
-    font-size: 0.85rem !important;
+  /* Make the “input row” feel like: [input][Search][Reset] */
+  .orders-search-row .search-input {
+    margin-right: 6px;
   }
 }
