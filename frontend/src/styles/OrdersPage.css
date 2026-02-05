@@ -332,8 +332,9 @@
 }
 
 .orders-search-bar {
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
+  position: relative;
   gap: 8px;
   width: 100%;
 }
@@ -612,6 +613,16 @@
   .order-notes-display {
     padding-top: 38px;
   }
+    .orders-search-btn,
+.orders-reset-btn {
+  font-size: 0.65rem;
+}
+
+.search-input {
+  height: 25px;
+  width: 60px;
+
+}
 
   .edit-order-notes {
     position: absolute;
@@ -679,9 +690,13 @@
   .follow-up-alert-buttons {
     top: 45px;
   }
+  .orders-search-btn,
+.orders-reset-btn {
+  font-size: 0.65rem;
+}
 }
 
-@media (max-width: 540px) {
+@media (max-width: 600px) {
   .choose-order-status {
     display: flex;
     flex-wrap: nowrap;
@@ -724,6 +739,40 @@
     font-size: 0.75rem !important;
     padding: 2px 3px !important;
     border: 2px solid purple;
+  }
+
+  .orders-search-bar {
+    gap: 6px;
+    padding: 6px 0;
+  }
+
+  .orders-search-label {
+    font-size: 0.9rem;
+    line-height: 1.1;
+    margin: 0;
+  }
+
+  .orders-search-row {
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+
+
+  .search-input {
+    flex: 1 0 100%;
+    min-width: 0;        
+    height: 30px;
+    padding: 4px 8px;
+    font-size: 0.9rem;
+  }
+
+
+  .orders-search-btn,
+  .orders-reset-btn {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    line-height: 1;
   }
 }
 
