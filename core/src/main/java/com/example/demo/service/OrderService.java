@@ -117,6 +117,7 @@ public class OrderService {
   public Order unmarkFollowUp(Long orderId) {
     Order order = orderRepository.findById(orderId)
         .orElseThrow(() -> new RuntimeException("Order not found: Order# " + orderId));
+    order.setFollowUpNotes(null);
     order.setNeedsFollowUp(false);
     return orderRepository.save(order);
   }

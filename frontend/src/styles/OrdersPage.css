@@ -30,6 +30,10 @@
   gap: 12px;
 }
 
+.order-product-button {
+  cursor: pointer;
+}
+
 .orders-title {
   font-size: 2.5rem;
   color: black;
@@ -37,45 +41,73 @@
 }
 
 .follow-up-alert {
-  display: grid;
+  display: flex;
+  position: relative;
+  flex: 1 0 100%;
+  order: 2;
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: 10px;
   width: 100%;
+  margin: -40px auto 10px;
   background-color: rgb(242, 242, 46);
   padding: 8px 10px;
 }
 
+.follow-up-resolved {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+}
+
 .follow-up-alert h3 {
   text-align: left;
-  margin-left: 0;
 }
 
 .follow-up {
   display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
 }
 
 .follow-up button {
   background-color: rgb(247, 205, 252);
   color: rgb(0, 0, 0);
   font-size: 0.95rem;
+  width: fit-content;
   border-radius: 10px;
-  margin-top: 25px !important;
+  margin-top: 8px;
   border: 0.5px solid black;
   padding: 4px 12px;
   cursor: pointer;
-  margin: 0 auto;
+  margin: 0;
+}
+
+.follow-up-resolved button {
+  background-color: rgb(247, 205, 252);
+  color: rgb(0, 0, 0);
+  font-size: 0.95rem;
+  width: fit-content;
+  border-radius: 10px;
+  margin: 25px auto;
+  border: 0.5px solid black;
+  padding: 4px 12px;
+  cursor: pointer;
+ 
 }
 
 .follow-up-alert-buttons {
   display: flex;
+  position: absolute;
   gap: 8px;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
-  width: auto;
-  position: static;
+  width: max-content;
 }
 
+.follow-up-resolved button:hover,
 .follow-up button:hover {
   background-color: purple;
   color: white;
@@ -131,15 +163,17 @@
 
 .follow-up-alert-text {
   white-space: nowrap;
-  margin: 0 auto;
   font-size: 1.2rem;
   color: red;
+}
+.follow-up-text-container {
+  margin: 0 auto;
 }
 
 .resolved-button,
 .unmark-follow-up-button {
-  font-size: clamp(10px, 2vw, 20px);
-  height: 32px;
+  font-size: clamp(10px, 2vw, 14px);
+  height: 24px;
   padding: 0 12px !important;
   display: inline-flex;
   align-items: center;
@@ -336,6 +370,7 @@
   border-radius: 10px;
   padding: 5px;
   background-color: #e0bafd;
+  cursor: pointer;
 }
 
 .orders-search-hint {
@@ -417,6 +452,56 @@
   background: rgba(255, 255, 255, 0.95);
   overflow: hidden;
   width: 100%;
+}
+
+.not-resolved-alert {
+  margin-left: auto;
+  right: 10px; 
+  position: absolute;     
+  order: 1;                
+  width: fit-content;
+  align-self: flex-start;
+  z-index: 1000;   
+}
+
+.resolved-alert {
+  display: flex;
+  position: relative;      
+  order: 1;                
+  width: fit-content;
+  align-self: flex-start;
+  justify-content: right;
+  right: 0;
+  padding: 2px 13px;
+  align-self: flex-start;
+  margin-top: 0 !important;
+  border-radius: 8px;
+  background-color: rgb(69, 255, 1);
+}
+
+.not-resolved-alert {
+  display: flex;
+  position: relative;
+  height: fit-content;
+  width: fit-content;
+  align-items: right;
+  padding: 2px 13px;
+  border-radius: 8px;
+  background-color: rgb(255, 99, 99);
+}
+
+.resolved-alert h3 {
+  font-size: 0.88rem;
+  white-space: nowrap;
+  text-align: center;
+  color: black;
+}
+
+.not-resolved-alert h3 {
+  font-size: 0.88rem;
+  white-space: nowrap;
+  text-align: center;
+  color: black;
 }
 
 .orders-card-header {
@@ -562,17 +647,37 @@
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 1100px) {
   .follow-up-alert-buttons {
-    width: 100%;
-    top: 8px;
-    margin: 20px 0 10px;
+    width: 100% !important;
+    top: 35px;
     display: flex;
-    position: absolute;
+    position: relative;
     justify-content: center;
+  
   }
   .follow-up-alert {
-    height: 60px;
+    margin-top: -40px;
+    width: 100%;
+    height: 110px !important;
+  }
+  .not-resolved-alert {
+    margin-right: 10px;
+    z-index: 1000;
+  }
+  .follow-up-alert h3 {
+    text-align: center;
+    white-space: nowrap;
+    position: absolute;
+    width: 100%;
+    top: 40px;
+    padding: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .follow-up-alert-buttons {
+    top: 45px;
   }
 }
 
@@ -587,7 +692,7 @@
 
   .follow-up-alert-buttons {
     width: 100%;
-    margin: 20px 0;
+    margin: 10px 0;
     position: absolute;
     justify-content: center;
   }

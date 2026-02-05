@@ -3,7 +3,6 @@ import { API_BASE_URL } from "../config/api";
 import emailjs from "@emailjs/browser";
 import "../styles/OrdersPage.css";
 
-
 export default function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const [auth, setAuth] = useState(null);
@@ -141,21 +140,21 @@ export default function OrdersPage() {
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
 
-      const openPackSlip = (order) => {
-  const itemsHtml = (order?.items ?? [])
-    .map(
-      (it) => `
+  const openPackSlip = (order) => {
+    const itemsHtml = (order?.items ?? [])
+      .map(
+        (it) => `
         <tr>
           <td>${escapeHtml(it?.productName ?? "")}</td>
           <td style="text-align:right;">${Number(it?.quantity ?? 0)}</td>
         </tr>
       `,
-    )
-    .join("");
+      )
+      .join("");
 
-  const notes = String(order?.followUpNotes ?? "").trim();
+    const notes = String(order?.followUpNotes ?? "").trim();
 
-  const html = `<!doctype html>
+    const html = `<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
@@ -219,20 +218,20 @@ export default function OrdersPage() {
   </body>
 </html>`;
 
-  const blob = new Blob([html], { type: "text/html" });
-  const url = URL.createObjectURL(blob);
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
 
-  const w = window.open(url, "_blank", "noopener,width=800,height=900");
-  if (!w) {
-    URL.revokeObjectURL(url);
-    alert("Pop-up blocked. Allow pop-ups for this site.");
-    return;
-  }
+    const w = window.open(url, "_blank", "noopener,width=800,height=900");
+    if (!w) {
+      URL.revokeObjectURL(url);
+      alert("Pop-up blocked. Allow pop-ups for this site.");
+      return;
+    }
 
-  // Cleanup: give the browser a moment to load it, then revoke.
-  setTimeout(() => URL.revokeObjectURL(url), 10_000);
-};
-  
+    // Cleanup: give the browser a moment to load it, then revoke.
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  };
+
   const ensureTrailingNumberedLine = (raw) => {
     const s = String(raw ?? "").replace(/\r\n/g, "\n");
 
@@ -599,8 +598,12 @@ export default function OrdersPage() {
   const fetchCounts = useCallback(
     async ({ signal } = {}) => {
       const [activeRes, shippedRes] = await Promise.all([
-        authedFetch(`${API_BASE_URL}/api/admin/orders/status/active`, { signal }),
-        authedFetch(`${API_BASE_URL}/api/admin/orders/status/shipped`, { signal }),
+        authedFetch(`${API_BASE_URL}/api/admin/orders/status/active`, {
+          signal,
+        }),
+        authedFetch(`${API_BASE_URL}/api/admin/orders/status/shipped`, {
+          signal,
+        }),
       ]);
 
       const active = activeRes.ok
@@ -701,8 +704,19 @@ export default function OrdersPage() {
       return;
     }
 
-    const confirm = window.confirm("Remove follow-up flag for this order?");
-    if (!confirm) return;
+    if (order?.followUpNotes?.length > 0) {
+      const notes = String(
+        order?.followUpNotes ?? orderNotes[orderId] ?? "",
+      ).trim();
+
+      const confirm = window.confirm(
+        notes.length > 0
+          ? "Unmark follow up? WARNING: This will delete all order notes permanently."
+          : "Unmark follow up?",
+      );
+
+      if (!confirm) return;
+    }
 
     try {
       const resp = await authedFetch(
@@ -713,12 +727,12 @@ export default function OrdersPage() {
           body: JSON.stringify({ needsFollowUp: false }),
         },
       );
-
       if (!resp.ok) {
         setError(`Failed to unmark follow-up for order #${orderId}`);
         return;
       }
-
+      setOrderNotes((prev) => ({ ...prev, [orderId]: "" }));
+      setEditingNotesByOrderId((prev) => ({ ...prev, [orderId]: false }));
       await fetchOrders();
     } catch (e) {
       console.error("Unmark follow up failed:", e);
@@ -737,17 +751,29 @@ export default function OrdersPage() {
       const trimmed = line.trim();
       if (!trimmed) continue;
 
-      const isListItem = /^-\s*/.test(trimmed);
-      if (!isListItem) continue;
+      const isDash = /^-\s+/.test(trimmed);
+      const isNum = /^\d+\.\s+/.test(trimmed);
+      if (!isDash && !isNum) continue;
 
-      const emptyBullet = /^-\s*(\[\s*x\s*\])?\s*$/i.test(trimmed);
-      if (emptyBullet) continue;
+      // strip prefix
+      const withoutPrefix = trimmed
+        .replace(/^\d+\.\s+/, "")
+        .replace(/^-\s+/, "");
+
+      // ignore empty bullets like "-" or "1."
+      const emptyItem =
+        /^(\[\s*x\s*\])?\s*$/i.test(withoutPrefix) ||
+        /^!\s*$/i.test(withoutPrefix);
+      if (emptyItem) continue;
 
       totalItems += 1;
 
-      const isChecked = /^-\s*\[\s*x\s*\]\s*/i.test(trimmed);
+      const isChecked =
+        /^\[\s*x\s*\]\s*/i.test(withoutPrefix) || /^!\s*/i.test(withoutPrefix);
+
       if (isChecked) checkedItems += 1;
     }
+
     return {
       totalItems,
       checkedItems,
@@ -765,13 +791,23 @@ export default function OrdersPage() {
     const rawNotes = orderNotes[orderId] ?? order?.followUpNotes ?? "";
     const { totalItems, allChecked } = getChecklistStats(rawNotes);
 
-    let message = "Mark order resolved?";
-
-    if (totalItems > 0 && !allChecked) {
-      message =
-        "All line items are not complete. Are you sure you want to mark resolved?";
+    if (totalItems <= 0) {
+      const confirm = window.confirm(
+        "No line items to resolve. Would you like to unmark follow up?",
+      );
+      if (!confirm) return;
+      await handleUnmarkFollowUp(order);
+      return;
     }
 
+    if (totalItems > 0 && !allChecked) {
+      window.alert(
+        "Some line items are not complete. Please check off all items first.",
+      );
+      return;
+    }
+
+    let message = "Mark order resolved?";
     const ok = window.confirm(message);
     if (!ok) return;
 
@@ -1389,37 +1425,53 @@ export default function OrdersPage() {
                 </div>
 
                 <div className="orders-card-body">
-                  <div className="follow-up">
-                  {!o.needsFollowUp && (
-                    <button onClick={() => handleMarkFollowUp(o)}>
-                      Needs follow up
-                    </button>
-                  )}
+                  <div
+                    className={
+                      o.followUpResolvedAt ? "follow-up-resolved" : "follow-up"
+                    }
+                  >
+                    {!o.needsFollowUp && (
+                      <button onClick={() => handleMarkFollowUp(o)}>
+                        Needs follow up
+                      </button>
+                    )}
+                    {o.followUpResolvedAt && (
+                      <div className="resolved-alert">
+                        <h3>Order notes resolved</h3>
+                      </div>
+                    )}
                     {o.needsFollowUp && !o.followUpResolvedAt && (
-                      <div className="follow-up-alert">
-                        <h3 className="follow-up-alert-text">
-                          Order is marked for follow up
-                        </h3>
-                        <div className="follow-up-alert-buttons">
-                          <div className="mark-resolved-container">
+                      <>
+                        <div className="not-resolved-alert">
+                          <h3>Not Resolved</h3>
+                        </div>
+                        <div className="follow-up-alert">
+                          <div className="follow-up-text-container">
+                            <h3 className="follow-up-alert-text">
+                              Order is marked for follow up
+                            </h3>
+                          </div>
+                          <div className="follow-up-alert-buttons">
+                            <div className="mark-resolved-container">
+                              <button
+                                type="button"
+                                className="unmark-follow-up-button"
+                                onClick={() => handleUnmarkFollowUp(o)}
+                              >
+                                Unmark follow up
+                              </button>
+                            </div>
                             <button
-                              type="button"
-                              className="unmark-follow-up-button"
-                              onClick={() => handleUnmarkFollowUp(o)}
+                              className="resolved-button"
+                              onClick={() => {
+                                handleMarkResolved(o);
+                              }}
                             >
-                              Unmark follow up
+                              Mark resolved
                             </button>
                           </div>
-                          <button
-                            className="resolved-button"
-                            onClick={() => {
-                              handleMarkResolved(o);
-                            }}
-                          >
-                            Mark resolved
-                          </button>
                         </div>
-                      </div>
+                      </>
                     )}
                   </div>
                   <div className="orders-field">
