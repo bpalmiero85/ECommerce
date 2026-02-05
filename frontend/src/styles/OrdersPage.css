@@ -95,7 +95,6 @@
   border: 0.5px solid black;
   padding: 4px 12px;
   cursor: pointer;
- 
 }
 
 .follow-up-alert-buttons {
@@ -298,7 +297,7 @@
   position: absolute;
   top: 0;
   right: 0;
-  transform: translate(45%, -45%); /* makes it hang off */
+  transform: translate(45%, -45%);
   z-index: 10;
 
   width: 18px;
@@ -457,18 +456,18 @@
 
 .not-resolved-alert {
   margin-left: auto;
-  right: 10px; 
-  position: absolute;     
-  order: 1;                
+  right: 10px;
+  position: absolute;
+  order: 1;
   width: fit-content;
   align-self: flex-start;
-  z-index: 1000;   
+  z-index: 1000;
 }
 
 .resolved-alert {
   display: flex;
-  position: relative;      
-  order: 1;                
+  position: relative;
+  order: 1;
   width: fit-content;
   align-self: flex-start;
   justify-content: right;
@@ -613,16 +612,15 @@
   .order-notes-display {
     padding-top: 38px;
   }
-    .orders-search-btn,
-.orders-reset-btn {
-  font-size: 0.65rem;
-}
+  .orders-search-btn,
+  .orders-reset-btn {
+    font-size: 0.65rem;
+  }
 
-.search-input {
-  height: 25px;
-  width: 60px;
-
-}
+  .search-input {
+    height: 25px;
+    width: 60px;
+  }
 
   .edit-order-notes {
     position: absolute;
@@ -631,7 +629,7 @@
     top: 8px;
     margin: 0;
   }
-  
+
   .choose-order-status {
     display: flex;
     flex-wrap: wrap;
@@ -665,7 +663,6 @@
     display: flex;
     position: relative;
     justify-content: center;
-  
   }
   .follow-up-alert {
     margin-top: -40px;
@@ -691,11 +688,10 @@
     top: 45px;
   }
   .orders-search-btn,
-.orders-reset-btn {
-  font-size: 0.65rem;
+  .orders-reset-btn {
+    font-size: 0.65rem;
+  }
 }
-}
-
 
 @media (max-width: 700px) {
   .follow-up-alert {
@@ -779,12 +775,12 @@
 
   .orders-search-row {
     display: flex;
+    display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 6px;
   }
 
-  /* Email + Order# stay on the first row */
   .orders-search-row .orders-search-btn:nth-of-type(1),
   .orders-search-row .orders-search-btn:nth-of-type(2) {
     flex: 0 0 auto;
@@ -792,8 +788,9 @@
     padding: 4px 6px;
   }
 
-  /* Input drops to next row when needed */
   .search-input {
+    flex: 1 1 100%;
+    min-width: 0;
     flex: 1 1 100%;
     min-width: 0;
     height: 30px;
@@ -801,7 +798,6 @@
     font-size: 0.9rem;
   }
 
-  /* Search + Reset sit directly to the right of the input (same row) */
   .orders-search-row .orders-search-btn:nth-of-type(3),
   .orders-search-row .orders-reset-btn {
     flex: 0 0 auto;
@@ -809,7 +805,6 @@
     padding: 4px 8px;
   }
 
-  /* Make the “input row” feel like: [input][Search][Reset] */
   .orders-search-row .search-input {
     margin-right: 6px;
   }
