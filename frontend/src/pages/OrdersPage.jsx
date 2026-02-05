@@ -16,9 +16,7 @@ export default function OrdersPage() {
   const [activeOrdersCount, setActiveOrdersCount] = useState(0);
   const [shippedOrdersCount, setShippedOrdersCount] = useState(0);
   const [searchResults, setSearchResults] = useState(null);
-  const [searchEmail, setSearchEmail] = useState("");
-  const [searchByOrderId, setSearchByOrderId] = useState("");
-  const [searchType, setSearchType] = useState("email");
+  const [searchQuery, setSearchQuery] = useState("");
   const [searchMeta, setSearchMeta] = useState(null);
   const [searchLoading, setSearchLoading] = useState(null);
   const [isSearchShown, setIsSearchShown] = useState(false);
@@ -619,56 +617,47 @@ export default function OrdersPage() {
     [authedFetch],
   );
 
-  const clearSearch = () => {
-    setSearchResults(null);
-    setSearchMeta(null);
-    setSearchEmail("");
-    setSearchByOrderId("");
-    setSearchType("email");
-    setIsSearchShown(false);
-  };
-
-  const handleSearchEmail = async (order) => {
+  const handleGeneralSearch = async () => {
     if (!auth) return;
 
-    const email = (searchEmail || "").trim();
-    if (!email) {
+    const q = String(searchQuery || "").trim();
+    if (!q) {
       clearSearch();
       return;
     }
+
     setSearchLoading(true);
 
+    const looksLikeEmail = q.includes("@");
+
     try {
-      const resp = await authedFetch(
-        `${API_BASE_URL}/api/admin/orders/search/email/${encodeURIComponent(email)}`,
-        {
-          method: "GET",
-          credentials: "include",
-        },
-      );
-      if (!resp.ok) {
-        throw new Error(`Couldn't find orders with email: ${email}`);
+      if (looksLikeEmail) {
+        const resp = await authedFetch(
+          `${API_BASE_URL}/api/admin/orders/search/email/${encodeURIComponent(q)}`,
+          { method: "GET", credentials: "include" },
+        );
+
+        if (!resp.ok) throw new Error(`Couldn't find orders with email: ${q}`);
+
+        const data = await resp.json();
+        setSearchResults(data);
+        setSearchMeta({ type: "email", value: q });
+        return;
       }
-      const data = await resp.json();
-      setSearchResults(data);
-      setSearchMeta({ type: "email", value: email });
+
+      const matches = (orders || []).filter((o) => String(o.orderId) === q);
+      setSearchResults(matches);
+      setSearchMeta({ type: "orderId", value: q });
     } finally {
       setSearchLoading(false);
     }
   };
 
-  const handleSearchByOrderId = () => {
-    const id = String(searchByOrderId || "").trim();
-
-    if (!id) {
-      clearSearch();
-      return;
-    }
-
-    const matches = (orders || []).filter((o) => String(o.orderId) === id);
-
-    setSearchResults(matches);
-    setSearchMeta({ type: "orderId", value: id });
+  const clearSearch = () => {
+    setSearchResults(null);
+    setSearchMeta(null);
+    setSearchQuery("");
+    setIsSearchShown(false);
   };
 
   const handleMarkFollowUp = async (order) => {
@@ -704,7 +693,7 @@ export default function OrdersPage() {
       return;
     }
 
-    if (order?.followUpNotes?.length > 0) {
+    if ((order?.followUpNotes ?? "").length > 0) {
       const notes = String(
         order?.followUpNotes ?? orderNotes[orderId] ?? "",
       ).trim();
@@ -1217,74 +1206,35 @@ export default function OrdersPage() {
       </div>
       {isSearchShown && (
         <div className="orders-search-bar">
-          <label className="orders-search-label" htmlFor="ordersSearch">
-            {searchType === "email" ? "Email Address:" : "Order #:"}
-          </label>
+          <input
+            id="ordersSearch"
+            type="text"
+            className="search-input"
+            value={searchQuery}
+            onChange={(e) => {
+              const next = e.target.value;
+              setSearchQuery(next);
+
+              if (!next.trim()) {
+                setSearchResults(null);
+                setSearchMeta(null);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleGeneralSearch();
+
+              if (e.key === "Escape") {
+                setIsSearchShown(false);
+                clearSearch();
+              }
+            }}
+          />
 
           <div className="orders-search-row">
             <button
               type="button"
               className="orders-search-btn"
-              onClick={() => {
-                setSearchType("email");
-                setSearchResults(null);
-                setSearchMeta(null);
-              }}
-              disabled={searchLoading}
-            >
-              Email
-            </button>
-
-            <button
-              type="button"
-              className="orders-search-btn"
-              onClick={() => {
-                setSearchType("orderId");
-                setSearchResults(null);
-                setSearchMeta(null);
-              }}
-              disabled={searchLoading}
-            >
-              Order #
-            </button>
-
-            <input
-              id="ordersSearch"
-              type="text"
-              className="search-input"
-              value={searchType === "email" ? searchEmail : searchByOrderId}
-              onChange={(e) => {
-                const next = e.target.value;
-
-                if (searchType === "email") setSearchEmail(next);
-                else setSearchByOrderId(next);
-
-                if (!next.trim()) {
-                  setSearchResults(null);
-                  setSearchMeta(null);
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  if (searchType === "email") handleSearchEmail();
-                  else handleSearchByOrderId();
-                }
-
-                if (e.key === "Escape") {
-                  setIsSearchShown(false);
-                  clearSearch();
-                }
-              }}
-            />
-
-            <button
-              type="button"
-              className="orders-search-btn"
-              onClick={
-                searchType === "email"
-                  ? handleSearchEmail
-                  : handleSearchByOrderId
-              }
+              onClick={handleGeneralSearch}
               disabled={searchLoading}
             >
               Search
@@ -1306,14 +1256,11 @@ export default function OrdersPage() {
         <h1 className={isSearching ? "orders-title-highlight" : "orders-title"}>
           {isSearching ? (
             <>
-              {searchType === "email"
+              {searchMeta?.type === "email"
                 ? "Showing orders for "
                 : "Showing Order # "}
               <br />
-              <span className="orders-search-email">
-                {searchMeta !== "email" && " "}
-                {searchMeta.value}
-              </span>
+              <span className="orders-search-email">{searchMeta?.value}</span>
             </>
           ) : (
             "Orders"
