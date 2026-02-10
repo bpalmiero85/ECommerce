@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import { API_BASE_URL } from "../config/api";
-import emailjs from "@emailjs/browser";
 import "../styles/OrdersPage.css";
 
 export default function OrdersPage() {
@@ -28,9 +27,6 @@ export default function OrdersPage() {
   const initialLoadedRef = useRef(false);
   const pollingRef = useRef(null);
   const notesTextareaRefs = useRef({});
-  const SHIPPING_TEMPLATE_ID = "template_wqi7wms";
-  const EMAILJS_SERVICE_ID = "service_1wp75sm";
-  const EMAILJS_PUBLIC_KEY = "ZkQfANdcZnMH2U1KL";
 
   const buildTrackingUrl = (carrier, trackingNumber) => {
     const c = (carrier || "").toLowerCase();
@@ -830,10 +826,7 @@ export default function OrdersPage() {
 
   const handleMarkShipped = async (order) => {
     const confirm = window.confirm("Are you sure you want to mark shipped?");
-
-    if (!confirm) {
-      return;
-    }
+    if (!confirm) return;
 
     const orderId = order.orderId;
 
@@ -852,6 +845,7 @@ export default function OrdersPage() {
 
       normalizedCarrier = carrier.trim().toLowerCase();
     }
+
     let showError = false;
     let cleanTracking = "";
 
@@ -869,6 +863,7 @@ export default function OrdersPage() {
         showError = true;
         continue;
       }
+
       const confirmed = window.confirm(
         `Please confirm tracking number. Hit OK if correct:\n\n${cleanTracking}`,
       );
@@ -880,6 +875,7 @@ export default function OrdersPage() {
     }
 
     try {
+      // 1) Mark shipped + save carrier/tracking
       const res = await authedFetch(
         `${API_BASE_URL}/api/admin/orders/${orderId}/status`,
         {
@@ -892,46 +888,28 @@ export default function OrdersPage() {
           }),
         },
       );
-      if (!res.ok) return;
-      const updated = await res.json().catch(() => null);
-
-      const resolvedEmail = String(
-        (updated && updated.orderEmail) || (order && order.orderEmail) || "",
-      ).trim();
-
-      if (!resolvedEmail) {
-        console.error("EmailJS NOT sent: resolvedEmail is empty", {
-          updatedEmail: updated?.orderEmail,
-          orderEmail: order?.orderEmail,
-          orderId,
-        });
+      const updated = await res.json().catch(() => ({}));
+      if (!res.ok) {
         throw new Error(
-          "Cannot send shipping email: customer email is missing.",
+          updated?.error || updated?.message || "Failed to mark shipped",
         );
       }
 
-      await emailjs.send(
-        EMAILJS_SERVICE_ID,
-        SHIPPING_TEMPLATE_ID,
-        {
-          to_email: resolvedEmail,
-          customer_name: (updated?.orderName ?? order.orderName) || "",
-          order_id: updated?.orderId ?? order.orderId,
-          carrier: updated?.carrier ?? carrier,
-          tracking_number: updated?.trackingNumber ?? cleanTracking,
-          tracking_url: buildTrackingUrl(
-            updated?.carrier ?? carrier,
-            updated?.trackingNumber ?? cleanTracking,
-          ),
-        },
-        EMAILJS_PUBLIC_KEY,
+      // 2) Tell backend to send shipping confirmation email
+      const emailRes = await authedFetch(
+        `${API_BASE_URL}/api/admin/orders/${orderId}/send-shipping-confirmation`,
+        { method: "POST" },
       );
+      const emailData = await emailRes.json().catch(() => ({}));
+      if (!emailRes.ok) {
+        throw new Error(
+          emailData?.error ||
+            emailData?.message ||
+            "Marked shipped, but failed to send shipping email.",
+        );
+      }
+
       await fetchOrders();
-      console.log("ship payload:", {
-        orderId,
-        carrier,
-        trackingNumber: cleanTracking,
-      });
       console.log("shipping email sent for:", orderId);
       return res;
     } catch (e) {
@@ -939,7 +917,6 @@ export default function OrdersPage() {
       setError(e.message || "Failed to mark as shipped");
     }
   };
-
   const handleMarkDelivered = async (order) => {
     const confirm = window.confirm("Are you sure you want to mark delivered?");
 
@@ -973,28 +950,25 @@ export default function OrdersPage() {
 
   const handleResendTracking = async (order) => {
     const confirm = window.confirm("Resend tracking (shipping) email?");
+    if (!confirm) return;
 
-    if (!confirm) {
-      return;
-    }
     try {
-      await emailjs.send(
-        EMAILJS_SERVICE_ID,
-        SHIPPING_TEMPLATE_ID,
-        {
-          to_email: order.orderEmail,
-          customer_name: order.orderName,
-          order_id: order.orderId,
-          carrier: order.carrier,
-          tracking_number: order.trackingNumber,
-          tracking_url: buildTrackingUrl(order.carrier, order.trackingNumber),
-        },
-        EMAILJS_PUBLIC_KEY,
+      const res = await authedFetch(
+        `${API_BASE_URL}/api/admin/orders/${order.orderId}/send-shipping-confirmation`,
+        { method: "POST" },
       );
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(
+          data?.error || data?.message || "Failed to resend shipping email.",
+        );
+      }
+
       alert(`Tracking email resent to ${order.orderEmail}`);
     } catch (e) {
       console.error("Resend tracking failed:", e);
-      alert("Failed to resend tracking email.");
+      alert(e.message || "Failed to resend tracking email.");
     }
   };
 
@@ -1502,6 +1476,23 @@ export default function OrdersPage() {
                       <span className="orders-field-label">Tracking</span>
                       <span className="orders-field-value">
                         {o.carrier} • {o.trackingNumber}
+                        {() => {
+                          const url = buildTrackingUrl(
+                            o.carrier,
+                            o.trackingNumber,
+                          );
+                          if (!url) return null;
+
+                          return (
+                            <>
+                              {" "}
+                              •{" "}
+                              <a href={url} target="_blank" rel="noreferrer">
+                                Track package
+                              </a>
+                            </>
+                          );
+                        }}
                       </span>
                     </div>
                   )}

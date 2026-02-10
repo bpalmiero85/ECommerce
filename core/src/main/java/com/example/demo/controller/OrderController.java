@@ -4,12 +4,16 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.example.demo.model.Order;
 import com.example.demo.model.OrderItem;
 import com.example.demo.model.OrderStatus;
+import com.example.demo.repository.OrderRepository;
+import com.example.demo.service.OrderEmailService;
 import com.example.demo.service.OrderService;
 
 import lombok.Getter;
@@ -19,9 +23,13 @@ import lombok.Setter;
 @RequestMapping("/api/admin/orders")
 public class OrderController {
   private final OrderService orderService;
+  private final OrderRepository orderRepository;
+  private final OrderEmailService orderEmailService;
 
-  public OrderController(OrderService orderService) {
+  public OrderController(OrderService orderService, OrderRepository orderRepository, OrderEmailService orderEmailService) {
     this.orderService = orderService;
+    this.orderRepository = orderRepository;
+    this.orderEmailService = orderEmailService;
   }
 
   @PatchMapping("/{orderId}/label")
@@ -79,6 +87,24 @@ public class OrderController {
     return ResponseEntity.ok(updated);
   }
 
+  @PostMapping("/{orderId}/send-shipping-confirmation")
+  public ResponseEntity<?> sendShippingConfirmation(@PathVariable Long orderId) {
+    Order order = orderRepository.findById(orderId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+    if (order.getOrderStatus() != OrderStatus.SHIPPED) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order is not marked SHIPPED.");
+    }
+    if (order.getTrackingNumber() == null || order.getTrackingNumber().isBlank()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tracking number is missing.");
+    }
+
+    orderEmailService.sendShippingConfirmation(order);
+
+    return ResponseEntity.ok(Map.of("ok", true));
+
+  }
+
   @PostMapping(consumes = "application/json")
   public Order createOrder(@RequestBody CreateOrderRequest req) {
     OrderStatus status = (req.getStatus() == null) ? OrderStatus.PAID : req.getStatus();
@@ -92,7 +118,7 @@ public class OrderController {
     // Keep it stable. (You can pass req.getTotal() too, but it’s ignored anyway.)
     BigDecimal subtotalIgnored = BigDecimal.ZERO;
 
-    return orderService.createOrderWithItems(
+    Order created = orderService.createOrderWithItems(
         req.getName(),
         req.getEmail(),
         req.getShippingAddress1(),
@@ -107,6 +133,11 @@ public class OrderController {
         shippingTotal,
         taxTotal,
         discountTotal);
+
+        if (created.getOrderStatus() == OrderStatus.PAID) {
+          orderEmailService.sendOrderConfirmation(created);
+        }
+        return created;
   }
 
   @Getter
@@ -172,7 +203,7 @@ public class OrderController {
     return orderService.getOrdersWithEmail(email);
   }
 
-  @GetMapping("api/admin/orders/follow-up")
+  @GetMapping("/follow-up")
   public List<Order> getOrdersNeedingFollowUp() {
     return orderService.getFollowUpQueue();
   }

@@ -1,8 +1,12 @@
 package com.example.demo.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 
 import com.example.demo.dto.ShipFromAddressDTO;
+import com.example.demo.model.Order;
+import com.example.demo.repository.OrderRepository;
 
 /**
  * Shippo API version is pinned at the account level (Dashboard → API Settings).

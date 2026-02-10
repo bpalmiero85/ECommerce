@@ -9,13 +9,15 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
+@ConditionalOnProperty(name = "usps.api.enabled", havingValue = "true")
 @Service
 public class ShippingRateService {
 
   private final UspsV3Client uspsClient;
 
-  @Value("${usps.origin-zip:43001}")
+  @Value("${usps.origin-zip:}")
   private String originZip;
 
   public ShippingRateService(UspsV3Client uspsClient) {
@@ -31,8 +33,7 @@ public class ShippingRateService {
       double weightOunces,
       double lengthInches,
       double widthInches,
-      double heightInches
-  ) {
+      double heightInches) {
     // v3 supports pounds
     int pounds = (int) Math.floor(weightOunces / 16.0);
     double ouncesRemainder = weightOunces - (pounds * 16.0);
@@ -62,7 +63,7 @@ public class ShippingRateService {
     List<BaseRateOptionRatesInner> lines = postages.stream().map(p -> {
       BaseRateOptionRatesInner line = new BaseRateOptionRatesInner();
       line.setDescription(p.service); // USPS service name
-      line.setPriceType("RETAIL");    // keep label; underlying price may be retail/commercial based on client
+      line.setPriceType("RETAIL"); // keep label; underlying price may be retail/commercial based on client
       line.setPrice(p.rate);
       line.setSKU(null);
       return line;
@@ -74,7 +75,10 @@ public class ShippingRateService {
 
   // helper to pull the shared origin ZIP you configured
   private String getOriginZipFromCommon() {
-    return originZip;
+    if (originZip == null || originZip.isBlank()) {
+      throw new IllegalStateException("Missing usps.origin-zip (SHIP_FROM_ZIP).");
+    }
+    return originZip.trim();
   }
 
   private double round2(double v) {

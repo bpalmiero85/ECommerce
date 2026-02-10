@@ -12,6 +12,13 @@ frontend/node_modules/
 .env.*
 .envrc
 .envrc.*
+**/.env
+**/.env.*
+**/.envrc
+
+.DS_Store
+
+application-prod.properties
 
 ### STS ###
 .apt_generated
@@ -23,7 +30,7 @@ frontend/node_modules/
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr

@@ -22,10 +22,15 @@ public class OrderService {
 
   private final OrderRepository orderRepository;
   private final ProductRepository productRepository;
+  private final OrderEmailService orderEmailService;
 
-  public OrderService(OrderRepository orderRepository, ProductRepository productRepository) {
+  public OrderService(OrderRepository orderRepository, 
+    ProductRepository productRepository,
+    OrderEmailService orderEmailService
+  ) {
     this.orderRepository = orderRepository;
     this.productRepository = productRepository;
+    this.orderEmailService = orderEmailService;
 
   }
 
@@ -98,7 +103,12 @@ public class OrderService {
             .add(order.getTaxTotal())
             .subtract(order.getDiscountTotal()));
 
-    return orderRepository.save(order);
+            Order saved = orderRepository.save(order);
+
+            if (saved.getOrderStatus() == OrderStatus.PAID) {
+              orderEmailService.sendOrderConfirmation(order);
+            }
+            return saved;
   }
 
   public List<Order> getFollowUpQueue() {
@@ -213,7 +223,12 @@ public class OrderService {
       }
     }
 
-    return orderRepository.save(order);
+    Order saved = orderRepository.save(order);
+
+    if (newStatus == OrderStatus.SHIPPED) {
+      orderEmailService.sendShippingConfirmation(order);
+    }
+    return saved;
   }
 
   @Transactional(readOnly = true)

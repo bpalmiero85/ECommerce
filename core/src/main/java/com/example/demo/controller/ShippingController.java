@@ -2,8 +2,8 @@ package com.example.demo.controller;
 
 import com.example.demo.model.BaseRateOption;
 import com.example.demo.service.ShippingRateService;
-import com.example.demo.service.UspsV3Client;
 import com.example.demo.service.ShippoRateQuoteService;
+import com.example.demo.service.UspsV3Client;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,6 +12,7 @@ import lombok.Setter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -29,16 +30,33 @@ import java.util.Map;
 public class ShippingController {
 
   private static final Logger log = LoggerFactory.getLogger(ShippingController.class);
-  private final ShippingRateService shippingRateService;
+
+  // ✅ USPS service is OPTIONAL now
+  private final ObjectProvider<ShippingRateService> shippingRateServiceProvider;
+
+  // ✅ Shippo stays required (your checkout uses this)
   private final ShippoRateQuoteService shippoRateQuoteService;
 
-  public ShippingController(ShippingRateService shippingRateService, ShippoRateQuoteService shippoRateQuoteService) {
-    this.shippingRateService = shippingRateService;
+  public ShippingController(
+      ObjectProvider<ShippingRateService> shippingRateServiceProvider,
+      ShippoRateQuoteService shippoRateQuoteService) {
+    this.shippingRateServiceProvider = shippingRateServiceProvider;
     this.shippoRateQuoteService = shippoRateQuoteService;
   }
 
+  // =========================
+  // USPS (single-carrier rates)
+  // =========================
   @PostMapping(path = "/rates", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<?> getRates(@Valid @RequestBody ShippingRateRequest req) {
+
+    // ✅ If USPS is disabled, ShippingRateService bean won't exist.
+    ShippingRateService shippingRateService = shippingRateServiceProvider.getIfAvailable();
+    if (shippingRateService == null) {
+      return ResponseEntity.status(404).body(Map.of(
+          "error", "USPS rates are disabled"));
+    }
+
     try {
       BaseRateOption option = shippingRateService.getBaseRateForParcel(
           req.getDestinationZip(),
@@ -50,15 +68,17 @@ public class ShippingController {
 
     } catch (UspsV3Client.UpstreamException e) {
       log.error("USPS upstream error: {}", e.getMessage(), e);
-      return ResponseEntity.status(502).body(
-          Map.of("error", "USPS upstream error. Please re-enter ZIP code", "details", e.getMessage()));
+      return ResponseEntity.status(502).body(Map.of(
+          "error", "USPS upstream error. Please re-enter ZIP code",
+          "details", e.getMessage()));
     } catch (IllegalArgumentException e) {
       log.warn("Bad request: {}", e.getMessage());
       return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
     } catch (Exception e) {
       log.error("Unexpected server error", e);
-      return ResponseEntity.status(500).body(
-          Map.of("error", "Internal Server Error", "details", e.getMessage()));
+      return ResponseEntity.status(500).body(Map.of(
+          "error", "Internal Server Error",
+          "details", e.getMessage()));
     }
   }
 
@@ -121,7 +141,7 @@ public class ShippingController {
     }
   }
 
-  // ✅ This makes validation errors show a useful JSON body instead of generic 400
+  // ✅ Validation errors → useful JSON body instead of generic 400
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
     Map<String, String> fieldErrors = new HashMap<>();
