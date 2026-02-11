@@ -36,7 +36,7 @@ public class OrderEmailService {
   public void sendOrderConfirmation(Order order) {
     if (!emailConfigured())
       return;
-    String subject = "Your Goth & Glitter Order #" + order.getOrderId();
+    String subject = "Goth & Glitter Order Confirmation - Order #" + order.getOrderId();
     String body = buildOrderConfirmationBody(order);
     send(order.getOrderEmail(), subject, body);
   }
@@ -67,13 +67,8 @@ public class OrderEmailService {
   }
 
   private String buildOrderConfirmationBody(Order order) {
-    String timeLine = DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a z")
-        .withZone(ZoneId.of(timezone))
-        .format(order.getCreatedAt() != null ? order.getCreatedAt() : java.time.Instant.now());
-
     return ""
         + "Hi " + safe(order.getOrderName()) + ",\n"
-        + timeLine + "\n"
         + "Thank you so much for your order from Goth & Glitter! 🖤🩸💀🔮\n\n"
         + "Your order has been successfully placed.\n\n"
         + "Orders ship on the next business day. Business days are Monday through Friday, excluding holidays — so orders placed on Friday, over the weekend, or on holidays ship the following business day.\n\n"
@@ -97,7 +92,7 @@ public class OrderEmailService {
         + "Order #: " + order.getOrderId() + "\n"
         + "Carrier: " + (carrier.isBlank() ? "N/A" : carrier) + "\n"
         + "Tracking: " + (tracking.isBlank() ? "N/A" : tracking) + "\n\n"
-        + "Track your package here! -> " + (tracking.isBlank() ? "N/A" : trackingUrl + "\n\n")
+        + "Track your package here: " + (tracking.isBlank() ? "N/A" : trackingUrl + "\n\n")
         + "Thanks again for supporting Goth & Glitter 💀💖\n"
         + "— The Goth & Glitter Team\n";
   }
