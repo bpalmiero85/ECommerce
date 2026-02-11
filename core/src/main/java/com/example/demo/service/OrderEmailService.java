@@ -74,7 +74,7 @@ public class OrderEmailService {
         + "Orders ship on the next business day. Business days are Monday through Friday, excluding holidays — so orders placed on Friday, over the weekend, or on holidays ship the following business day.\n\n"
         + "🧾 Order Details:\n\n"
         + "Order #: " + order.getOrderId() + "\n"
-        + "Order Total: $" + (order.getOrderTotal() != null ? order.getOrderTotal() : "0.00") + "\n\n"
+        + "Order Total (including shipping): $" + (order.getOrderTotal() != null ? order.getOrderTotal() : "0.00") + "\n\n"
         + "We’ll send you another email as soon as your order ships with tracking information.\n\n"
         + "If you have any questions or need to update anything, just reply to this email — we’re happy to help!\n\n"
         + "Thanks again for supporting Goth & Glitter 💀💖\n"
