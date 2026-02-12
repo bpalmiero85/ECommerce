@@ -41,8 +41,7 @@ public class Product {
   @Column(nullable = false)
   private String name;
 
-  @Lob
-  @Column(nullable = false)
+  @Column(nullable = false, columnDefinition = "text")
   private String description;
 
   @Column(nullable = false)
@@ -60,9 +59,8 @@ public class Product {
   @Column(nullable = false)
   private boolean newArrival;
 
-  @Lob
   @JsonIgnore
-  @Column(name = "product_picture_file")
+  @Column(name = "product_picture_file", columnDefinition = "bytea")
   private byte[] productPictureFile;
 
 }
