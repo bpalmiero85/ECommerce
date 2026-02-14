@@ -11,21 +11,25 @@ import com.example.demo.model.Product;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-  List<Product> findByCategoryIgnoreCaseOrderByNameAsc(String category);
+  List<Product> findByCategoryIgnoreCaseAndProductArchivedFalseOrderByNameAsc(String category);
 
-  List<Product> findByFeaturedTrueOrderByNameAsc();
+  List<Product> findByFeaturedTrueAndProductArchivedFalseOrderByNameAsc();
 
-  List<Product> findByNewArrivalTrueOrderByNameAsc();
+  List<Product> findByNewArrivalTrueAndProductArchivedFalseOrderByNameAsc();
 
-  List<Product> findBySoldOutTrueOrderByNameAsc();
+  List<Product> findBySoldOutTrueAndProductArchivedFalseOrderByNameAsc();
 
-  List<Product> findByQuantityAndSoldOutIsFalseOrderByNameAsc(Integer quantity);
+  List<Product> findByQuantityAndSoldOutIsFalseAndProductArchivedFalseOrderByNameAsc(Integer quantity);
 
-  List<Product> findByCategoryIgnoreCaseAndNewArrivalTrueOrderByNameAsc(String category);
+  List<Product> findByCategoryIgnoreCaseAndNewArrivalTrueAndProductArchivedFalseOrderByNameAsc(String category);
 
-  List<Product> findByCategoryIgnoreCaseAndFeaturedTrueOrderByNameAsc(String category);
+  List<Product> findByCategoryIgnoreCaseAndFeaturedTrueAndProductArchivedFalseOrderByNameAsc(String category);
 
-  @Query("select distinct p.category from Product p order by p.category asc")
+  List<Product> findByProductArchivedFalseOrderByIdDesc();
+
+  List<Product> findByProductArchivedTrueOrderByIdDesc();
+
+  @Query("select distinct p.category from Product p where p.productArchived = false order by p.category asc")
   List<String> findAllDistinctCategories();
 
 }

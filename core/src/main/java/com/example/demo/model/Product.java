@@ -10,6 +10,8 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Type;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
@@ -59,8 +61,12 @@ public class Product {
   @Column(nullable = false)
   private boolean newArrival;
 
+  @Column(name = "product_archived", nullable = false)
+  private boolean productArchived = false;
+
   @JsonIgnore
-  @Column(name = "product_picture_file", columnDefinition = "bytea")
+  @Type(type = "org.hibernate.type.BinaryType")
+  @Column(name = "product_picture_file")
   private byte[] productPictureFile;
 
 }

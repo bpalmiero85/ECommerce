@@ -33,7 +33,8 @@ public class ProductController {
   public List<Product> getAllProducts(
       @RequestParam(value = "category", required = false) String category,
       @RequestParam(value = "featured", required = false) Boolean featured,
-      @RequestParam(value = "newArrival", required = false) Boolean newArrival) {
+      @RequestParam(value = "newArrival", required = false) Boolean newArrival
+    ) {
     if (Boolean.TRUE.equals(featured) && category != null && !category.isBlank()) {
       return productService.getFeaturedProductsByCategory(category);
     }

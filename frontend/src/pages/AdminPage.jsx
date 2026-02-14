@@ -65,14 +65,11 @@ const AdminPage = () => {
   }, []);
 
   const verifyAuth = useCallback(async (token) => {
-    const res = await fetch(
-      `${API_BASE_URL}/api/admin/products/sold-out`,
-      {
-        method: "GET",
-        headers: { Authorization: `Basic ${token}` },
-        credentials: "include",
-      },
-    );
+    const res = await fetch(`${API_BASE_URL}/api/admin/products/sold-out`, {
+      method: "GET",
+      headers: { Authorization: `Basic ${token}` },
+      credentials: "include",
+    });
     return res.ok;
   }, []);
 
@@ -218,6 +215,11 @@ const AdminPage = () => {
           `${API_BASE_URL}/api/admin/products/sold-out`,
           { method: "GET" },
         );
+      } else if (activeTab === "archived") {
+        response = await authedFetch(
+          `${API_BASE_URL}/api/admin/products/archived`,
+          { method: "GET" }
+        );
       }
 
       if (!response.ok) throw new Error(`Error: ${response.status}`);
@@ -254,27 +256,29 @@ const AdminPage = () => {
     }
 
     try {
-      const response = await authedFetch(
-        `${API_BASE_URL}/api/admin/product`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name,
-            description,
-            price: parseFloat(price),
-            quantity: parseInt(quantity, 10),
-            category,
-            featured: isFeatured,
-            newArrival: isNewArrival,
-          }),
-        },
-      );
+      // 1) Create product via JSON
+      const response = await authedFetch(`${API_BASE_URL}/api/admin/product`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          description,
+          price: parseFloat(price),
+          quantity: parseInt(quantity, 10),
+          category,
+          featured: isFeatured,
+          newArrival: isNewArrival,
+        }),
+      });
 
       if (!response.ok) throw new Error(`Error: ${response.status}`);
 
       const newProduct = await response.json();
 
+      // 2) Upload picture (if any) using your existing endpoint
+      const fileToUpload = selectedFile;
+
+      // reset form UI
       setName("");
       setDescription("");
       setPrice("");
@@ -282,15 +286,13 @@ const AdminPage = () => {
       setCategory("");
       setIsFeatured(false);
       setIsNewArrival(false);
-      if (mainFileRef.current) mainFileRef.current.value = "";
-
-      const fileToUpload = selectedFile;
       setSelectedFile(null);
+      if (mainFileRef.current) mainFileRef.current.value = "";
 
       if (fileToUpload) {
         await handleUploadProductPicture(newProduct.id, fileToUpload);
       } else {
-        fetchProducts();
+        await fetchProducts();
       }
 
       notifyProductsChanged({
@@ -337,6 +339,35 @@ const AdminPage = () => {
       notifyProductsChanged({ type: "picture-upload", id: productId });
     } catch (error) {
       console.error("Error uploading product picture:", error);
+    }
+  };
+
+  const handleToggleArchiveProduct = async (product) => {
+    const isCurrentlyArchived = product.productArchived;
+    const ok = window.confirm(
+      isCurrentlyArchived
+        ? "Unarchive this product and make it available for sale?"
+        : "Are you sure you want to archive this product? Archived products are not available for sale.",
+    );
+
+    if (!ok) return;
+
+    try {
+      const response = await authedFetch(
+        `${API_BASE_URL}/api/admin/products/${product.id}/archive-toggle`,
+        {
+          method: "PATCH",
+        },
+      );
+
+      if (!response.ok) {
+        alert("Product archive status not able to be updated. Please try again.");
+        throw new Error(`Archive toggle failed (${response.status})`);
+      }
+
+      await fetchProducts();
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -561,6 +592,13 @@ const AdminPage = () => {
           >
             Sold Out
           </button>
+
+            <button
+            className={activeTab === "archived" ? "active-tab" : ""}
+            onClick={() => setActiveTab("archived")}
+          >
+            Archived
+          </button>
         </div>
         <div>
           <button type="button" onClick={handleOpenMetricsDashboard}>
@@ -602,7 +640,9 @@ const AdminPage = () => {
                     {Object.entries(metrics).map(([key, value]) => (
                       <div key={key} className="metric-card">
                         <div className="metric-label">{LABELS[key] ?? key}</div>
-                        <div className="metric-value"><strong>{formatMetricValue(key, value)}</strong></div>
+                        <div className="metric-value">
+                          <strong>{formatMetricValue(key, value)}</strong>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -705,9 +745,9 @@ const AdminPage = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="label-header">
-              <div className="label-header">Upload Product Picture</div>
+                <div className="label-header">Upload Product Picture</div>
                 <input
                   key={mainFileKey}
                   ref={mainFileRef}
@@ -716,7 +756,6 @@ const AdminPage = () => {
                   className="file-input-field"
                   onChange={handleFileChange}
                 />
-              
               </div>
 
               <button className="submit" type="submit">
@@ -768,6 +807,13 @@ const AdminPage = () => {
                         }}
                       >
                         edit
+                      </button>
+                    </div>
+                    <div className="product-archive-button">
+                      <button
+                        onClick={() => handleToggleArchiveProduct(product)}
+                      >
+                        {product.productArchived ? "Unarchive" : "Archive"}
                       </button>
                     </div>
                     <div className="product-delete-button">

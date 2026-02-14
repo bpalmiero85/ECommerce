@@ -31,10 +31,14 @@ public class ProductService {
   }
 
   public List<Product> getAllProducts() {
-    List<Product> list = productRepository.findAll();
+    List<Product> list = productRepository.findByProductArchivedFalseOrderByIdDesc();
 
     list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
     return list;
+  }
+
+  public List<Product> getArchivedProducts() {
+    return productRepository.findByProductArchivedTrueOrderByIdDesc();
   }
 
   public Optional<Product> getProductById(Long id) {
@@ -56,7 +60,7 @@ public class ProductService {
   }
 
   public List<Product> getProductCategory(String category) {
-    List<Product> list = productRepository.findByCategoryIgnoreCaseOrderByNameAsc(category);
+    List<Product> list = productRepository.findByCategoryIgnoreCaseAndProductArchivedFalseOrderByNameAsc(category);
     list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
     return list;
   }
@@ -84,36 +88,54 @@ public class ProductService {
   }
 
   public List<Product> getFeaturedProducts() {
-    List<Product> list = productRepository.findByFeaturedTrueOrderByNameAsc();
+    List<Product> list = productRepository.findByFeaturedTrueAndProductArchivedFalseOrderByNameAsc();
     list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
     return list;
 
   }
 
-    public List<Product> getLowStockProducts() {
-    return productRepository.findByQuantityAndSoldOutIsFalseOrderByNameAsc(1);
+  public List<Product> getLowStockProducts() {
+    return productRepository.findByQuantityAndSoldOutIsFalseAndProductArchivedFalseOrderByNameAsc(1);
   }
 
   public List<Product> getFeaturedProductsByCategory(String category) {
-    List<Product> list = productRepository.findByCategoryIgnoreCaseAndFeaturedTrueOrderByNameAsc(category);
+    List<Product> list = productRepository
+        .findByCategoryIgnoreCaseAndFeaturedTrueAndProductArchivedFalseOrderByNameAsc(category);
     list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
     return list;
   }
 
   public List<Product> getNewArrivals() {
-    List<Product> list = productRepository.findByNewArrivalTrueOrderByNameAsc();
+    List<Product> list = productRepository.findByNewArrivalTrueAndProductArchivedFalseOrderByNameAsc();
     list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
     return list;
   }
 
   public List<Product> getNewArrivalsByCategory(String category) {
-    List<Product> list = productRepository.findByCategoryIgnoreCaseAndNewArrivalTrueOrderByNameAsc(category);
+    List<Product> list = productRepository
+        .findByCategoryIgnoreCaseAndNewArrivalTrueAndProductArchivedFalseOrderByNameAsc(category);
     list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
     return list;
   }
 
   public List<Product> getSoldOutProducts() {
-    return productRepository.findBySoldOutTrueOrderByNameAsc();
+    return productRepository.findBySoldOutTrueAndProductArchivedFalseOrderByNameAsc();
+  }
+
+  public void archiveProduct(Long id) {
+    Product product = productRepository.findById(id).orElseThrow();
+
+    product.setProductArchived(true);
+
+    productRepository.save(product);
+  }
+
+  public Product toggleArchive(Long id) {
+    Product product = productRepository.findById(id).orElseThrow();
+
+    product.setProductArchived(!product.isProductArchived());
+
+    return productRepository.save(product);
   }
 
   public void deleteProduct(Long id) {

@@ -1,7 +1,6 @@
 package com.example.demo.controller;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -30,6 +30,12 @@ public class AdminController {
     this.productService = productService;
   }
 
+  @PatchMapping("/products/{id}/archive-toggle")
+  public ResponseEntity<Product> toggleArchive(@PathVariable Long id) {
+    Product updated = productService.toggleArchive(id);
+    return ResponseEntity.ok(updated);
+  }
+
   @GetMapping
   public String adminCheck() {
     return "Admin access OK";
@@ -43,6 +49,11 @@ public class AdminController {
   @GetMapping("/products/low-stock")
   public List<Product> getLowStock() {
     return productService.getLowStockProducts();
+  }
+
+  @GetMapping("/products/archived")
+  public List<Product> getArchivedProducts() {
+    return productService.getArchivedProducts();
   }
 
   @PostMapping("/product")
