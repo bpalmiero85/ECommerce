@@ -167,14 +167,23 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   useEffect(() => {
     const load = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/products`);
+        const response = await fetch(
+          `${API_BASE_URL}/api/products?_=${Date.now()}`,
+          {
+            cache: "no-store",
+            credentials: "include",
+          },
+        );
+
         if (!response.ok) {
           throw new Error("error fetching products");
         }
         const product = await response.json();
+        const visibleProducts = product.filter((p) => !p?.productArchived);
         const hasNew = product.some((p) => p?.newArrival === true);
         const categoriesSet = new Set(
-          product.map((p) => String(p.category).trim()).filter(Boolean),
+          visibleProducts
+          .map((p) => String(p.category).trim()).filter(Boolean),
         );
         const categoriesArray = [...categoriesSet];
         const sorted = categoriesArray.sort((a, b) =>
@@ -197,8 +206,16 @@ const ProductPage = ({ products: externalProducts = [] }) => {
     };
     window.addEventListener("products:changed", onProductsChanged);
 
+    const onStorage = (e) => {
+      if (e.key !== "products:changed") return;
+      console.log("Detected products:changed via storage", e.newValue);
+      load();
+    };
+    window.addEventListener("storage", onStorage);
+
     return () => {
       window.removeEventListener("products:changed", onProductsChanged);
+      window.removeEventListener("storage", onStorage);
     };
   }, []);
 

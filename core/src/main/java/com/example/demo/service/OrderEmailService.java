@@ -90,7 +90,7 @@ public class OrderEmailService {
         + "Hi " + safe(order.getOrderName()) + ",\n\n"
         + "Your Goth & Glitter order has shipped! 🖤✨\n\n"
         + "Order #: " + order.getOrderId() + "\n"
-        + "Carrier: " + (carrier.isBlank() ? "N/A" : carrier) + "\n"
+        + "Carrier: " + (carrier == null || carrier.isBlank() ? "N/A" : carrier.toUpperCase()) + "\n"
         + "Tracking: " + (tracking.isBlank() ? "N/A" : tracking) + "\n\n"
         + "Track your package here: " + (tracking.isBlank() ? "N/A" : trackingUrl + "\n\n")
         + "Thanks again for supporting Goth & Glitter 💀💖\n"

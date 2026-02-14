@@ -162,7 +162,7 @@ const AdminPage = () => {
       setAuthFailed(true);
       setAuth(null);
       setAuthVerified(false);
-      return; // ✅ no throw
+      return;
     }
 
     (async () => {
@@ -183,9 +183,11 @@ const AdminPage = () => {
 
   const notifyProductsChanged = useCallback((payload) => {
     try {
-      window.dispatchEvent(
-        new CustomEvent("products:changed", { detail: payload }),
-      );
+      const message = { ts: Date.now(), payload: payload ?? null};
+
+      window.dispatchEvent(new CustomEvent("products:changed", { detail: message }));
+
+      localStorage.setItem("products:changed", JSON.stringify(message));
     } catch (e) {
       console.error("products:changed dispatch failed", e);
     }
@@ -218,7 +220,7 @@ const AdminPage = () => {
       } else if (activeTab === "archived") {
         response = await authedFetch(
           `${API_BASE_URL}/api/admin/products/archived`,
-          { method: "GET" }
+          { method: "GET" },
         );
       }
 
@@ -361,11 +363,19 @@ const AdminPage = () => {
       );
 
       if (!response.ok) {
-        alert("Product archive status not able to be updated. Please try again.");
+        alert(
+          "Product archive status not able to be updated. Please try again.",
+        );
         throw new Error(`Archive toggle failed (${response.status})`);
       }
-
       await fetchProducts();
+      notifyProductsChanged({
+        type: "archive-toggle",
+        id: product.id,
+        category: product.category,
+        productArchived: !isCurrentlyArchived,
+      });
+
     } catch (e) {
       console.error(e);
     }
@@ -593,7 +603,7 @@ const AdminPage = () => {
             Sold Out
           </button>
 
-            <button
+          <button
             className={activeTab === "archived" ? "active-tab" : ""}
             onClick={() => setActiveTab("archived")}
           >
