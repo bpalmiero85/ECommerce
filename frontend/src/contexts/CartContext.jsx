@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  useRef,
-} from "react";
+import { createContext, useContext, useEffect, useState, useRef } from "react";
 
 import { API_BASE_URL } from "../config/api";
 
@@ -26,8 +19,9 @@ function migrateItem(raw) {
   const id = raw.id;
   if (id == null) return null;
 
-  // normalize field names; prefer `qty`, fall back to `quantity`
-  const qtyNum = Number(raw.qty ?? raw.quantity ?? 1);
+  const qtySafe = Number(raw.qty ?? raw.quantity ?? 0);
+  const qty = Number.isFinite(qtySafe) ? Math.max(0, qtySafe) : 0;
+  if (qty <= 0) return null;
   const priceNum = Number(raw.price ?? 0);
 
   return {
@@ -35,7 +29,7 @@ function migrateItem(raw) {
     name: raw.name ?? "",
     price: Number.isFinite(priceNum) ? priceNum : 0,
     imageUrl: raw.imageUrl ?? "",
-    qty: Number.isFinite(qtyNum) && qtyNum > 0 ? qtyNum : 1,
+    qty,
     available: Number(
       raw.available ??
         raw.inventory ??
@@ -48,6 +42,10 @@ function migrateItem(raw) {
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
+  const cartItemsRef = useRef([]);
+  useEffect(() => {
+    cartItemsRef.current = cartItems;
+  }, [cartItems]);
 
   useEffect(() => {
     if (cartItems.length === 0) return;
@@ -89,8 +87,8 @@ export function CartProvider({ children }) {
     };
   }, [cartItems.length]);
 
-  async function clearCartAndRelease(reason = "manual") {
-    const ids = cartItems.map((i) => i.id);
+  async function clearCartServerAndBroadcast(reason = "manual") {
+    const ids = cartItemsRef.current.map((i) => i.id);
 
     const resp = await fetch(`${API_BASE_URL}/api/cart/clear`, {
       method: "POST",
@@ -99,22 +97,27 @@ export function CartProvider({ children }) {
     if (!resp.ok) throw new Error(`clear failed ${resp.status}`);
 
     setCartItems([]);
-    window.dispatchEvent(new CustomEvent("inventory:changed", { detail: ids }));
-    try {
-      localStorage.setItem(
-        "inventory:broadcast",
-        JSON.stringify({ ids, ts: Date.now() }),
+
+    if (ids.length) {
+      window.dispatchEvent(
+        new CustomEvent("inventory:changed", { detail: ids }),
       );
-    } catch {}
+      try {
+        localStorage.setItem(
+          "inventory:broadcast",
+          JSON.stringify({ ids, ts: Date.now(), reason }),
+        );
+      } catch (e) {}
+    }
   }
 
-  function clearCartAfterPayment() {
-    setCartItems([]);
-  }
+  const clearCartAndRelease = (reason = "manual") =>
+    clearCartServerAndBroadcast(reason);
+
+  const clearCartAfterPayment = () => clearCartServerAndBroadcast("payment");
 
   const setItemQty = async (id, nextQty, fallback = {}) => {
-
-    const current = cartItems.find((p) => p.id === id)?.qty ?? 0;
+    const current = cartItemsRef.current.find((p) => p.id === id)?.qty ?? 0;
     const target = Math.max(0, Number(nextQty) || 0);
     const delta = target - current;
 
@@ -132,7 +135,7 @@ export function CartProvider({ children }) {
       const idx = prev.findIndex((p) => p.id === id);
 
       if (idx === -1 && target > 0) {
-        const item = migrateItem({ id, qty: target, ...fallback });
+        const item = migrateItem({ id, ...fallback, qty: target });
         return item ? [...prev, item] : prev;
       }
 
@@ -144,7 +147,7 @@ export function CartProvider({ children }) {
 
       if (idx !== -1) {
         const copy = [...prev];
-        copy[idx] = { ...copy[idx], qty: target, ...fallback };
+        copy[idx] = { ...copy[idx], ...fallback, qty: target };
         return copy;
       }
 
@@ -162,11 +165,13 @@ export function CartProvider({ children }) {
   const idleTimer = useRef(null);
 
   async function refreshCart() {
-    const resp = await fetch(`${API_BASE_URL}/api/cart`, { 
+    const resp = await fetch(`${API_BASE_URL}/api/cart`, {
       credentials: "include",
       cache: "no-store",
     });
-    const serverCart = resp.ok ? await resp.json() : {};
+    if (!resp.ok) return;
+    const serverCart = await resp.json();
+
     console.log("[refreshCart] server cart ->", serverCart);
 
     setCartItems((prev) => {
@@ -221,17 +226,14 @@ export function CartProvider({ children }) {
     };
   }, [cartItems.length]);
 
-  const value = useMemo(
-    () => ({
-      cartItems,
-      setItemQty,
-      removeFromCart,
-      clearCart,
-      clearCartAndRelease,
-      clearCartAfterPayment,
-    }),
-    [cartItems],
-  );
+  const value = {
+    cartItems,
+    setItemQty,
+    removeFromCart,
+    clearCart,
+    clearCartAndRelease,
+    clearCartAfterPayment,
+  };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
