@@ -203,6 +203,8 @@ export default function CheckoutPage({ onSuccess }) {
     return data;
   };
 
+  const submitLockRef = useRef(false);
+
   /**
    * Handles the form submission to process the payment.
    * 1. Calls the backend to create a PaymentIntent and retrieve clientSecret.
@@ -213,6 +215,10 @@ export default function CheckoutPage({ onSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (submitLockRef.current) return;
+    submitLockRef.current = true;
+
     setAttemptedPay(true);
     setProcessing(true);
 
@@ -292,6 +298,7 @@ export default function CheckoutPage({ onSuccess }) {
         shippingCity: city,
         shippingState: inferStateFromZip(destinationZip),
         shippingZip: destinationZip,
+        paymentIntentId: paidIntentId,
         status: "PAID",
         shippingTotal,
         taxTotal,
@@ -375,6 +382,7 @@ export default function CheckoutPage({ onSuccess }) {
       setError(err.message || "Payment failed. Please try again.");
     } finally {
       setProcessing(false);
+      submitLockRef.current = false;
     }
   };
 

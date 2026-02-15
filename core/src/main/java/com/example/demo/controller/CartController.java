@@ -34,9 +34,13 @@ public class CartController {
   }
 
   @PostMapping("/clear")
-  public void clearCart(HttpSession session) {
+  public void clearCart(@RequestParam(defaultValue = "true") boolean release, HttpSession session) {
     String sid = session.getId();
-    cartService.releaseAll(sid);
+    if (release) {
+      cartService.releaseAll(sid);
+    } else {
+      cartService.clearOnly(sid);
+    }
   }
 
   @PostMapping("/{id}/add")

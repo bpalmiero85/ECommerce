@@ -87,18 +87,24 @@ export function CartProvider({ children }) {
     };
   }, [cartItems.length]);
 
-  async function clearCartServerAndBroadcast(reason = "manual") {
+  async function clearCartServerAndBroadcast(
+    reason = "manual",
+    release = true,
+  ) {
     const ids = cartItemsRef.current.map((i) => i.id);
 
-    const resp = await fetch(`${API_BASE_URL}/api/cart/clear`, {
-      method: "POST",
-      credentials: "include",
-    });
+    const resp = await fetch(
+      `${API_BASE_URL}/api/cart/clear?release=${release ? "true" : "false"}`,
+      {
+        method: "POST",
+        credentials: "include",
+      },
+    );
     if (!resp.ok) throw new Error(`clear failed ${resp.status}`);
 
     setCartItems([]);
 
-    if (ids.length) {
+    if (release && ids.length) {
       window.dispatchEvent(
         new CustomEvent("inventory:changed", { detail: ids }),
       );
@@ -107,14 +113,14 @@ export function CartProvider({ children }) {
           "inventory:broadcast",
           JSON.stringify({ ids, ts: Date.now(), reason }),
         );
-      } catch (e) {}
+      } catch {}
     }
   }
 
   const clearCartAndRelease = (reason = "manual") =>
-    clearCartServerAndBroadcast(reason);
+    clearCartServerAndBroadcast(reason, true);
 
-  const clearCartAfterPayment = () => clearCartServerAndBroadcast("payment");
+  const clearCartAfterPayment = () => clearCartServerAndBroadcast("payment", false);
 
   const setItemQty = async (id, nextQty, fallback = {}) => {
     const current = cartItemsRef.current.find((p) => p.id === id)?.qty ?? 0;

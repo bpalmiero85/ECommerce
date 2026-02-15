@@ -48,6 +48,11 @@ public class CartService {
     }
   }
 
+  public void clearOnly(String sid) {
+    carts.remove(sid);
+    lastTouched.remove(sid);
+  }
+
   public void touch(String sessionId) {
     lastTouched.put(sessionId, System.currentTimeMillis());
   }
