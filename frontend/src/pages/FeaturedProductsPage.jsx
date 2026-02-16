@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { API_BASE_URL } from "../config/api";
+import { error as logError } from "../utils/logger";
 import ProductPage from "../pages/ProductPage.jsx";
 import "../styles/styles.css";
 import "../styles/ProductPage.css";
@@ -7,11 +8,10 @@ import "../styles/ProductPage.css";
 function FeaturedProducts() {
   const [products, setProducts] = useState([]);
 
-
   useEffect(() => {
-    const fetchProducts = async (category) => {
+    const fetchProducts = async () => {
+      const url = `${API_BASE_URL}/api/products?featured=true`;
       try {
-        const url = `${API_BASE_URL}/api/products?featured=true`;
         const response = await fetch(url);
 
         if (!response.ok) throw new Error(`Error: ${response.status}`);
@@ -19,14 +19,18 @@ function FeaturedProducts() {
 
         setProducts((prev) => {
           const fetchedMap = new Map(fetched.map((p) => [p.id, p]));
-          const keptUpdated = prev.filter((p) => fetchedMap.has(p.id))
-                              .map((p) => fetchedMap.get(p.id));
+          const keptUpdated = prev
+            .filter((p) => fetchedMap.has(p.id))
+            .map((p) => fetchedMap.get(p.id));
           const keptIds = new Set(keptUpdated.map((p) => p.id));
           const onlyNew = fetched.filter((p) => !keptIds.has(p.id));
           return [...keptUpdated, ...onlyNew];
         });
       } catch (err) {
-        console.error("Error fetching products:", err);
+        logError("FeaturedProducts fetchProducts failed", {
+          urlAttempted: url,
+          message: err?.message,
+        });
       }
     };
 
@@ -68,13 +72,11 @@ function HeroSection() {
           <span className="neon-glow" style={{ color: "var(--neon-green)" }}>
             PRODUCTS.
           </span>{" "}
-     
         </h1>
 
         <p className="hero-description">
           Hand-picked fan favorites—spooky-cute treasures our coven loves most.
         </p>
-
       </div>
 
       {/* Right side - Hero image area */}

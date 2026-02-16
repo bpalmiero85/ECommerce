@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import { API_BASE_URL } from "../config/api";
+import { error as logError, warn as logWarn, info as logInfo } from "../utils/logger"
 import "../styles/OrdersPage.css";
 
 export default function OrdersPage() {
@@ -270,7 +271,10 @@ export default function OrdersPage() {
       const data = await resp.json();
       return data;
     } catch (e) {
-      console.error("Could not generate shipping label: ", e);
+      logError("OrdersPage generateShippingLabel failed", {
+        orderId,
+        message: e?.message,
+      });
     }
   };
 
@@ -345,7 +349,10 @@ export default function OrdersPage() {
 
       return true;
     } catch (e) {
-      console.error("Failed to save order notes:", e);
+      logError("OrdersPage save order notes failed", {
+        orderId: order?.orderId,
+        message: e?.message,
+      });
       return false;
     }
   };
@@ -551,7 +558,11 @@ export default function OrdersPage() {
           signal,
         });
       } catch (err) {
-        console.error("[authedFetch] FETCH THREW:", err);
+        logError("OrdersPage authedFetch threw", {
+          urlAttempted: url,
+          method: options?.method,
+          message: err?.message,
+        });
         throw err;
       }
 
@@ -659,7 +670,9 @@ export default function OrdersPage() {
   const handleMarkFollowUp = async (order) => {
     const orderId = order?.orderId ?? order?.id;
     if (!orderId) {
-      console.error("Missing orderId: Check your onClick wiring.", { order });
+      logWarn("OrdersPage missing orderId in handleMarkFollowUp", {
+        order,
+      });
       alert("Could not mark follow up: missing order id");
       return;
     }
@@ -677,7 +690,10 @@ export default function OrdersPage() {
       }
       await fetchOrders();
     } catch (e) {
-      console.error("Mark follow up failed", e);
+      logError("OrdersPage mark follow up failed", {
+        orderId,
+        message: e?.message,
+      });
       setError(`Could not mark follow-up for order #${orderId}`);
     }
   };
@@ -720,7 +736,10 @@ export default function OrdersPage() {
       setEditingNotesByOrderId((prev) => ({ ...prev, [orderId]: false }));
       await fetchOrders();
     } catch (e) {
-      console.error("Unmark follow up failed:", e);
+      logError("OrdersPage unmark follow up failed", {
+        orderId,
+        message: e?.message,
+      });
       setError(`Could not unmark follow-up for order #${orderId}`);
     }
   };
@@ -818,7 +837,10 @@ export default function OrdersPage() {
       await fetchOrders();
       return updated;
     } catch (e) {
-      console.error("Failed to mark resolved:", e);
+      logError("OrdersPage mark resolved failed", {
+        orderId,
+        message: e?.message,
+      });
       setError(`Could not mark resolved for order #${orderId}`);
     }
     handleSaveOrderNotes(order.orderId);
@@ -910,10 +932,12 @@ export default function OrdersPage() {
       }
 
       await fetchOrders();
-      console.log("shipping email sent for:", orderId);
       return res;
     } catch (e) {
-      console.error(e);
+      logError("OrdersPage mark shipped failed", {
+        orderId,
+        message: e?.message,
+      });
       setError(e.message || "Failed to mark as shipped");
     }
   };
@@ -943,7 +967,10 @@ export default function OrdersPage() {
       await fetchOrders();
       return res;
     } catch (e) {
-      console.error(e);
+      logError("OrdersPage mark delivered failed", {
+        orderId,
+        message: e?.message,
+      });
       setError(e.message || "Failed to mark as delivered");
     }
   };
@@ -967,7 +994,10 @@ export default function OrdersPage() {
 
       alert(`Tracking email resent to ${order.orderEmail}`);
     } catch (e) {
-      console.error("Resend tracking failed:", e);
+      logError("OrdersPage resend tracking failed", {
+        orderId: order?.orderId,
+        message: e?.message,
+      });
       alert(e.message || "Failed to resend tracking email.");
     }
   };
@@ -1004,7 +1034,11 @@ export default function OrdersPage() {
         }));
       } catch (e) {
         if (e?.name === "AbortError") return;
-        console.error("[fetchOrders] error:", e);
+        logError("OrdersPage fetchOrders failed", {
+          orderStatus,
+          urlAttempted: orderStatusEndpoint(),
+          message: e?.message,
+        });
         setError(e?.message || "Failed to load orders.");
       }
     },
@@ -1025,7 +1059,9 @@ export default function OrdersPage() {
       await fetchCounts({ signal: controller.signal });
       await fetchOrders({ signal: controller.signal });
     } catch (e) {
-      if (e.name !== "AbortError") console.error(e);
+      if (e.name !== "AbortError") logError("OrdersPage refreshOrdersAndCounts failed", {
+        message: e?.message
+      });
     } finally {
       isRefreshingRef.current = false;
     }
@@ -1101,7 +1137,10 @@ export default function OrdersPage() {
       if (!res.ok) throw new Error("Failed to archive order");
       await fetchOrders();
     } catch (e) {
-      console.error(e);
+      logError("OrdersPage archive order failed", {
+        orderId,
+        message: e?.message,
+      });
       setError(e.message || "Failed to archive order");
     }
   };
@@ -1476,7 +1515,7 @@ export default function OrdersPage() {
                       <span className="orders-field-label">Tracking</span>
                       <span className="orders-field-value">
                         {o.carrier} • {o.trackingNumber}
-                        {() => {
+                        {(() => {
                           const url = buildTrackingUrl(
                             o.carrier,
                             o.trackingNumber,
@@ -1492,7 +1531,7 @@ export default function OrdersPage() {
                               </a>
                             </>
                           );
-                        }}
+                        })()}
                       </span>
                     </div>
                   )}
@@ -1549,9 +1588,11 @@ export default function OrdersPage() {
                           );
                           fetchOrders();
                         } catch (e) {
-                          console.error(
-                            "Could not generate shipping label:",
-                            e,
+                          logError(
+                            "OrdersPage create label failed", {
+                              orderId,
+                              message: e?.message,
+                            }
                           );
                           return null;
                         }

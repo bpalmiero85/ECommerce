@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { error as logError } from "../utils/logger";
 import { useParams } from "react-router-dom";
 import { API_BASE_URL } from "../config/api";
 import ProductPage from "./ProductPage.jsx";
@@ -98,24 +99,23 @@ function Category() {
       setProducts([]);
       return;
     }
-    let alive = true;
     const fetchProducts = async (showLoader = false) => {
       if (inFlight.current) return;
       inFlight.current = true;
       if (showLoader && firstLoad.current) setLoading(true);
       setError("");
+      const slugValue = String(slug ?? "")
+        .trim()
+        .toLowerCase();
+      const mappedCategory =
+        SLUG_TO_CATEGORY[slugValue] ?? slugValue.replace(/-/g, " ");
+      const url =
+        slugValue === "new-arrivals"
+          ? `${API_BASE_URL}/api/products?newArrival=true`
+          : `${API_BASE_URL}/api/products?category=${encodeURIComponent(
+              mappedCategory,
+            )}`;
       try {
-        const slugValue = String(slug ?? "")
-          .trim()
-          .toLowerCase();
-        const mappedCategory =
-          SLUG_TO_CATEGORY[slugValue] ?? slugValue.replace(/-/g, " ");
-        const url =
-          slugValue === "new-arrivals"
-            ? `${API_BASE_URL}/api/products?newArrival=true`
-            : `${API_BASE_URL}/api/products?category=${encodeURIComponent(
-                mappedCategory
-              )}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
@@ -123,7 +123,7 @@ function Category() {
         const sig = sorted
           .map(
             (p) =>
-              `${p.id}:${p.pictureVersion ?? p.updatedAt ?? 0}:${p.quantity}`
+              `${p.id}:${p.pictureVersion ?? p.updatedAt ?? 0}:${p.quantity}`,
           )
           .join("|");
         if (sig !== prevSig.current) {
@@ -132,7 +132,14 @@ function Category() {
         }
       } catch (error) {
         setError("Could not load products");
-        console.error(error);
+        logError("CategoryPage fetchProducts failed", {
+          slug,
+          slugKey,
+          slugValue,
+          mappedCategory,
+          urlAttempted: url,
+          message: error?.message,
+        });
       } finally {
         if (showLoader && firstLoad.current) {
           setLoading(false);

@@ -77,7 +77,7 @@ public class ShippingController {
     } catch (Exception e) {
       log.error("Unexpected server error", e);
       return ResponseEntity.status(500).body(Map.of(
-          "error", "Internal Server Error",
+          "error", "Internal Server Error. Please re-enter ZIP",
           "details", e.getMessage()));
     }
   }
