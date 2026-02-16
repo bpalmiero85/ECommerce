@@ -2,6 +2,7 @@ import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useState, useContext, useEffect, useRef } from "react";
 import { CartContext } from "../contexts/CartContext";
 import { API_BASE_URL, PAYMENT_API_BASE_URL } from "../config/api";
+import { log, error as logError } from "../utils/logger";
 import ClearCartButton from "../components/ClearCartButton";
 import "../styles/CheckoutPage.css";
 import "../styles/ProductPage.css";
@@ -111,7 +112,6 @@ export default function CheckoutPage({ onSuccess }) {
 
   const [orderSaveError, setOrderSaveError] = useState(null);
   const [orderPayloadToRetry, setOrderPayloadToRetry] = useState(null);
-  const [paidIntentId, setPaidIntentId] = useState(null);
 
   // store order information to display to customer
   const [savedOrder, setSavedOrder] = useState(null);
@@ -159,7 +159,7 @@ export default function CheckoutPage({ onSuccess }) {
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destinationZip, totalWeightOunces, addressLine1, addressLine2, city]);
+  }, [destinationZip, totalWeightOunces, addressLine1, addressLine2, city, shippingState]);
 
   const inferStateFromZip = (zip) => {
     if (!/^\d{5}(-\d{4})?$/.test(zip)) {
@@ -190,11 +190,16 @@ export default function CheckoutPage({ onSuccess }) {
     } catch {}
 
     if (!res.ok) {
-      console.error("saveOrder failed:", {
+      logError("saveOrder failed:", {
         status: res.status,
         rawText,
         data,
-        payloadSent: payload,
+        payloadSent: {
+          itemCount: payload?.items?.length,
+          total: payload?.total,
+          status: payload?.status,
+          paymentIntentId: payload?.paymentIntentId,
+        },
       });
       throw new Error(
         data?.error || rawText || `Saving order failed (${res.status})`,
@@ -224,7 +229,7 @@ export default function CheckoutPage({ onSuccess }) {
 
     try {
       // ✅ Single source of truth: compute from current inputs (no async state timing)
-      const stateNow = inferStateFromZip(destinationZip);
+      const stateNow = shippingState.trim().toUpperCase();
 
       const taxTotal =
         stateNow === "OH" ? Number((subtotal * 0.0725).toFixed(2)) : 0;
@@ -238,7 +243,7 @@ export default function CheckoutPage({ onSuccess }) {
         (subtotal + taxTotal + shippingTotal - discountTotal).toFixed(2),
       );
 
-      console.log("TOTALS:", {
+      log("TOTALS:", {
         subtotal,
         stateNow,
         taxTotal,
@@ -296,9 +301,9 @@ export default function CheckoutPage({ onSuccess }) {
         shippingAddress1: addressLine1,
         shippingAddress2: addressLine2,
         shippingCity: city,
-        shippingState: inferStateFromZip(destinationZip),
+        shippingState: stateNow,
         shippingZip: destinationZip,
-        paymentIntentId: paidIntentId,
+        paymentIntentId: result.paymentIntent.id,
         status: "PAID",
         shippingTotal,
         taxTotal,
@@ -313,24 +318,33 @@ export default function CheckoutPage({ onSuccess }) {
         })),
       };
 
-      console.log("SENDING ORDER PAYLOAD:", payload);
+      log("SENDING ORDER PAYLOAD:", {
+        itemCount: payload.items?.length,
+        total: payload.total,
+        taxTotal: payload.taxTotal,
+        shippingTotal: payload.shippingTotal,
+        status: payload.status,
+      });
 
-      setPaidIntentId(result.paymentIntent.id);
       setOrderPayloadToRetry(payload);
       setOrderSaveError(null);
 
       try {
-        console.log("Attempting to save order with payload:", payload);
-        console.log("payload keys:", Object.keys(payload));
-        console.log("payload json:", JSON.stringify(payload));
-        console.log("totals check:", {
+        log("Attempting to save order:", {
+          itemCount: payload.items?.length,
+          total: payload.total,
+          status: payload.status,
+          paymentIntentId: payload.paymentIntentId,
+        });
+
+        log("totals check:", {
           shippingTotal,
           taxTotal,
           discountTotal,
           total,
         });
         const createdOrder = await saveOrder(payload);
-        console.log("createdOrder response:", createdOrder);
+        log("createdOrder response:", { orderId: createdOrder?.orderId });
 
         const resolvedEmail = String(
           createdOrder?.orderEmail || payload.email || email || "",
@@ -363,22 +377,22 @@ export default function CheckoutPage({ onSuccess }) {
             },
           );
         } catch (emailErr) {
-          console.error("EmailJS failed:", emailErr);
-          console.error("EmailJS details:", emailErr?.status, emailErr?.text);
+          logError("EmailJS failed:", emailErr);
+          logError("EmailJS details:", emailErr?.status, emailErr?.text);
         }
 
         setSucceeded(true);
         clearCartAfterPayment();
         if (onSuccess) onSuccess();
       } catch (err) {
-        console.error("Post-payment step failed:", err);
+        logError("Post-payment step failed:", err);
         setOrderSaveError(
           err?.text || err?.message || "Post-payment step failed.",
         );
         setSucceeded(false);
       }
     } catch (err) {
-      console.error("Checkout error:", err);
+      logError("Checkout error:", err);
       setError(err.message || "Payment failed. Please try again.");
     } finally {
       setProcessing(false);
@@ -408,8 +422,11 @@ export default function CheckoutPage({ onSuccess }) {
       return;
     }
 
-    const stateNow = inferStateFromZip(zip);
-    setShippingState(stateNow);
+    const st = shippingState.trim().toUpperCase();
+    if (!/^[A-Z]{2}$/.test(st)) {
+      setShippingError("Please enter a valid 2-letter state code (e.g. OH).");
+      return;
+    }
     setShippingLoading(true);
 
     try {
@@ -418,7 +435,7 @@ export default function CheckoutPage({ onSuccess }) {
         toStreet1: addressLine1,
         toStreet2: addressLine2 || "",
         toCity: city,
-        toState: stateNow || "OH",
+        toState: st,
         toZip: zip,
         weightOunces: totalWeightOunces || 6,
         lengthInches: 4,
@@ -454,13 +471,15 @@ export default function CheckoutPage({ onSuccess }) {
       setSelectedRateId(cheapest?.object_id || null);
       setShippingRate(cheapest ? Number(cheapest.amount) : null);
     } catch (err) {
-      console.error("Shipping error:", err);
+      logError("Shipping error:", err);
       setShippingRate(null);
       setShippingError(err.message || "Unable to calculate shipping.");
     } finally {
       setShippingLoading(false);
     }
   };
+
+  const stOk = /^[A-Z]{2}$/.test(shippingState.trim().toUpperCase());
 
   const payDisabled =
     !stripe ||
@@ -472,6 +491,7 @@ export default function CheckoutPage({ onSuccess }) {
     !isEmailValid ||
     !addressLine1.trim() ||
     !city.trim() ||
+    !stOk ||
     !destinationZip.trim() ||
     shippingRate == null;
 
@@ -538,7 +558,7 @@ export default function CheckoutPage({ onSuccess }) {
           {/* Display subtotal */}
           <div className="payment-form">
             <h3>Subtotal: ${subtotal.toFixed(2)}</h3>
-            {shippingState === "OH" && (
+            {shippingState.trim().toUpperCase() === "OH" && (
               <h3>Ohio sales tax: ${(subtotal * 0.0725).toFixed(2)}</h3>
             )}
 
@@ -703,6 +723,16 @@ export default function CheckoutPage({ onSuccess }) {
                 required
               />
             </label>
+            <label>
+              State (2-letter):
+              <input
+                name="shippingState"
+                value={shippingState}
+                onChange={(e) => setShippingState(e.target.value.toUpperCase())}
+                maxLength={2}
+                required
+              />
+            </label>
 
             <label>
               ZIP code:
@@ -724,7 +754,6 @@ export default function CheckoutPage({ onSuccess }) {
                 className="StripeElement"
                 options={CARD_ELEMENT_OPTIONS}
                 onChange={(e) => {
-                  console.log("Complete: ", e.complete, "Error: ", e.error);
                   setIsCardComplete(e.complete);
                   setCardError(e.error ? e.error.message : null);
                 }}
@@ -793,7 +822,7 @@ export default function CheckoutPage({ onSuccess }) {
                         },
                       );
                     } catch (emailErr) {
-                      console.error("Confirmation email failed:", emailErr);
+                      logError("Confirmation email failed:", emailErr);
                     }
 
                     setSucceeded(true);
