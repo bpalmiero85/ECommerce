@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { error as logError } from "../utils/logger";
 import { API_BASE_URL } from "../config/api";
 import "../styles/AdminPage.css";
 import "../styles/ProductPage.css";
@@ -12,16 +13,14 @@ const AdminPage = () => {
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
-  const [productPicture, setProductPicture] = useState(null);
+  const [selectedFilesByProductId, setSelectedFilesByProductId] = useState({});
   const [isEditingId, setIsEditingId] = useState(null);
-  const [isPictureUploaded, setIsPictureUploaded] = useState(false);
-  const [croppingStatus, setCroppingStatus] = useState(false);
-  const [mainFileKey, setMainFileKey] = useState(0);
+  const [mainFileKey] = useState(0);
   const [metricsRefreshKey, setMetricsRefreshKey] = useState(0);
   const [metrics, setMetrics] = useState(null);
   const [metricsLoading, setMetricsLoading] = useState(false);
   const [category, setCategory] = useState("");
-  const [filterCategory, setFilterCategory] = useState("");
+  const [filterCategory] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
   const [isNewArrival, setIsNewArrival] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
@@ -140,7 +139,7 @@ const AdminPage = () => {
 
         if (!cancelled) setMetrics(data);
       } catch (e) {
-        if (!cancelled) console.error(e);
+        if (!cancelled) logError("AdminPage metrics fetch failed", e);
       } finally {
         if (!cancelled) setMetricsLoading(false);
       }
@@ -183,13 +182,15 @@ const AdminPage = () => {
 
   const notifyProductsChanged = useCallback((payload) => {
     try {
-      const message = { ts: Date.now(), payload: payload ?? null};
+      const message = { ts: Date.now(), payload: payload ?? null };
 
-      window.dispatchEvent(new CustomEvent("products:changed", { detail: message }));
+      window.dispatchEvent(
+        new CustomEvent("products:changed", { detail: message }),
+      );
 
       localStorage.setItem("products:changed", JSON.stringify(message));
     } catch (e) {
-      console.error("products:changed dispatch failed", e);
+      logError("products:changed dispatch failed", e);
     }
   }, []);
 
@@ -229,7 +230,7 @@ const AdminPage = () => {
       const data = await response.json();
       setProducts(data);
     } catch (error) {
-      console.error("Error fetching products", error);
+      logError("Error fetching products", error);
     }
   }, [filterCategory, activeTab, authedFetch]);
 
@@ -305,24 +306,29 @@ const AdminPage = () => {
         featured: !!newProduct.featured,
       });
     } catch (error) {
-      console.error("Error submitting product", error);
+      logError("Error submitting product", error);
     }
   };
 
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e?.target?.files?.[0];
-      if (file) setSelectedFile(file);
-      console.log("File selected:", e.target.files[0]);
-    } else {
-      console.error("No file selected");
-    }
+  const handleMainFileChange = (e) => {
+    const file = e?.target?.files?.[0];
+    if (!file) return;
+    setSelectedFile(file);
+  };
+
+  const handleFileChange = (productId) => (e) => {
+    const file = e?.target?.files?.[0];
+    if (!file) return;
+
+    setSelectedFilesByProductId((prev) => ({ ...prev, [productId]: file }));
   };
 
   const handleUploadProductPicture = async (productId, file) => {
-    if (!productId)
-      return console.error("Product ID is required to upload a picture");
-    if (!file) return console.error("No file selected for upload");
+    if (!productId) {
+      logError("Upload product picture failed: missing productId");
+      return;
+    }
+    if (!file) return;
 
     try {
       const formData = new FormData();
@@ -340,7 +346,7 @@ const AdminPage = () => {
 
       notifyProductsChanged({ type: "picture-upload", id: productId });
     } catch (error) {
-      console.error("Error uploading product picture:", error);
+      logError("Error uploading product picture:", error);
     }
   };
 
@@ -375,9 +381,8 @@ const AdminPage = () => {
         category: product.category,
         productArchived: !isCurrentlyArchived,
       });
-
     } catch (e) {
-      console.error(e);
+      logError("Archive toggle failed", e);
     }
   };
 
@@ -406,7 +411,7 @@ const AdminPage = () => {
         id,
       });
     } catch (error) {
-      console.error("Error deleting product: ", error);
+      logError("Error deleting product: ", error);
     }
   };
 
@@ -414,7 +419,7 @@ const AdminPage = () => {
     e.preventDefault();
 
     if (!isEditingId) {
-      console.error("No product selected to edit");
+      logError("No product selected to edit");
       return;
     }
 
@@ -449,8 +454,15 @@ const AdminPage = () => {
       const saved = await response.json();
       setProducts((prev) => prev.map((p) => (p.id === id ? saved : p)));
 
-      if (selectedFile) {
-        await handleUploadProductPicture(id, selectedFile);
+      const fileForThisProduct = selectedFilesByProductId[id];
+      if (fileForThisProduct) {
+        await handleUploadProductPicture(id, fileForThisProduct);
+
+        setSelectedFilesByProductId((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
       }
 
       setIsEditingId(null);
@@ -474,7 +486,7 @@ const AdminPage = () => {
         featured: !!updated.featured,
       });
     } catch (error) {
-      console.error(error);
+      logError(error);
     }
   };
 
@@ -764,7 +776,7 @@ const AdminPage = () => {
                   type="file"
                   accept="image/*, .jpg, .jpeg, .png"
                   className="file-input-field"
-                  onChange={handleFileChange}
+                  onChange={handleMainFileChange}
                 />
               </div>
 
@@ -794,8 +806,6 @@ const AdminPage = () => {
                     <ProductPicture
                       productId={product.id}
                       onUpload={() => fetchProducts()}
-                      setIsPictureUploaded={setIsPictureUploaded}
-                      setCroppingStatus={setCroppingStatus}
                     />
 
                     <div className="product-edit-button">
@@ -807,7 +817,6 @@ const AdminPage = () => {
                           setPrice(product.price);
                           setQuantity(product.quantity);
                           setCategory(product.category);
-                          setProductPicture(product.productPicture);
                           setIsFeatured(!!product.featured);
                           setIsNewArrival(!!product.newArrival);
 
@@ -862,7 +871,7 @@ const AdminPage = () => {
                           type="file"
                           accept="image/*, .jpg, .jpeg, .png"
                           className="product-input-field"
-                          onChange={(e) => handleFileChange(e)}
+                          onChange={handleFileChange(product.id)}
                         ></input>
 
                         <label>
@@ -992,18 +1001,20 @@ const AdminPage = () => {
                       type="file"
                       accept="image/*, .jpg, .jpeg, .png"
                       className="product-input-field"
-                      onChange={handleFileChange}
+                      onChange={handleFileChange(product.id)}
                     />
 
                     <button
                       type="button"
                       className="upload-product-picture-button"
                       onClick={() => {
-                        if (selectedFile) {
-                          handleUploadProductPicture(product.id, selectedFile);
-                        } else {
-                          console.error("No file selected for upload");
-                        }
+                        const file = selectedFilesByProductId[product.id];
+                        if (!file)
+                          return logError(
+                            "Upload picture blocked: no file selected",
+                            { productId: product.id },
+                          );
+                        handleUploadProductPicture(product.id, file);
                       }}
                     >
                       Upload Picture

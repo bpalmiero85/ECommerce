@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import { API_BASE_URL } from "../config/api";
-import { error as logError, warn as logWarn, info as logInfo } from "../utils/logger"
+import { error as logError, warn as logWarn } from "../utils/logger"
 import "../styles/OrdersPage.css";
 
 export default function OrdersPage() {
