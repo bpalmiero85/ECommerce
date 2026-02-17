@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useContext, useCallback } from "react";
+import { error as logError } from "../utils/logger";
 import { CartContext } from "../contexts/CartContext";
 import { API_BASE_URL } from "../config/api";
 import "../styles/AdminPage.css";
@@ -115,18 +116,12 @@ const ProductPage = ({ products: externalProducts = [] }) => {
         available: modalAvailableQty,
       });
 
-      if (delta > 0) {
-        const newAvail = await fetchAvailable(selectedProduct.id);
-        if (newAvail === 0) {
-          closeProductModal();
-        }
-      } else {
-        await fetchAvailable(selectedProduct.id);
+      const newAvail = await fetchAvailable(selectedProduct.id);
+      if (delta > 0 && newAvail === 0) {
+        closeProductModal();
       }
-
-      fetchAvailable(selectedProduct.id);
     } catch (err) {
-      console.error(err);
+      logError("ProductPage could not update product quantity", err);
       alert("Could not update quantity. Please try again.");
     } finally {
       setModalSaving(false);
@@ -138,7 +133,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
     setIsProductModalOpen(true);
   }, []);
 
-  const closeProductModal = useCallback((p) => {
+  const closeProductModal = useCallback(() => {
     setIsProductModalOpen(false);
     setSelectedProduct(null);
   }, []);
@@ -182,8 +177,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
         const visibleProducts = product.filter((p) => !p?.productArchived);
         const hasNew = product.some((p) => p?.newArrival === true);
         const categoriesSet = new Set(
-          visibleProducts
-          .map((p) => String(p.category).trim()).filter(Boolean),
+          visibleProducts.map((p) => String(p.category).trim()).filter(Boolean),
         );
         const categoriesArray = [...categoriesSet];
         const sorted = categoriesArray.sort((a, b) =>
@@ -193,22 +187,19 @@ const ProductPage = ({ products: externalProducts = [] }) => {
         // put "New Arrivals" at the front only if any exist
         const finalCategories = hasNew ? ["New Arrivals", ...sorted] : sorted;
         setActiveCategories(finalCategories);
-        console.log("Present categories:", finalCategories);
       } catch (e) {
-        console.error("failed to load products: ", e);
+        logError("ProductPage failed to load products: ", e);
       }
     };
     load();
 
     const onProductsChanged = (e) => {
-      console.log("Detected products:changed event", e.detail);
       load();
     };
     window.addEventListener("products:changed", onProductsChanged);
 
     const onStorage = (e) => {
       if (e.key !== "products:changed") return;
-      console.log("Detected products:changed via storage", e.newValue);
       load();
     };
     window.addEventListener("storage", onStorage);
