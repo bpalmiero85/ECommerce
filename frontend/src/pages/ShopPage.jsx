@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { API_BASE_URL } from "../config/api";
+import { error as logError } from "../utils/logger";
 import ProductPage from "./ProductPage.jsx";
 import "../styles/styles.css";
 import "../styles/ProductPage.css";
@@ -10,8 +11,11 @@ const Shop = () => {
   useEffect(() => {
     const fetchProducts = async (category) => {
       try {
-        const url = `${API_BASE_URL}/api/products?category${category}`;
-        const response = await fetch(url);
+        const url = category
+          ? `${API_BASE_URL}/api/products?category=${encodeURIComponent(category)}`
+          : `${API_BASE_URL}/api/products`;
+
+        const response = await fetch(url, { credentials: "include" });
 
         if (!response.ok) throw new Error(`Error: ${response.status}`);
         const fetched = await response.json();
@@ -26,7 +30,7 @@ const Shop = () => {
           return [...keptUpdated, ...onlyNew];
         });
       } catch (err) {
-        console.error("Error fetching products:", err);
+        logError("ShopPage failed fetching products:", err);
       }
     };
 
@@ -76,7 +80,6 @@ function HeroSection() {
           items. From adorable ghosts to mystical creatures, bring magic to your
           world.
         </p>
-
       </div>
 
       {/* Right side - Hero image area */}
@@ -90,7 +93,11 @@ function HeroSection() {
           <div className="hero-circle">
             <div className="hero-inner-circle">
               <div>
-                <img style={{display: "flex", width: "150px"}}src="/sludgy.jpg"></img>
+                <img
+                alt="Sludgy product preview"
+                  style={{ display: "flex", width: "150px" }}
+                  src="/sludgy.jpg"
+                ></img>
               </div>
             </div>
 
@@ -149,7 +156,11 @@ export default function ShopPage() {
       {/* Footer */}
       <footer className="footer">
         <div>
-          <img alt="Goth & Glitter logo"className="gglogo" src="./gglogo.svg" />
+          <img
+            alt="Goth & Glitter logo"
+            className="gglogo"
+            src="./gglogo.svg"
+          />
         </div>
 
         <p className="footer-text">
