@@ -21,8 +21,9 @@ const Product = ({
 }) => {
   const { cartItems: rawItems, setItemQty } = useContext(CartContext);
   const cartItems = Array.isArray(rawItems) ? rawItems : [];
+  const idStr = String(id);
   const inCartQty = cartItems.reduce(
-    (sum, item) => (item.id === id ? sum + (item.qty ?? 1) : sum),
+    (sum, item) => (String(item.id) === idStr ? sum + (item.qty ?? 1) : sum),
     0,
   );
   const [isOpen, setIsOpen] = useState(false);
@@ -30,14 +31,48 @@ const Product = ({
   const [message, setMessage] = useState("");
   const [isLastItemShown, setIsLastItemShown] = useState(false);
   const cardRef = useRef(null);
+  const prevInCartQtyRef = useRef(inCartQty);
   const [added, setAdded] = useState(false);
   const prevQtyRef = useRef(quantity);
   const depletionTakeRef = useRef(0);
   const [showCheck, setShowCheck] = useState(false);
-  const prevInCartQtyRef = useRef(inCartQty);
   const prevInCartQtyForCheckRef = useRef(inCartQty);
 
   const imageUrl = `${API_BASE_URL}/api/product/${id}/picture?version=${pictureVersion}`;
+
+  useEffect(() => {
+    if (!isLastItemShown) return;
+
+    if (quantity > 0 || inCartQty === 0) {
+      setIsLastItemShown(false);
+      setMessage("");
+      depletionTakeRef.current = 0;
+    }
+  }, [quantity, inCartQty, isLastItemShown]);
+
+  useEffect(() => {
+    const prevQty = prevQtyRef.current;
+    const prevInCart = prevInCartQtyRef.current;
+
+    const cartDelta = inCartQty - prevInCart;
+
+    if (cartDelta !== 0) {
+      depletionTakeRef.current = Math.max(
+        0,
+        depletionTakeRef.current + cartDelta,
+      );
+    }
+
+    if (!isLastItemShown && prevQty > 0 && quantity === 0) {
+      const taken = depletionTakeRef.current || prevQty;
+      showTempMessage(
+        taken === 1 ? "You got the last one!" : "You got the last ones!",
+      );
+      depletionTakeRef.current = 0;
+    }
+    prevQtyRef.current = quantity;
+    prevInCartQtyRef.current = inCartQty;
+  }, [inCartQty, quantity, isLastItemShown]);
 
   async function handleQtyChange(nextQty) {
     if (Number.isNaN(nextQty)) nextQty = 0;
@@ -52,23 +87,12 @@ const Product = ({
       const delta = nextQty - inCartQty;
 
       if (delta > 0) {
-        const take = Math.min(delta, quantity);
-        depletionTakeRef.current += take;
-
-        if (take > 0 && take === quantity) {
-          const taken = depletionTakeRef.current;
-          showTempMessage(
-            taken === 1 ? "You got the last one!" : "You got the last ones!",
-          );
-          depletionTakeRef.current = 0;
-        }
-      } else {
         depletionTakeRef.current = 0;
         setIsLastItemShown(false);
         setMessage("");
       }
 
-      await setItemQty(id, nextQty, {
+      await setItemQty(idStr, nextQty, {
         name,
         price,
         imageUrl,
@@ -130,7 +154,7 @@ const Product = ({
   useEffect(() => {
     function onInventoryChanged(e) {
       const ids = Array.isArray(e?.detail) ? e.detail : [];
-      if (ids.includes(id)) {
+      if (ids.map(String).includes(String(id))) {
         // ask parent to refresh this product's available qty
         onReserved?.(id);
       }
@@ -150,16 +174,14 @@ const Product = ({
   }, [isOpen]);
 
   useEffect(() => {
-    const prev = prevQtyRef.current;
+    const prevQty = prevQtyRef.current;
 
-    if (prev === 0 && quantity > 0) {
+    if (prevQty === 0 && quantity > 0) {
       setIsLastItemShown(false);
       setMessage("");
+      depletionTakeRef.current = 0;
     }
-
-    prevInCartQtyRef.current = inCartQty;
-    prevQtyRef.current = quantity;
-  }, [quantity, inCartQty, isLastItemShown]);
+  }, [quantity]);
 
   useEffect(() => {
     setAdded(inCartQty > 0);

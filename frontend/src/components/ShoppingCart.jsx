@@ -6,14 +6,18 @@ const ShoppingCart = ({ succeeded = false }) => {
   const { cartItems, setItemQty } = useContext(CartContext);
 
   const handleDecrement = (productId, qty) => {
+    if (qty <= 0) return;
     setItemQty(productId, qty - 1);
     window.dispatchEvent(
       new CustomEvent("inventory:changed", { detail: [productId] }),
     );
   };
 
-  const handleIncrement = (productId, qty) => {
-    setItemQty(productId, qty + 1);
+  const handleIncrement = (productId, qty, maxAvailable) => {
+    const max = Number(maxAvailable);
+    const hasLimit = Number.isFinite(max);
+    const next = hasLimit ? Math.min(qty + 1, max) : qty + 1;
+    setItemQty(productId, next);
   };
 
   return (
@@ -21,6 +25,17 @@ const ShoppingCart = ({ succeeded = false }) => {
       {cartItems.map((item) => {
         const qty = Number(item.qty ?? item.quantity ?? 1);
         const price = Number(item.price) || 0;
+
+        const remaining = Number(item.available);
+        const hasRemaining = Number.isFinite(remaining);
+
+        const maxTotal = hasRemaining
+          ? qty + remaining
+          : Number.isFinite(Number(item.quantity))
+            ? Number(item.quantity)
+            : Infinity;
+
+        const disableIncrease = qty >= maxTotal;
 
         return (
           <div key={item.id} className="cart-item">
@@ -50,11 +65,9 @@ const ShoppingCart = ({ succeeded = false }) => {
                   <button
                     type="button"
                     className="cart-qty-btn"
-                    disabled={
-                      typeof item.quantity === "number" && qty >= item.quantity
-                    }
+                    disabled={disableIncrease}
                     aria-label={`Increase ${item.name}`}
-                    onClick={() => handleIncrement(item.id, qty)}
+                    onClick={() => handleIncrement(item.id, qty, maxTotal)}
                   >
                     +
                   </button>
