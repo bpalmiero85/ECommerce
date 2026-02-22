@@ -18,7 +18,8 @@
   z-index: 1;
 }
 .orders-item-meta {
-  font-size: 1rem;
+  font-size: 1.2rem;
+  font-weight: bold;
   color: black;
   white-space: nowrap;
 }
@@ -31,7 +32,19 @@
 }
 
 .order-product-button {
+  font-size: 1.2rem;
+  font-weight: bold;
+  background: none;
+  border: unset;
+  text-decoration: underline;
+  color: blue;
   cursor: pointer;
+}
+
+
+
+.orders-item {
+  color: black;
 }
 
 .orders-title {
@@ -190,6 +203,10 @@
 
 .generate-label-button {
   margin-right: 5px !important;
+}
+
+.resend-tracking-button {
+  margin-right: 5px;
 }
 
 .label-created-alert {

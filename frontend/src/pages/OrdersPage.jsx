@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import { API_BASE_URL } from "../config/api";
-import { error as logError, warn as logWarn } from "../utils/logger"
+import { error as logError, warn as logWarn } from "../utils/logger";
 import "../styles/OrdersPage.css";
 
 export default function OrdersPage() {
@@ -1052,9 +1052,10 @@ export default function OrdersPage() {
       await fetchCounts({ signal: controller.signal });
       await fetchOrders({ signal: controller.signal });
     } catch (e) {
-      if (e.name !== "AbortError") logError("OrdersPage refreshOrdersAndCounts failed", {
-        message: e?.message
-      });
+      if (e.name !== "AbortError")
+        logError("OrdersPage refreshOrdersAndCounts failed", {
+          message: e?.message,
+        });
     } finally {
       isRefreshingRef.current = false;
     }
@@ -1581,12 +1582,10 @@ export default function OrdersPage() {
                           );
                           fetchOrders();
                         } catch (e) {
-                          logError(
-                            "OrdersPage create label failed", {
-                              orderId,
-                              message: e?.message,
-                            }
-                          );
+                          logError("OrdersPage create label failed", {
+                            orderId,
+                            message: e?.message,
+                          });
                           return null;
                         }
                       }}
@@ -1610,12 +1609,14 @@ export default function OrdersPage() {
                         <>
                           <button
                             type="button"
+                            className="resend-tracking-button"
                             onClick={() => handleResendTracking(o)}
                           >
                             Resend tracking
                           </button>
                           <button
                             type="button"
+                            className="mark-delivered-button"
                             onClick={() => handleMarkDelivered(o)}
                           >
                             Mark delivered
