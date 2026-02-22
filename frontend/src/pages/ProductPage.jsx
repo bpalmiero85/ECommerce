@@ -64,9 +64,10 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   const modalAvailableQty = selectedProduct
     ? (availableById[selectedProduct.id] ?? selectedProduct.quantity)
     : 0;
-  const modalImageUrl = selectedProduct
-    ? `${API_BASE_URL}/api/product/${selectedProduct.id}/picture?version=${selectedProduct.pictureVersion}`
-    : "";
+ const modalImageUrl =
+  selectedProduct && Number(selectedProduct.pictureVersion) > 0
+    ? `${API_BASE_URL}/api/product/${selectedProduct.id}/picture?v=${selectedProduct.pictureVersion}`
+    : ""; 
 
   async function handleModalQtyChange(nextQty) {
     if (!selectedProduct) return;
@@ -175,6 +176,9 @@ const ProductPage = ({ products: externalProducts = [] }) => {
         }
         const product = await response.json();
         const visibleProducts = product.filter((p) => !p?.productArchived);
+        visibleProducts.forEach((p) => fetchAvailable(p.id));
+        setProducts(visibleProducts);
+
         const hasNew = product.some((p) => p?.newArrival === true);
         const categoriesSet = new Set(
           visibleProducts.map((p) => String(p.category).trim()).filter(Boolean),
@@ -222,12 +226,6 @@ const ProductPage = ({ products: externalProducts = [] }) => {
     return () =>
       window.removeEventListener("inventory:changed", onInventoryChanged);
   }, []);
-
-  useEffect(() => {
-    const list = Array.isArray(externalProducts) ? externalProducts : [];
-    setProducts(list);
-    list.forEach((p) => fetchAvailable(p.id));
-  }, [externalProducts]);
 
   const handleClickCart = () => {
     setIsCartShown((open) => !open);
@@ -860,7 +858,7 @@ const ProductPage = ({ products: externalProducts = [] }) => {
                   <img
                     className="product-modal-image"
                     alt={selectedProduct.name}
-                    src={`${API_BASE_URL}/api/product/${selectedProduct.id}/picture?version=${selectedProduct.pictureVersion}`}
+                    src={modalImageUrl}
                   />
                 </div>
               </div>

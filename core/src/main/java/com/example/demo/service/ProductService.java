@@ -24,9 +24,27 @@ public class ProductService {
     if (product.getCategory() == null || product.getCategory().isBlank()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category is required when posting a product.");
     }
+
+    if (product.getName() == null || product.getName().isBlank()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name is required.");
+    }
+
+    if (product.getQuantity() == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quantity is required");
+    }
+
+    if (product.getPictureVersion() == null) {
+      product.setPictureVersion(0L);
+    }
+
     product.setSoldOut(product.getQuantity() <= 0);
     Product saved = productRepository.save(product);
-    inventory.setStock(saved.getId(), saved.getQuantity());
+
+    try {
+      inventory.setStock(saved.getId(), saved.getQuantity());
+    } catch (Exception e) {
+
+    }
     return saved;
   }
 
@@ -45,18 +63,13 @@ public class ProductService {
     return productRepository.findById(id);
   }
 
-  public Product saveProductPicture(Long id, byte[] productPictureData) {
+  public Product saveProductPicture(Long id, byte[] productPictureData, String pictureType) {
 
-    Optional<Product> productOptional = productRepository.findById(id);
-    if (productOptional.isPresent()) {
-      Product product = productOptional.get();
-      product.setProductPictureFile(productPictureData);
-      product.setPictureVersion(System.currentTimeMillis());
-      return productRepository.save(product);
-    } else {
-      throw new RuntimeException("Product not found");
-    }
-
+    Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+    product.setProductPictureFile(productPictureData);
+    product.setPictureType(pictureType);
+    product.setPictureVersion(System.currentTimeMillis());
+    return productRepository.save(product);
   }
 
   public List<Product> getProductCategory(String category) {

@@ -10,12 +10,12 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -41,6 +41,25 @@ public class Order {
   private List<OrderItem> items = new ArrayList<>();
 
   @Column(nullable = false)
+  private String firstName;
+
+  @Column(nullable = false)
+  private String lastName;
+
+  @PrePersist
+  @PreUpdate
+  private void syncDerivedFields() {
+    if (createdAt == null)
+      createdAt = Instant.now();
+    if (orderStatus == null)
+      orderStatus = OrderStatus.PAID;
+
+    String fn = firstName == null ? "" : firstName.trim();
+    String ln = lastName == null ? "" : lastName.trim();
+    this.orderName = (fn + " " + ln).trim();
+  }
+
+  @Column(nullable = false)
   private String orderName;
 
   @Column(nullable = false)
@@ -50,7 +69,7 @@ public class Order {
   private String followUpNotes;
 
   @Column(nullable = false)
-  private boolean labelCreated; 
+  private boolean labelCreated;
 
   @Column
   private Instant followUpResolvedAt;
@@ -88,16 +107,16 @@ public class Order {
   @Column
   private Instant shippedAt;
 
-  @Column(name="subtotal", nullable = false, precision = 10, scale = 2)
+  @Column(name = "subtotal", nullable = false, precision = 10, scale = 2)
   private BigDecimal subtotal = BigDecimal.ZERO;
 
-  @Column(name="shipping_total", nullable = false, precision = 10, scale = 2)
+  @Column(name = "shipping_total", nullable = false, precision = 10, scale = 2)
   private BigDecimal shippingTotal = BigDecimal.ZERO;
 
-  @Column(name="tax_total", nullable = false, precision = 10, scale = 2)
+  @Column(name = "tax_total", nullable = false, precision = 10, scale = 2)
   private BigDecimal taxTotal = BigDecimal.ZERO;
 
-  @Column(name="discount_total", nullable = false, precision = 10, scale = 2)
+  @Column(name = "discount_total", nullable = false, precision = 10, scale = 2)
   private BigDecimal discountTotal = BigDecimal.ZERO;
 
   @Column
@@ -107,7 +126,6 @@ public class Order {
   @Column(nullable = false)
   private OrderStatus orderStatus;
 
-  @PrePersist
   public void onCreate() {
     if (createdAt == null) {
       createdAt = Instant.now();

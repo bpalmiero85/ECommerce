@@ -66,9 +66,13 @@ public class AdminController {
   public ResponseEntity<Product> uploadProductPicture(@PathVariable Long productId,
       @RequestParam("file") MultipartFile file) throws IOException {
     Product product = productService.getProductById(productId).orElseThrow();
-    product.setProductPictureFile(file.getBytes());
+
     product.setPictureType(file.getContentType());
-    Product updated = productService.saveProduct(product);
+
+    Product updated = productService.saveProductPicture(productId, file.getBytes(), file.getContentType());
+
+    updated.setPictureType(file.getContentType());
+    updated = productService.saveProduct(updated);
     return ResponseEntity.ok(updated);
   }
 

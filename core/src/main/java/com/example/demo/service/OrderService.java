@@ -24,10 +24,9 @@ public class OrderService {
   private final ProductRepository productRepository;
   private final OrderEmailService orderEmailService;
 
-  public OrderService(OrderRepository orderRepository, 
-    ProductRepository productRepository,
-    OrderEmailService orderEmailService
-  ) {
+  public OrderService(OrderRepository orderRepository,
+      ProductRepository productRepository,
+      OrderEmailService orderEmailService) {
     this.orderRepository = orderRepository;
     this.productRepository = productRepository;
     this.orderEmailService = orderEmailService;
@@ -45,7 +44,8 @@ public class OrderService {
   }
 
   @Transactional
-  public Order createOrderWithItems(String name, String email, String address1, String address2, String city,
+  public Order createOrderWithItems(String firstName, String lastName, String email, String address1, String address2,
+      String city,
       String state, String zip, BigDecimal subtotalIgnored, OrderStatus status,
       List<OrderItem> items, BigDecimal shippingTotal, BigDecimal taxTotal, BigDecimal discountTotal) {
 
@@ -54,7 +54,8 @@ public class OrderService {
     }
 
     Order order = new Order();
-    order.setOrderName(name);
+    order.setFirstName(firstName);
+    order.setLastName(lastName);
     order.setOrderEmail(email);
     order.setShippingAddress1(address1);
     order.setShippingAddress2(address2);
@@ -103,12 +104,12 @@ public class OrderService {
             .add(order.getTaxTotal())
             .subtract(order.getDiscountTotal()));
 
-            Order saved = orderRepository.save(order);
+    Order saved = orderRepository.save(order);
 
-            if (saved.getOrderStatus() == OrderStatus.PAID) {
-              orderEmailService.sendOrderConfirmation(order);
-            }
-            return saved;
+    if (saved.getOrderStatus() == OrderStatus.PAID) {
+      orderEmailService.sendOrderConfirmation(order);
+    }
+    return saved;
   }
 
   public List<Order> getFollowUpQueue() {

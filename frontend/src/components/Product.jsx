@@ -38,7 +38,11 @@ const Product = ({
   const [showCheck, setShowCheck] = useState(false);
   const prevInCartQtyForCheckRef = useRef(inCartQty);
 
-  const imageUrl = `${API_BASE_URL}/api/product/${id}/picture?version=${pictureVersion}`;
+  const hasPicture = Number(pictureVersion) > 0;
+
+  const imageUrl = hasPicture
+    ? `${API_BASE_URL}/api/product/${id}/picture?v=${pictureVersion}`
+    : "";
 
   useEffect(() => {
     if (!isLastItemShown) return;

@@ -1,6 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Creepster&family=Griffy&family=Nosifer&family=Butcherman&display=swap");
 
-
 html,
 body {
   height: 100%;
@@ -82,14 +81,17 @@ body {
   opacity: 1;
   border-radius: 20px;
   padding: 20px;
-  background-image: radial-gradient(circle, rgb(255, 192, 242), rgb(255, 113, 255));
+  background-image: radial-gradient(
+    circle,
+    rgb(255, 192, 242),
+    rgb(255, 113, 255)
+  );
 }
 
 .thank-you {
   font-size: 2rem;
   font-family: "Montserrat", sans-serif;
 }
-
 
 .modal-backdrop {
   position: fixed;
@@ -113,7 +115,9 @@ body {
   padding: 5px;
   /** Using 'background' below causes a red highlight.
       This is intentional - animating gradients directly isn't supported. */
-  transition: background 0.3s ease, color 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
   cursor: pointer;
 }
 
@@ -196,7 +200,9 @@ body {
   overflow: hidden;
   /** Using 'background' below causes a red highlight.
       This is intentional - animating gradients directly isn't supported. */
-  transition: background 0.3s ease, color 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
   cursor: pointer;
 }
 
@@ -381,7 +387,8 @@ body {
     text-shadow: 0 0 20px rgba(230, 122, 249, 0.6);
   }
   to {
-    text-shadow: 0 0 30px rgba(225, 190, 231, 0.9),
+    text-shadow:
+      0 0 30px rgba(225, 190, 231, 0.9),
       0 0 40px rgba(225, 190, 231, 0.6);
   }
 }
@@ -514,6 +521,10 @@ body {
   border-radius: 5px;
 }
 
+.add-to-cart:hover {
+  background: rgb(35, 186, 1);
+}
+
 .modal-add-to-cart {
   width: 100%;
   height: 25px;
@@ -527,6 +538,11 @@ body {
   text-align: center;
   border-radius: 5px;
   margin-top: 5px;
+  cursor: pointer;
+}
+
+.modal-add-to-cart:hover {
+  background-color: rgb(36, 188, 2);
 }
 
 .product-card {
@@ -1507,6 +1523,10 @@ body {
   height: 35px;
   cursor: pointer;
   font-weight: 800;
+}
+
+.product-modal-exit:hover {
+  background: rgb(99, 2, 196);
 }
 
 @media (max-height: 600px) and (orientation: landscape) {

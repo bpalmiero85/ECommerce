@@ -26,7 +26,8 @@ public class OrderController {
   private final OrderRepository orderRepository;
   private final OrderEmailService orderEmailService;
 
-  public OrderController(OrderService orderService, OrderRepository orderRepository, OrderEmailService orderEmailService) {
+  public OrderController(OrderService orderService, OrderRepository orderRepository,
+      OrderEmailService orderEmailService) {
     this.orderService = orderService;
     this.orderRepository = orderRepository;
     this.orderEmailService = orderEmailService;
@@ -118,8 +119,17 @@ public class OrderController {
     // Keep it stable. (You can pass req.getTotal() too, but it’s ignored anyway.)
     BigDecimal subtotalIgnored = BigDecimal.ZERO;
 
+    String[] names = resolveNames(req);
+    String firstName = names[0];
+    String lastName = names[1];
+
+    if (firstName.isBlank() || lastName.isBlank()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "firstName and lastName are required.");
+    }
+
     Order created = orderService.createOrderWithItems(
-        req.getName(),
+        firstName,
+        lastName,
         req.getEmail(),
         req.getShippingAddress1(),
         req.getShippingAddress2(),
@@ -127,22 +137,24 @@ public class OrderController {
         req.getShippingState(),
         req.getShippingZip(),
 
-        subtotalIgnored,
+      subtotalIgnored,
         status,
         req.getItems(),
         shippingTotal,
         taxTotal,
         discountTotal);
 
-        if (created.getOrderStatus() == OrderStatus.PAID) {
-          orderEmailService.sendOrderConfirmation(created);
-        }
-        return created;
+    if (created.getOrderStatus() == OrderStatus.PAID) {
+      orderEmailService.sendOrderConfirmation(created);
+    }
+    return created;
   }
 
   @Getter
   @Setter
   public static class CreateOrderRequest {
+    private String firstName;
+    private String lastName;
     private String name;
     private String email;
     private String shippingAddress1;
@@ -161,6 +173,30 @@ public class OrderController {
     private BigDecimal taxTotal;
     private BigDecimal discountTotal;
 
+  }
+
+  private static String[] resolveNames(CreateOrderRequest req) {
+    String fn = req.getFirstName() != null ? req.getFirstName().trim() : "";
+    String ln = req.getLastName() != null ? req.getLastName().trim() : "";
+
+    if (!fn.isBlank() && !ln.isBlank()) {
+      return new String[] { fn, ln };
+    }
+
+    // fallback to legacy "name"
+    String full = req.getName() != null ? req.getName().trim() : "";
+    if (full.isBlank()) {
+      return new String[] { "", "" };
+    }
+
+    String[] parts = full.split("\\s+");
+    if (parts.length == 1) {
+      return new String[] { parts[0], "" };
+    }
+
+    String first = parts[0];
+    String last = String.join(" ", java.util.Arrays.copyOfRange(parts, 1, parts.length));
+    return new String[] { first, last };
   }
 
   @GetMapping("/all")

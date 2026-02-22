@@ -68,7 +68,7 @@ public class OrderEmailService {
 
   private String buildOrderConfirmationBody(Order order) {
     return ""
-        + "Hi " + safe(order.getOrderName()) + ",\n"
+        + "Hi " + safe(order.getFirstName()) + ",\n"
         + "Thank you so much for your order from Goth & Glitter! 🖤🩸💀🔮\n\n"
         + "Your order has been successfully placed.\n\n"
         + "Orders ship on the next business day. Business days are Monday through Friday, excluding holidays — so orders placed on Friday, over the weekend, or on holidays ship the following business day.\n\n"
@@ -87,7 +87,7 @@ public class OrderEmailService {
     String trackingUrl = buildTrackingUrl(carrier, tracking);
 
     return ""
-        + "Hi " + safe(order.getOrderName()) + ",\n\n"
+        + "Hi " + safe(order.getFirstName()) + ",\n\n"
         + "Your Goth & Glitter order has shipped! 🖤✨\n\n"
         + "Order #: " + order.getOrderId() + "\n"
         + "Carrier: " + (carrier == null || carrier.isBlank() ? "N/A" : carrier.toUpperCase()) + "\n"

@@ -1,5 +1,5 @@
-import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef, useCallback } from "react";
+import { error as logError } from "../utils/logger";
 import { API_BASE_URL } from "../config/api";
 import Cropper from "react-easy-crop";
 import "../styles/AdminPage.css";
@@ -37,7 +37,7 @@ const getCroppedImg = async (imageSrc, crop) => {
     0,
     0,
     crop.width,
-    crop.height
+    crop.height,
   );
 
   return new Promise((resolve) => {
@@ -49,7 +49,6 @@ const getCroppedImg = async (imageSrc, crop) => {
 
 const ProductPicture = ({
   onUpload,
-  isPictureUploaded,
   productId,
   setIsPictureUploaded,
   setCroppingStatus,
@@ -59,33 +58,42 @@ const ProductPicture = ({
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [isCropping, setIsCropping] = useState(false);
-  const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [pictureVersion, setPictureVersion] = useState(Date.now());
   const [product, setProduct] = useState(null);
-
-
+  const [previewUrl, setPreviewUrl] = useState(null);
   const handleFileSelect = () => {
     fileInputRef.current.click();
   };
 
   useEffect(() => {
+    if (!selectedFile) return;
+    const url = URL.createObjectURL(selectedFile);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [selectedFile]);
+
+  useEffect(() => {
     const fetchProducts = async () => {
       try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/products/${productId}`, {
-          method: "GET",
-          credentials: "include",
+        const response = await fetch(
+          `${API_BASE_URL}/api/products/${productId}`,
+          {
+            method: "GET",
+            credentials: "include",
+          },
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const product = await response.json();
+        setProduct(product);
+      } catch (e) {
+        logError("ProductPicture component failed to load product:", {
+          productId,
+          error: e?.message || String(e),
+        });
       }
-      const product = await response.json();
-      setProduct(product);
-    } catch (e) {
-      console.error("Failed to load product", e);
-    }
     };
     fetchProducts();
   }, [productId]);
@@ -96,25 +104,30 @@ const ProductPicture = ({
       setIsCropping(true);
       setCroppingStatus(true);
     } else {
-      console.error("No file selected");
+      alert("No file selected");
+      return;
     }
   };
 
-  const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
+  const onCropComplete = useCallback((croppedAreaPixels) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
   const handleCropAndUpload = useCallback(
     async (productId) => {
       if (!selectedFile || !product) {
-        console.error("No file selected or product not loaded");
+        logError("ProductPicture component missing selectedFile or product:", {
+          productId,
+          hasFile: !!selectedFile,
+          hasProduct: !!product,
+        });
         return;
       }
 
       try {
         const croppedImage = await getCroppedImg(
           URL.createObjectURL(selectedFile),
-          croppedAreaPixels
+          croppedAreaPixels,
         );
 
         const formData = new FormData();
@@ -127,7 +140,7 @@ const ProductPicture = ({
             method: "POST",
             body: formData,
             credentials: "include",
-          }
+          },
         );
 
         if (!response.ok) {
@@ -135,19 +148,18 @@ const ProductPicture = ({
         }
 
         const data = await response.json();
-        console.log("Product picture uploaded successfully", data);
 
         setProduct(data);
         setPictureVersion(data.pictureVersion || Date.now());
         setIsPictureUploaded(true);
-        onUpload();
+        onUpload?.();
         setIsCropping(false);
         setCroppingStatus(false);
       } catch (e) {
-        console.error("Error cropping or uploading image:", e);
+        logError("Error cropping or uploading image:", e);
       }
     },
-    [croppedAreaPixels, selectedFile, product, onUpload, setCroppingStatus]
+    [croppedAreaPixels, selectedFile, product, onUpload, setCroppingStatus],
   );
 
   return (
@@ -169,7 +181,10 @@ const ProductPicture = ({
               </div>
               {isCropping && (
                 <div className="crop-button-container">
-                  <button onClick={() => handleCropAndUpload(productId)} className="crop-button">
+                  <button
+                    onClick={() => handleCropAndUpload(productId)}
+                    className="crop-button"
+                  >
                     Crop & Save
                   </button>
                 </div>
@@ -179,12 +194,12 @@ const ProductPicture = ({
             <div className="product-picture">
               <img
                 src={`${API_BASE_URL}/api/products/${productId}/${product.productPicture}?version=${pictureVersion}`}
-                alt="Product Picture"
+                alt={`Product ${product.name}`}
                 className="current-product-picture"
               />
             </div>
           ) : (
-           ""
+            ""
           )}
 
           <input

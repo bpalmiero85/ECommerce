@@ -74,7 +74,9 @@ export default function CheckoutPage({ onSuccess }) {
   const [succeeded, setSucceeded] = useState(false);
 
   // Form input state
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const fullName = `${firstName} ${lastName}`.trim();
   const [email, setEmail] = useState("");
   const [addressLine1, setAddressLine1] = useState("");
   const [addressLine2, setAddressLine2] = useState("");
@@ -159,7 +161,14 @@ export default function CheckoutPage({ onSuccess }) {
     };
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destinationZip, totalWeightOunces, addressLine1, addressLine2, city, shippingState]);
+  }, [
+    destinationZip,
+    totalWeightOunces,
+    addressLine1,
+    addressLine2,
+    city,
+    shippingState,
+  ]);
 
   const inferStateFromZip = (zip) => {
     if (!/^\d{5}(-\d{4})?$/.test(zip)) {
@@ -279,7 +288,7 @@ export default function CheckoutPage({ onSuccess }) {
       const result = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: elements.getElement(CardElement),
-          billing_details: { name, email },
+          billing_details: { name: fullName, email },
         },
       });
 
@@ -296,7 +305,9 @@ export default function CheckoutPage({ onSuccess }) {
       setError(null);
 
       const payload = {
-        name,
+        name: fullName,
+        firstName,
+        lastName,
         email,
         shippingAddress1: addressLine1,
         shippingAddress2: addressLine2,
@@ -351,7 +362,7 @@ export default function CheckoutPage({ onSuccess }) {
         ).trim();
 
         const resolvedName = String(
-          createdOrder?.orderName || payload.name || name || "",
+          createdOrder?.orderName || payload.name || fullName || "",
         ).trim();
 
         const resolvedTotal = Number(
@@ -431,7 +442,7 @@ export default function CheckoutPage({ onSuccess }) {
 
     try {
       const body = {
-        toName: name,
+        toName: fullName,
         toStreet1: addressLine1,
         toStreet2: addressLine2 || "",
         toCity: city,
@@ -486,7 +497,8 @@ export default function CheckoutPage({ onSuccess }) {
     !isCardComplete ||
     processing ||
     succeeded ||
-    !name.trim() ||
+    !firstName.trim() ||
+    !lastName.trim() ||
     !email.trim() ||
     !isEmailValid ||
     !addressLine1.trim() ||
@@ -665,11 +677,21 @@ export default function CheckoutPage({ onSuccess }) {
 
             {/* ✅ Keep these inputs INSIDE payment-form */}
             <label className="payment-form-input">
-              Name:
+              First Name:
               <input
-                name="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                name="firstName"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+              />
+            </label>
+
+            <label className="payment-form-input">
+              Last Name:
+              <input
+                name="lastName"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
                 required
               />
             </label>
@@ -793,7 +815,7 @@ export default function CheckoutPage({ onSuccess }) {
                     const resolvedName = String(
                       createdOrder?.orderName ||
                         orderPayloadToRetry.name ||
-                        name ||
+                        fullName ||
                         "",
                     ).trim();
 
@@ -871,21 +893,23 @@ export default function CheckoutPage({ onSuccess }) {
                   ? "Email is required."
                   : !isEmailValid
                     ? "Please enter a valid email address."
-                    : !name.trim()
-                      ? "Name is required."
-                      : !addressLine1
-                        ? "Address line 1 is required"
-                        : !city.trim()
-                          ? "City is required."
-                          : !destinationZip.trim()
-                            ? "ZIP code is required."
-                            : shippingRate == null
-                              ? "Please enter a valid ZIP code to calculate shipping."
-                              : !isCardComplete
-                                ? "Please complete your card details."
-                                : !processing
-                                  ? "Please complete the form above."
-                                  : ""}
+                    : !firstName.trim()
+                      ? "First name is required."
+                      : !lastName.trim()
+                        ? "Last name is required."
+                        : !addressLine1
+                          ? "Address line 1 is required"
+                          : !city.trim()
+                            ? "City is required."
+                            : !destinationZip.trim()
+                              ? "ZIP code is required."
+                              : shippingRate == null
+                                ? "Please enter a valid ZIP code to calculate shipping."
+                                : !isCardComplete
+                                  ? "Please complete your card details."
+                                  : !processing
+                                    ? "Please complete the form above."
+                                    : ""}
               </div>
             )}
           </div>

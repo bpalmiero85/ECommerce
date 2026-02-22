@@ -53,7 +53,8 @@ public class OrderPublicController {
         + " items=" + items.size());
 
     Order saved = orderService.createOrderWithItems(
-        req.getName(),
+        req.getFirstName(),
+        req.getLastName(),
         req.getEmail(),
         req.getShippingAddress1(),
         req.getShippingAddress2(),
@@ -81,7 +82,8 @@ public class OrderPublicController {
   }
 
   public static class CreateOrderRequest {
-    private String name;
+    private String firstName;
+    private String lastName;
     private String email;
     private String shippingAddress1;
     private String shippingAddress2;
@@ -95,12 +97,20 @@ public class OrderPublicController {
     private BigDecimal taxTotal;
     private BigDecimal discountTotal;
 
-    public String getName() {
-      return name;
+    public String getFirstName() {
+      return firstName;
     }
 
-    public void setName(String name) {
-      this.name = name;
+    public void setFirstName(String firstName) {
+      this.firstName = firstName;
+    }
+
+    public String getLastName() {
+      return lastName;
+    }
+
+    public void setLastName(String lastName) {
+      this.lastName = lastName;
     }
 
     public String getEmail() {

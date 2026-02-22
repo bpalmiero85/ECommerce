@@ -79,9 +79,14 @@ const AdminPage = () => {
       const headers = new Headers(options.headers || {});
       headers.set("Authorization", `Basic ${auth}`);
 
+      const mergedHeaders = {
+        ...(options?.headers || {}),
+        ...headers,
+      };
+
       const res = await fetch(url, {
         ...options,
-        headers,
+        headers: mergedHeaders,
         credentials: "include",
       });
 

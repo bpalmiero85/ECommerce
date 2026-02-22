@@ -181,7 +181,7 @@ export default function OrdersPage() {
       </div>
 
       <div class="box col">
-        <strong>Customer</strong><br/>
+        <strong>Customer Email</strong><br/>
         ${escapeHtml(order?.orderEmail ?? "")}<br/><br/>
         <strong>Status</strong><br/>
         ${escapeHtml(order?.orderStatus ?? "")}
@@ -198,13 +198,6 @@ export default function OrdersPage() {
           ${itemsHtml || "<tr><td colspan='2'>No items</td></tr>"}
         </tbody>
       </table>
-    </div>
-
-    <div class="box">
-      <strong>Notes</strong>
-      <div style="white-space:pre-wrap; margin-top:8px;">
-        ${escapeHtml(notes || "None")}
-      </div>
     </div>
 
     <div style="margin-top:14px;">

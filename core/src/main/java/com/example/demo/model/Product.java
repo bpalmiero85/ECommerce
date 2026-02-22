@@ -15,11 +15,13 @@ import org.hibernate.annotations.Type;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
+@Data
 @Getter
 @Setter
 @NoArgsConstructor
@@ -35,7 +37,8 @@ public class Product {
 
   private String pictureType;
 
-  private long pictureVersion;
+  @Column(name = "picture_version")
+  private Long pictureVersion;
 
   @Column(name = "material_cost", nullable = false, precision = 10, scale = 2)
   private BigDecimal materialCost = BigDecimal.ZERO;
