@@ -15,4 +15,5 @@ public class DiscountValidateRequest {
   private String code;
   private String email;
   private BigDecimal subtotal;
+  private BigDecimal shippingTotal;
 }
