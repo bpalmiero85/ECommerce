@@ -107,7 +107,7 @@ public class OrderService {
     Order saved = orderRepository.save(order);
 
     if (saved.getOrderStatus() == OrderStatus.PAID) {
-      orderEmailService.sendOrderConfirmation(order);
+      orderEmailService.sendOrderConfirmation(saved);
     }
     return saved;
   }
@@ -236,6 +236,16 @@ public class OrderService {
   public List<Order> findOrderByStatus(OrderStatus status) {
     return orderRepository.findWithItemsByStatus(status);
 
+  }
+
+  private static final List<OrderStatus> RETURNING_CUSTOMER_STATUSES =
+    List.of(OrderStatus.PAID, OrderStatus.SHIPPED, OrderStatus.DELIVERED, OrderStatus.ARCHIVED);
+
+  public boolean hasPreviousOrder(String email) {
+    return orderRepository.existsByOrderEmailIgnoreCaseAndOrderStatusIn(
+      email,
+      RETURNING_CUSTOMER_STATUSES
+    );
   }
 
 }

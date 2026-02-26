@@ -17,6 +17,7 @@
 
   z-index: 1;
 }
+
 .orders-item-meta {
   font-size: 1.2rem;
   font-weight: bold;
@@ -40,8 +41,6 @@
   color: blue;
   cursor: pointer;
 }
-
-
 
 .orders-item {
   color: black;
@@ -464,7 +463,7 @@
 }
 
 .orders-card {
-  border: 1px solid rgba(121, 2, 206, 0.25);
+  border: 1px solid rgba(121, 2, 206, 0.651);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.95);
   overflow: hidden;

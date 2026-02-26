@@ -13,44 +13,48 @@ import com.example.demo.model.OrderStatus;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    @Query("""
-            select distinct o
-            from Order o
-            left join fetch o.items
-            where o.orderStatus in :statuses
-            order by o.createdAt desc
-            """)
-    List<Order> findWithItemsByStatuses(@Param("statuses") List<OrderStatus> statuses);
+        @Query("""
+                        select distinct o
+                        from Order o
+                        left join fetch o.items
+                        where o.orderStatus in :statuses
+                        order by o.createdAt desc
+                        """)
+        List<Order> findWithItemsByStatuses(@Param("statuses") List<OrderStatus> statuses);
 
-    @Query("""
-            select distinct o
-            from Order o
-            left join fetch o.items
-            where o.orderStatus = :status
-            order by o.createdAt desc
-            """)
-    List<Order> findWithItemsByStatus(@Param("status") OrderStatus status);
+        @Query("""
+                        select distinct o
+                        from Order o
+                        left join fetch o.items
+                        where o.orderStatus = :status
+                        order by o.createdAt desc
+                        """)
+        List<Order> findWithItemsByStatus(@Param("status") OrderStatus status);
 
-    @EntityGraph(attributePaths = "items")
-    List<Order> findByOrderEmailIgnoreCaseOrderByCreatedAtDesc(String email);
+        @EntityGraph(attributePaths = "items")
+        List<Order> findByOrderEmailIgnoreCaseOrderByCreatedAtDesc(String email);
 
-    List<Order> findByOrderStatusOrderByCreatedAtAsc(OrderStatus status);
+        List<Order> findByOrderStatusOrderByCreatedAtAsc(OrderStatus status);
 
-    List<Order> findByNeedsFollowUpTrueAndFollowUpResolvedAtIsNullOrderByCreatedAtDesc();
+        List<Order> findByNeedsFollowUpTrueAndFollowUpResolvedAtIsNullOrderByCreatedAtDesc();
 
-    @EntityGraph(attributePaths = "items")
-    List<Order> findAllByOrderStatusNotInOrderByCreatedAtAsc(List<OrderStatus> statuses);
+        @EntityGraph(attributePaths = "items")
+        List<Order> findAllByOrderStatusNotInOrderByCreatedAtAsc(List<OrderStatus> statuses);
 
-    @EntityGraph(attributePaths = "items")
-    List<Order> findAllByOrderByCreatedAtAsc();
+        @EntityGraph(attributePaths = "items")
+        List<Order> findAllByOrderByCreatedAtAsc();
 
-    @EntityGraph(attributePaths = "items")
-    List<Order> findByCreatedAtBetween(Instant start, Instant end);
+        @EntityGraph(attributePaths = "items")
+        List<Order> findByCreatedAtBetween(Instant start, Instant end);
 
-    @EntityGraph(attributePaths = "items")
-    List<Order> findByOrderStatusAndCreatedAtBetween(OrderStatus status, Instant start, Instant end);
+        @EntityGraph(attributePaths = "items")
+        List<Order> findByOrderStatusAndCreatedAtBetween(OrderStatus status, Instant start, Instant end);
 
-    @EntityGraph(attributePaths = "items")
-    List<Order> findByOrderStatusInAndCreatedAtBetween(List<OrderStatus> statuses, Instant start, Instant end);
+        @EntityGraph(attributePaths = "items")
+        List<Order> findByOrderStatusInAndCreatedAtBetween(List<OrderStatus> statuses, Instant start, Instant end);
+
+        boolean existsByOrderEmailIgnoreCaseAndOrderStatusIn(String email, List<OrderStatus> statuses);
+
+        boolean existsByOrderEmailIgnoreCase(String email);
 
 }
