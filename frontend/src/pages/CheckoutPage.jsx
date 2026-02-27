@@ -44,6 +44,14 @@ export default function CheckoutPage({ onSuccess }) {
 
   const shippingDebounceRef = useRef(null);
 
+  // Discount code/free shipping state
+  const [discountCode, setDiscountCode] = useState("");
+  const [discountEmail, setDiscountEmail] = useState("");
+  const [discountMessage, setDiscountMessage] = useState("");
+  const [discountTotal, setDiscountTotal] = useState(0);
+  const [finalShippingTotal, setFinalShippingTotal] = useState(0);
+  const [freeShippingApplied, setFreeShippingApplied] = useState(false);
+
   // Access the shopping cart context to calculate subtotal.
   const { cartItems, clearCartAfterPayment } = useContext(CartContext);
   const subtotal = cartItems.reduce(
@@ -244,12 +252,15 @@ export default function CheckoutPage({ onSuccess }) {
         stateNow === "OH" ? Number((subtotal * 0.0725).toFixed(2)) : 0;
 
       const shippingTotal =
-        shippingRate != null ? Number(Number(shippingRate).toFixed(2)) : 0;
+        finalShippingTotal != null
+          ? Number(Number(finalShippingTotal).toFixed(2))
+          : 0;
 
-      const discountTotal = 0;
+      const discountToApply =
+        discountTotal != null ? Number(Number(discountTotal).toFixed(2)) : 0;
 
       const total = Number(
-        (subtotal + taxTotal + shippingTotal - discountTotal).toFixed(2),
+        (subtotal + taxTotal + shippingTotal - discountToApply).toFixed(2),
       );
 
       log("TOTALS:", {
@@ -317,8 +328,8 @@ export default function CheckoutPage({ onSuccess }) {
         paymentIntentId: result.paymentIntent.id,
         status: "PAID",
         shippingTotal,
+        discountTotal: discountToApply,
         taxTotal,
-        discountTotal,
         total: Number(total.toFixed(2)),
 
         items: cartItems.map((it) => ({
@@ -411,6 +422,45 @@ export default function CheckoutPage({ onSuccess }) {
     }
   };
 
+  const handleApplyDiscount = async () => {
+    try {
+      const shippingTotal =
+        shippingRate != null ? Number(Number(shippingRate).toFixed(2)) : 0;
+      const resp = await fetch(`${API_BASE_URL}/api/discounts/validate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: discountCode,
+          email: discountEmail,
+          subtotal: Number(subtotal.toFixed(2)),
+          shippingTotal,
+        }),
+      });
+
+      const data = await resp.json().catch(() => ({}));
+
+      if (!resp.ok) {
+        throw new Error(data?.message || "Discount validation failed.");
+      }
+      setDiscountMessage(data.message || "");
+      setDiscountTotal(Number(data.discountTotal || 0));
+      setFinalShippingTotal(
+        Number(
+          data.finalShippingTotal != null
+            ? data.finalShippingTotal
+            : shippingTotal,
+        ) || 0,
+      );
+      setFreeShippingApplied(Boolean(data.freeShippingApplied));
+    } catch (e) {
+      setDiscountMessage(e.message || "Could not apply discount.");
+      setDiscountTotal(0);
+      setFinalShippingTotal(
+        shippingRate != null ? Number(Number(shippingRate).toFixed(2)) : 0,
+      );
+    }
+  };
+
   const getShipScheduleNote = () => {
     const day = new Date().getDay();
 
@@ -481,6 +531,11 @@ export default function CheckoutPage({ onSuccess }) {
       setShippingCheapest(cheapest);
       setSelectedRateId(cheapest?.object_id || null);
       setShippingRate(cheapest ? Number(cheapest.amount) : null);
+      const quote = cheapest ? Number(cheapest.amount) : 0;
+      setFinalShippingTotal(Number(quote.toFixed(2)));
+      setDiscountTotal(0);
+      setFreeShippingApplied(false);
+      setDiscountMessage("");
     } catch (err) {
       logError("Shipping error:", err);
       setShippingRate(null);
@@ -703,9 +758,11 @@ export default function CheckoutPage({ onSuccess }) {
                 type="email"
                 value={email}
                 onChange={(e) => {
+                  const v = e.target.value;
                   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                  setIsEmailValid(regex.test(e.target.value));
-                  setEmail(e.target.value);
+                  setIsEmailValid(regex.test(v));
+                  setEmail(v);
+                  setDiscountEmail(v);
                 }}
                 required
               />
@@ -766,6 +823,22 @@ export default function CheckoutPage({ onSuccess }) {
                 required
               />
             </label>
+          </div>
+
+          <div className="discount-box">
+            <label>Discount code</label>
+            <input
+              value={discountCode}
+              onChange={(e) => setDiscountCode(e.target.value)}
+              placeholder="e.g. CRYPT10"
+            />
+            <label>Email (only for returning-customer codes)</label>
+
+            <button type="button" onClick={handleApplyDiscount}>
+              Apply
+            </button>
+
+            {discountMessage && <p>{discountMessage}</p>}
           </div>
 
           {/* Stripe CardElement for secure card input */}

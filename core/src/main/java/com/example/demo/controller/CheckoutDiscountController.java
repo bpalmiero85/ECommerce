@@ -25,7 +25,9 @@ public class CheckoutDiscountController {
     DiscountValidateResponse response = discountService.validateDiscount(
         request.getCode(),
         request.getEmail(),
-        request.getSubtotal());
+        request.getSubtotal(),
+        request.getShippingTotal()
+      );
 
     return ResponseEntity.ok(response);
   }
