@@ -47,6 +47,11 @@ public class AdminController {
     return ResponseEntity.ok(updated);
   }
 
+  @GetMapping("/discounts/all")
+  public List<Discount> getAllDiscounts() {
+    return discountService.getAllDiscounts();
+  }
+
   @GetMapping
   public String adminCheck() {
     return "Admin access OK";

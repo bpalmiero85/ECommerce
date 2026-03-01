@@ -30,6 +30,7 @@ const AdminPage = () => {
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [discountCode, setDiscountCode] = useState("");
   const [discountValue, setDiscountValue] = useState("");
+  const [discountList, setDiscountList] = useState([]);
   const formRef = useRef(null);
   const mainFileRef = useRef(null);
   const editFileRef = useRef(null);
@@ -336,22 +337,68 @@ const AdminPage = () => {
           body: JSON.stringify(payload),
         },
       );
-      const bodyText = await response.text();
+      const body = await response.text();
       if (!response.ok) {
         logError("Create discount failed", {
           status: response.status,
-          body: bodyText,
+          body: body,
           payload,
         });
         return;
       }
+      await fetchDiscounts();
       setDiscountCode("");
       setDiscountValue("");
       window.alert("Discount code created!");
+      return;
     } catch (e) {
       logError("Create discount failed (exception)", e);
     }
   };
+
+  const handleToggleDiscountEnabled = async (discountId) => {
+    try {
+      const response = await authedFetch(
+        `${API_BASE_URL}/api/admin/discounts/${discountId}/toggle-enabled`,
+        {
+          method: "PATCH",
+        },
+      );
+
+      const body = await response.json();
+      if (!response.ok) {
+        logError("Toggle discount failed", {
+          status: response.status,
+          body: body,
+        });
+        window.alert("Failed to toggle discount enabled.");
+        return;
+      }
+      await fetchDiscounts();
+    } catch (e) {
+      logError("Toggle discount failed (exception)", e);
+      window.alert("Failed to toggle discount.");
+    }
+  };
+
+  const fetchDiscounts = useCallback(async () => {
+    try {
+      const res = await authedFetch(`${API_BASE_URL}/api/admin/discounts/all`, {
+        method: "GET",
+      });
+      if (!res.ok) throw new Error(`Fetch discounts failed (${res.status})`);
+      const data = await res.json();
+      setDiscountList(data);
+    } catch (e) {
+      logError("Error fetching discounts", e);
+    }
+  }, [authedFetch]);
+
+  useEffect(() => {
+    if (!auth) return;
+    if (activeTab !== "discount") return;
+    fetchDiscounts();
+  }, [auth, activeTab, fetchDiscounts]);
 
   const handleMainFileChange = (e) => {
     const file = e?.target?.files?.[0];
@@ -633,6 +680,16 @@ const AdminPage = () => {
     );
   }
 
+  const sortedDiscountList = [...discountList].sort((a, b) => {
+    // enabled first
+    if (a.enabled !== b.enabled) return a.enabled ? -1 : 1;
+
+    // then alphabetical by code (nice and predictable)
+    const ac = (a.discountCode ?? "").toUpperCase();
+    const bc = (b.discountCode ?? "").toUpperCase();
+    return ac.localeCompare(bc);
+  });
+
   return (
     <>
       <div className="home-container">
@@ -733,7 +790,7 @@ const AdminPage = () => {
                 value={discountCode}
                 onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
               />
-              <br />
+            
               <label className="discount-label">Amount:</label>
               <input
                 type="number"
@@ -744,9 +801,44 @@ const AdminPage = () => {
                   setDiscountValue(value < 0 ? (value = 0) : value);
                 }}
               />
+              <br />
               <button type="button" onClick={handleCreateDiscount}>
                 Save
               </button>
+            </div>
+            <div className="discount-list">
+              <ol>
+                {sortedDiscountList.map((d) => (
+                  <li key={d.discountId} className="discount-row">
+                    {d.enabled ? (
+                      <span className="discount-code-text">
+                        <strong>{d.discountCode}</strong>
+                      </span>
+                    ) : (
+                      <span className="discount-code-text">
+                        {d.discountCode}
+                      </span>
+                    )}{" "}
+                    <span className="discount-details">
+                      {d.type === "PERCENT_OFF"
+                        ? `• ${d.percentOff}% off`
+                        : `• ${d.type}`}
+                    </span>
+                    <button
+                      type="button"
+                      title={d.enabled ? "Click to disable" : "Click to enable"}
+                      className={
+                        d.enabled
+                          ? "discount-enabled-button"
+                          : "discount-toggle-button"
+                      }
+                      onClick={() => handleToggleDiscountEnabled(d.discountId)}
+                    >
+                      {d.enabled ? "Active" : "Inactive"}
+                    </button>
+                  </li>
+                ))}
+              </ol>
             </div>
           </div>
         ) : (

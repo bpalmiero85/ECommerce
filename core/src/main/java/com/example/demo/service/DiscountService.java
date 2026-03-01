@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -42,6 +43,10 @@ public class DiscountService {
     Discount d = discountRepository.findById(id).orElseThrow();
     d.setEnabled(!d.isEnabled());
     return discountRepository.save(d);
+  }
+
+  public List<Discount> getAllDiscounts() {
+    return discountRepository.findAll();
   }
 
   public DiscountValidateResponse validateDiscount(

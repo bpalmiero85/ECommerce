@@ -114,29 +114,172 @@
   border: none;
 }
 
+/* Discount Modal sizing: yours currently has clamp backwards */
 .discount-modal {
+  width: min(900px, 92vw);
+  max-width: 900px;
+  margin: 35px auto 0;
+  padding-bottom: 18px;
+}
+
+/* Inputs area: keep it tight and centered */
+.discount-inputs {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 10px 12px;
+  margin: 0 auto;
+  width: 200px;
+
+}
+
+.discount-inputs button {
+  grid-column: 1 / -1;
+  justify-self: end;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.18);
+  background: #bd6dfa;
+  color: white;
+  cursor: pointer;
+}
+
+.discount-inputs button:hover {
+  background: #9755ca;
+}
+
+/* List container */
+.discount-list {
+  width: 80%;
+  margin: 0 auto;
+  padding: 0 18px;
+}
+
+.discount-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  position: relative;
-  background-color: rgb(247, 185, 255);
-  color: black;
-  border-radius: 25px;
-  margin-top: 35px;
-  width: clamp(800px, 50vw, 400px);
-  min-height: 300px;
-  height: fit-content;
+  gap: 10px;
 }
 
-.discount-title {
-  background-color: rgb(222, 131, 255);
-  margin-bottom: 25px;
-  border-top-left-radius: 25px;
-  border-top-right-radius: 25px;
+/* Each row is a 3-column grid */
+.discount-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 120px;
+  align-items: center;
+  gap: 12px;
+
+  padding: 12px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(121, 2, 206, 0.18);
+  box-shadow: 1px 1px 6px rgba(0,0,0,0.10);
 }
 
-.discount-label {
-  font-size: 1.1rem;
-  margin-right: 10px;
+/* Column 1: code */
+.discount-code-text {
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  font-size: 1.05rem;
+  color: rgb(92, 0, 128);
+}
+
+/* Column 2: details */
+.discount-details {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 10px;
+  font-size: 0.95rem;
+  color: rgba(0,0,0,0.75);
+}
+
+/* Disabled pill */
+.discount-disabled-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  background: rgba(0,0,0,0.08);
+  border: 1px solid rgba(0,0,0,0.14);
+}
+
+/* Column 3: button, consistent sizing */
+.discount-status-button {
+  justify-self: end;
+  width: 110px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.18);
+  color: white;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* On/Off variants */
+.discount-status-button.is-on {
+  background-color: rgb(12, 147, 12);
+}
+.discount-status-button.is-on:hover {
+  background-color: rgb(6, 105, 6);
+}
+
+.discount-status-button.is-off {
+  background-color: #bc6df9;
+}
+.discount-status-button.is-off:hover {
+  background-color: #9755ca;
+}
+
+/* Mobile: stack nicely */
+@media (max-width: 560px) {
+  .discount-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    text-align: left;
+  }
+
+  .discount-status-button {
+    justify-self: start;
+  }
+
+  .discount-inputs {
+    grid-template-columns: 1fr;
+  }
+
+  .discount-label {
+    margin-right: 0;
+  }
+}
+
+
+
+
+
+
+.discount-enabled-button {
+  border-radius: 5px;
+  padding: 2px 4px;
+  cursor: pointer;
+  background-color: rgb(12, 147, 12);
+  color: white;
+}
+
+.discount-enabled-button:hover {
+  background-color: rgb(6, 105, 6);
+}
+.discount-toggle-button {
+  border-radius: 5px;
+  padding: 2px 4px;
+  cursor: pointer;
+  background-color: #bc6df9;
+  color: white;
+}
+
+.discount-toggle-button:hover {
+  background-color: #9755ca;
 }
 
 .admin-tabs button.active-tab {
