@@ -28,6 +28,8 @@ const AdminPage = () => {
   const [authVerified, setAuthVerified] = useState(false);
   const [authAttempted, setAuthAttempted] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+  const [discountCode, setDiscountCode] = useState("");
+  const [discountValue, setDiscountValue] = useState("");
   const formRef = useRef(null);
   const mainFileRef = useRef(null);
   const editFileRef = useRef(null);
@@ -210,6 +212,8 @@ const AdminPage = () => {
           : `?_=${Date.now()}`;
       const url = `${base}${qs}`;
 
+      if (activeTab === "discount") return;
+
       let response;
       if (activeTab === "all") {
         response = await fetch(url, { method: "GET", cache: "no-store" });
@@ -312,6 +316,40 @@ const AdminPage = () => {
       });
     } catch (error) {
       logError("Error submitting product", error);
+    }
+  };
+
+  const handleCreateDiscount = async () => {
+    try {
+      const payload = {
+        discountCode,
+        type: "PERCENT_OFF",
+        percentOff: Number(discountValue),
+        enabled: true,
+        returningCustomerOnly: false,
+      };
+      const response = await authedFetch(
+        `${API_BASE_URL}/api/admin/discounts`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
+      const bodyText = await response.text();
+      if (!response.ok) {
+        logError("Create discount failed", {
+          status: response.status,
+          body: bodyText,
+          payload,
+        });
+        return;
+      }
+      setDiscountCode("");
+      setDiscountValue("");
+      window.alert("Discount code created!");
+    } catch (e) {
+      logError("Create discount failed (exception)", e);
     }
   };
 
@@ -626,6 +664,12 @@ const AdminPage = () => {
           >
             Archived
           </button>
+          <button
+            className={activeTab === "discount" ? "active-tab" : ""}
+            onClick={() => setActiveTab("discount")}
+          >
+            Discount Codes
+          </button>
         </div>
         <div>
           <button type="button" onClick={handleOpenMetricsDashboard}>
@@ -678,362 +722,407 @@ const AdminPage = () => {
             </div>
           )}
         </div>
-        <div className="product-form">
-          <h1>Admin Home</h1>
-          <h3>List an item:</h3>
-          {isEditingId === null && (
-            <form onSubmit={handleSubmit} id="productForm" ref={formRef}>
+        {activeTab === "discount" ? (
+          <div className={"discount-modal"}>
+            <h2 className="discount-title">Discount Codes</h2>
+            <div className="discount-inputs">
+              <label className="discount-label">Code:</label>
               <input
                 type="text"
-                placeholder="Name"
-                className="product-input-field"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
+                className="discount-input-field"
+                value={discountCode}
+                onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
               />
-
-              <textarea
-                placeholder="Description"
-                className="product-input-field-description"
-                ref={createDescriptionRef}
-                value={description}
+              <br />
+              <label className="discount-label">Amount:</label>
+              <input
+                type="number"
+                className="discount-input-field"
+                value={discountValue}
                 onChange={(e) => {
-                  if (createDescriptionRef.current) {
-                    createDescriptionRef.current.style.height = "auto";
-                    createDescriptionRef.current.style.height =
-                      createDescriptionRef.current.scrollHeight + "px";
-                  }
-                  setDescription(e.target.value);
+                  let value = e.target.value;
+                  setDiscountValue(value < 0 ? (value = 0) : value);
                 }}
-                required
               />
-
-              <input
-                type="number"
-                placeholder="$Price"
-                className="product-input-field"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                required
-              />
-
-              <input
-                type="number"
-                placeholder="Quantity on hand"
-                className="product-input-field"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                required
-              />
-              <div className="category-select">
-                <label className="input-label">
-                  <strong>Category:</strong>
-                </label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>
-                    -- Select a category --
-                  </option>
-                  {CATEGORIES.filter((category) => category).map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-                <div className="check-boxes">
-                  <div className="featured-select">
-                    <label
-                      className="featured-flag"
-                      style={{ display: "flex", gap: 8, alignItems: "center" }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isFeatured}
-                        onChange={(e) => setIsFeatured(e.target.checked)}
-                      />
-                      Featured
-                    </label>
-                  </div>
-                  <div className="new-select">
-                    <label
-                      className="featured-flag"
-                      style={{ display: "flex", gap: 8, alignItems: "center" }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isNewArrival}
-                        onChange={(e) => setIsNewArrival(e.target.checked)}
-                      />
-                      New Arrival
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <div className="label-header">
-                <div className="label-header">Upload Product Picture</div>
-                <input
-                  key={mainFileKey}
-                  ref={mainFileRef}
-                  type="file"
-                  accept="image/*, .jpg, .jpeg, .png"
-                  className="file-input-field"
-                  onChange={handleMainFileChange}
-                />
-              </div>
-
-              <button className="submit" type="submit">
-                {isEditingId ? "Save Changes" : "Post"}
+              <button type="button" onClick={handleCreateDiscount}>
+                Save
               </button>
-            </form>
-          )}
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="product-form">
+              <h1>Admin Home</h1>
+              <h3>List an item:</h3>
+              {isEditingId === null && (
+                <form onSubmit={handleSubmit} id="productForm" ref={formRef}>
+                  <input
+                    type="text"
+                    placeholder="Name"
+                    className="product-input-field"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
 
-          {products.length > 0 && (
-            <h1 className="items-for-sale-header">Items for sale: </h1>
-          )}
-        </div>
-        <div className="product-grid-container">
-          {products.length > 0 ? (
-            products.map((product) => (
-              <div key={product.id} className="product-card">
-                {product.featured && (
-                  <span className="badge-purple">Featured</span>
-                )}
-                {product.newArrival && (
-                  <span className="badge-purple">New Arrival!</span>
-                )}
+                  <textarea
+                    placeholder="Description"
+                    className="product-input-field-description"
+                    ref={createDescriptionRef}
+                    value={description}
+                    onChange={(e) => {
+                      if (createDescriptionRef.current) {
+                        createDescriptionRef.current.style.height = "auto";
+                        createDescriptionRef.current.style.height =
+                          createDescriptionRef.current.scrollHeight + "px";
+                      }
+                      setDescription(e.target.value);
+                    }}
+                    required
+                  />
 
-                <div id={`${product.id}`} className="product-item">
-                  <div className="product-buttons">
-                    <ProductPicture
-                      productId={product.id}
-                      onUpload={() => fetchProducts()}
-                    />
+                  <input
+                    type="number"
+                    placeholder="$Price"
+                    className="product-input-field"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    required
+                  />
 
-                    <div className="product-edit-button">
-                      <button
-                        onClick={() => {
-                          setIsEditingId(product.id);
-                          setName(product.name);
-                          setDescription(product.description);
-                          setPrice(product.price);
-                          setQuantity(product.quantity);
-                          setCategory(product.category);
-                          setIsFeatured(!!product.featured);
-                          setIsNewArrival(!!product.newArrival);
-
-                          document
-                            .getElementById(`${product.id}`)
-                            .scrollIntoView({ behavior: "smooth" });
-                        }}
-                      >
-                        edit
-                      </button>
-                    </div>
-                    <div className="product-archive-button">
-                      <button
-                        onClick={() => handleToggleArchiveProduct(product)}
-                      >
-                        {product.productArchived ? "Unarchive" : "Archive"}
-                      </button>
-                    </div>
-                    <div className="product-delete-button">
-                      <button onClick={() => handleDeleteProduct(product.id)}>
-                        delete
-                      </button>
+                  <input
+                    type="number"
+                    placeholder="Quantity on hand"
+                    className="product-input-field"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
+                    required
+                  />
+                  <div className="category-select">
+                    <label className="input-label">
+                      <strong>Category:</strong>
+                    </label>
+                    <select
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      required
+                    >
+                      <option value="" disabled>
+                        -- Select a category --
+                      </option>
+                      {CATEGORIES.filter((category) => category).map(
+                        (category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
+                        ),
+                      )}
+                    </select>
+                    <div className="check-boxes">
+                      <div className="featured-select">
+                        <label
+                          className="featured-flag"
+                          style={{
+                            display: "flex",
+                            gap: 8,
+                            alignItems: "center",
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isFeatured}
+                            onChange={(e) => setIsFeatured(e.target.checked)}
+                          />
+                          Featured
+                        </label>
+                      </div>
+                      <div className="new-select">
+                        <label
+                          className="featured-flag"
+                          style={{
+                            display: "flex",
+                            gap: 8,
+                            alignItems: "center",
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isNewArrival}
+                            onChange={(e) => setIsNewArrival(e.target.checked)}
+                          />
+                          New Arrival
+                        </label>
+                      </div>
                     </div>
                   </div>
-                  {product.pictureType ? (
-                    <div className="product-image">
-                      <img
-                        key={`pic-${product.id}-${
-                          product.pictureVersion || product.pictureType
-                        }`}
-                        src={`${API_BASE_URL}/api/product/${
-                          product.id
-                        }/picture?version=${
-                          product.pictureVersion || Date.now()
-                        }`}
-                        alt={product.name}
-                      ></img>
+
+                  <div className="label-header">
+                    <div className="label-header">Upload Product Picture</div>
+                    <input
+                      key={mainFileKey}
+                      ref={mainFileRef}
+                      type="file"
+                      accept="image/*, .jpg, .jpeg, .png"
+                      className="file-input-field"
+                      onChange={handleMainFileChange}
+                    />
+                  </div>
+
+                  <button className="submit" type="submit">
+                    {isEditingId ? "Save Changes" : "Post"}
+                  </button>
+                </form>
+              )}
+
+              {products.length > 0 && (
+                <h1 className="items-for-sale-header">Items for sale: </h1>
+              )}
+            </div>
+            <div className="product-grid-container">
+              {products.length > 0 ? (
+                products.map((product) => (
+                  <div key={product.id} className="product-card">
+                    {product.featured && (
+                      <span className="badge-purple">Featured</span>
+                    )}
+                    {product.newArrival && (
+                      <span className="badge-purple">New Arrival!</span>
+                    )}
+
+                    <div id={`${product.id}`} className="product-item">
+                      <div className="product-buttons">
+                        <ProductPicture
+                          productId={product.id}
+                          onUpload={() => fetchProducts()}
+                        />
+
+                        <div className="product-edit-button">
+                          <button
+                            onClick={() => {
+                              setIsEditingId(product.id);
+                              setName(product.name);
+                              setDescription(product.description);
+                              setPrice(product.price);
+                              setQuantity(product.quantity);
+                              setCategory(product.category);
+                              setIsFeatured(!!product.featured);
+                              setIsNewArrival(!!product.newArrival);
+
+                              document
+                                .getElementById(`${product.id}`)
+                                .scrollIntoView({ behavior: "smooth" });
+                            }}
+                          >
+                            edit
+                          </button>
+                        </div>
+                        <div className="product-archive-button">
+                          <button
+                            onClick={() => handleToggleArchiveProduct(product)}
+                          >
+                            {product.productArchived ? "Unarchive" : "Archive"}
+                          </button>
+                        </div>
+                        <div className="product-delete-button">
+                          <button
+                            onClick={() => handleDeleteProduct(product.id)}
+                          >
+                            delete
+                          </button>
+                        </div>
+                      </div>
+                      {product.pictureType ? (
+                        <div className="product-image">
+                          <img
+                            key={`pic-${product.id}-${
+                              product.pictureVersion || product.pictureType
+                            }`}
+                            src={`${API_BASE_URL}/api/product/${
+                              product.id
+                            }/picture?version=${
+                              product.pictureVersion || Date.now()
+                            }`}
+                            alt={product.name}
+                          ></img>
+                        </div>
+                      ) : (
+                        <div className="no-picture">No image yet</div>
+                      )}
+                      <div className="product-info-section">
+                        {isEditingId === product.id ? (
+                          // Inline edit form
+                          <form
+                            key={isEditingId || "none"}
+                            onSubmit={handleUpdateProduct}
+                            className="inline-edit-form"
+                          >
+                            <input
+                              ref={editFileRef}
+                              type="file"
+                              accept="image/*, .jpg, .jpeg, .png"
+                              className="product-input-field"
+                              onChange={handleFileChange(product.id)}
+                            ></input>
+
+                            <label>
+                              Name:
+                              <input
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                required
+                              />
+                            </label>
+
+                            <label>
+                              Description:
+                              <textarea
+                                ref={editDescriptionRef}
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                required
+                              />
+                            </label>
+
+                            <label>
+                              Price:
+                              <input
+                                type="number"
+                                value={price}
+                                onChange={(e) => setPrice(e.target.value)}
+                                required
+                              />
+                            </label>
+
+                            <label>
+                              Quantity:
+                              <input
+                                type="number"
+                                value={quantity}
+                                onChange={(e) => setQuantity(e.target.value)}
+                                required
+                              />
+                            </label>
+
+                            <label>
+                              Category:
+                              <select
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                              >
+                                {CATEGORIES.map((category) => (
+                                  <option key={category} value={category}>
+                                    {category}
+                                  </option>
+                                ))}
+                              </select>
+                              <label>
+                                Featured
+                                <input
+                                  type="checkbox"
+                                  checked={isFeatured}
+                                  onChange={(e) =>
+                                    setIsFeatured(e.target.checked)
+                                  }
+                                ></input>
+                              </label>
+                              <label>
+                                New Arrivals
+                                <input
+                                  type="checkbox"
+                                  checked={isNewArrival}
+                                  onChange={(e) =>
+                                    setIsNewArrival(e.target.checked)
+                                  }
+                                />
+                              </label>
+                            </label>
+
+                            <button className="edit-button" type="submit">
+                              Save
+                            </button>
+                            <button
+                              className="edit-button"
+                              type="button"
+                              onClick={() => {
+                                setIsEditingId(null);
+                                setName("");
+                                setDescription("");
+                                setPrice("");
+                                setQuantity("");
+                                setCategory("");
+                                setSelectedFile(null);
+                                setIsFeatured(false);
+                                setIsNewArrival(false);
+                                if (editFileRef.current) {
+                                  editFileRef.current.value = "";
+                                }
+                              }}
+                            >
+                              Cancel
+                            </button>
+                          </form>
+                        ) : (
+                          <>
+                            <div className="admin-product-container">
+                              <div className="product-name">{product.name}</div>
+                              <div className="product-category">
+                                Category: {product.category}
+                              </div>
+
+                              <div className="product-description">
+                                {product.description}
+                              </div>
+
+                              <p className="product-price">
+                                Price: ${product.price}
+                              </p>
+                              <p className="product-quantity">
+                                Quantity: {product.quantity}
+                              </p>
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  ) : (
-                    <div className="no-picture">No image yet</div>
-                  )}
-                  <div className="product-info-section">
-                    {isEditingId === product.id ? (
-                      // Inline edit form
-                      <form
-                        key={isEditingId || "none"}
-                        onSubmit={handleUpdateProduct}
-                        className="inline-edit-form"
-                      >
+
+                    {product.pictureType == null && (
+                      <>
                         <input
-                          ref={editFileRef}
+                          ref={(el) => (cardFileRefs.current[product.id] = el)}
                           type="file"
                           accept="image/*, .jpg, .jpeg, .png"
                           className="product-input-field"
                           onChange={handleFileChange(product.id)}
-                        ></input>
+                        />
 
-                        <label>
-                          Name:
-                          <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            required
-                          />
-                        </label>
-
-                        <label>
-                          Description:
-                          <textarea
-                            ref={editDescriptionRef}
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            required
-                          />
-                        </label>
-
-                        <label>
-                          Price:
-                          <input
-                            type="number"
-                            value={price}
-                            onChange={(e) => setPrice(e.target.value)}
-                            required
-                          />
-                        </label>
-
-                        <label>
-                          Quantity:
-                          <input
-                            type="number"
-                            value={quantity}
-                            onChange={(e) => setQuantity(e.target.value)}
-                            required
-                          />
-                        </label>
-
-                        <label>
-                          Category:
-                          <select
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                          >
-                            {CATEGORIES.map((category) => (
-                              <option key={category} value={category}>
-                                {category}
-                              </option>
-                            ))}
-                          </select>
-                          <label>
-                            Featured
-                            <input
-                              type="checkbox"
-                              checked={isFeatured}
-                              onChange={(e) => setIsFeatured(e.target.checked)}
-                            ></input>
-                          </label>
-                          <label>
-                            New Arrivals
-                            <input
-                              type="checkbox"
-                              checked={isNewArrival}
-                              onChange={(e) =>
-                                setIsNewArrival(e.target.checked)
-                              }
-                            />
-                          </label>
-                        </label>
-
-                        <button className="edit-button" type="submit">
-                          Save
-                        </button>
                         <button
-                          className="edit-button"
                           type="button"
+                          className="upload-product-picture-button"
                           onClick={() => {
-                            setIsEditingId(null);
-                            setName("");
-                            setDescription("");
-                            setPrice("");
-                            setQuantity("");
-                            setCategory("");
-                            setSelectedFile(null);
-                            setIsFeatured(false);
-                            setIsNewArrival(false);
-                            if (editFileRef.current) {
-                              editFileRef.current.value = "";
-                            }
+                            const file = selectedFilesByProductId[product.id];
+                            if (!file)
+                              return logError(
+                                "Upload picture blocked: no file selected",
+                                { productId: product.id },
+                              );
+                            handleUploadProductPicture(product.id, file);
                           }}
                         >
-                          Cancel
+                          Upload Picture
                         </button>
-                      </form>
-                    ) : (
-                      <>
-                        <div className="admin-product-container">
-                          <div className="product-name">{product.name}</div>
-                          <div className="product-category">
-                            Category: {product.category}
-                          </div>
-
-                          <div className="product-description">
-                            {product.description}
-                          </div>
-
-                          <p className="product-price">
-                            Price: ${product.price}
-                          </p>
-                          <p className="product-quantity">
-                            Quantity: {product.quantity}
-                          </p>
-                        </div>
                       </>
                     )}
                   </div>
+                ))
+              ) : (
+                <div className="no-products-available">
+                  <p>No products listed.</p>
                 </div>
-
-                {product.pictureType == null && (
-                  <>
-                    <input
-                      ref={(el) => (cardFileRefs.current[product.id] = el)}
-                      type="file"
-                      accept="image/*, .jpg, .jpeg, .png"
-                      className="product-input-field"
-                      onChange={handleFileChange(product.id)}
-                    />
-
-                    <button
-                      type="button"
-                      className="upload-product-picture-button"
-                      onClick={() => {
-                        const file = selectedFilesByProductId[product.id];
-                        if (!file)
-                          return logError(
-                            "Upload picture blocked: no file selected",
-                            { productId: product.id },
-                          );
-                        handleUploadProductPicture(product.id, file);
-                      }}
-                    >
-                      Upload Picture
-                    </button>
-                  </>
-                )}
-              </div>
-            ))
-          ) : (
-            <div className="no-products-available">
-              <p>No products listed.</p>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
     </>
   );
