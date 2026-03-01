@@ -714,19 +714,6 @@ export default function CheckoutPage({ onSuccess }) {
                 >
                   {getShipScheduleNote()}
                 </div>
-
-                <div style={{ marginTop: 6 }}>
-                  <h3>
-                    <strong>
-                      Estimated Total: $
-                      {(
-                        subtotal +
-                        (shippingState === "OH" ? subtotal * 0.0725 : 0) +
-                        shippingRate
-                      ).toFixed(2)}
-                    </strong>
-                  </h3>
-                </div>
               </div>
             )}
 
@@ -832,13 +819,25 @@ export default function CheckoutPage({ onSuccess }) {
               onChange={(e) => setDiscountCode(e.target.value)}
               placeholder="e.g. CRYPT10"
             />
-            <label>Email (only for returning-customer codes)</label>
 
             <button type="button" onClick={handleApplyDiscount}>
               Apply
             </button>
 
             {discountMessage && <p>{discountMessage}</p>}
+          </div>
+
+          <div style={{ marginTop: 6 }}>
+            <h3>
+              <strong>
+                Estimated Total: 
+                {(
+                  subtotal +
+                  (shippingState === "OH" ? subtotal * 0.0725 : 0) +
+                  shippingRate
+                ).toFixed(2)}
+              </strong>
+            </h3>
           </div>
 
           {/* Stripe CardElement for secure card input */}

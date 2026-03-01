@@ -18,21 +18,32 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.demo.dto.DiscountCreateRequestDTO;
+import com.example.demo.model.Discount;
 import com.example.demo.model.Product;
 import com.example.demo.service.ProductService;
+import com.example.demo.service.DiscountService;
 
 @RestController
 @RequestMapping("/api/admin")
 public class AdminController {
   private final ProductService productService;
+  private final DiscountService discountService;
 
-  public AdminController(ProductService productService) {
+  public AdminController(ProductService productService, DiscountService discountService) {
     this.productService = productService;
+    this.discountService = discountService;
   }
 
   @PatchMapping("/products/{id}/archive-toggle")
   public ResponseEntity<Product> toggleArchive(@PathVariable Long id) {
     Product updated = productService.toggleArchive(id);
+    return ResponseEntity.ok(updated);
+  }
+
+  @PatchMapping("/discounts/{id}/toggle-enabled")
+  public ResponseEntity<Discount> toggleDiscountEnabled(@PathVariable Long id) {
+    Discount updated = discountService.toggleEnabled(id);
     return ResponseEntity.ok(updated);
   }
 
@@ -54,6 +65,12 @@ public class AdminController {
   @GetMapping("/products/archived")
   public List<Product> getArchivedProducts() {
     return productService.getArchivedProducts();
+  }
+
+  @PostMapping("/discounts")
+  public ResponseEntity<Discount> createDiscount(@RequestBody DiscountCreateRequestDTO request) {
+    Discount created = discountService.createDiscount(request);
+    return ResponseEntity.ok(created);
   }
 
   @PostMapping("/product")

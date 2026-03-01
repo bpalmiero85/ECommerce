@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.dto.DiscountCreateRequestDTO;
 import com.example.demo.model.Discount;
 import com.example.demo.model.DiscountType;
 import com.example.demo.model.DiscountValidateResponse;
@@ -23,6 +24,24 @@ public class DiscountService {
   public DiscountService(DiscountRepository discountRepository, OrderService orderService) {
     this.discountRepository = discountRepository;
     this.orderService = orderService;
+  }
+
+  public Discount createDiscount(DiscountCreateRequestDTO request) {
+    Discount d = new Discount();
+
+    d.setDiscountCode(request.getDiscountCode());
+    d.setType(request.getType());
+    d.setPercentOff(request.getPercentOff());
+    d.setEnabled(request.isEnabled());
+    d.setReturningCustomerOnly(request.isReturningCustomerOnly());
+
+    return discountRepository.save(d);
+  }
+
+  public Discount toggleEnabled(Long id) {
+    Discount d = discountRepository.findById(id).orElseThrow();
+    d.setEnabled(!d.isEnabled());
+    return discountRepository.save(d);
   }
 
   public DiscountValidateResponse validateDiscount(
