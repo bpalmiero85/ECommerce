@@ -356,6 +356,24 @@ const AdminPage = () => {
     }
   };
 
+  const handleDeleteDiscount = async (discountId) => {
+    const ok = window.confirm("Delete this discount permanently?");
+    if (!ok) return;
+    try {
+      const res = await authedFetch(
+        `${API_BASE_URL}/api/admin/discounts/${discountId}/delete`,
+        { method: "DELETE" },
+      );
+      if (!res.ok) {
+        throw new Error("Could not delete discount. Please try again");
+      }
+     await fetchDiscounts();
+    } catch (e) {
+      logError("Delete discount failed", e);
+      window.alert("Failed to delete discount.");
+    }
+  };
+
   const handleToggleDiscountEnabled = async (discountId) => {
     try {
       const response = await authedFetch(
@@ -790,7 +808,7 @@ const AdminPage = () => {
                 value={discountCode}
                 onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
               />
-            
+
               <label className="discount-label">Amount:</label>
               <input
                 type="number"
@@ -824,6 +842,12 @@ const AdminPage = () => {
                         ? `• ${d.percentOff}% off`
                         : `• ${d.type}`}
                     </span>
+                    <button
+                      className="discount-delete-button"
+                      onClick={() => handleDeleteDiscount(d.discountId)}
+                    >
+                      Delete
+                    </button>
                     <button
                       type="button"
                       title={d.enabled ? "Click to disable" : "Click to enable"}

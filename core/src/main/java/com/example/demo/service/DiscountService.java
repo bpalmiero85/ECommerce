@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.DiscountCreateRequestDTO;
@@ -48,6 +49,15 @@ public class DiscountService {
   public List<Discount> getAllDiscounts() {
     return discountRepository.findAll();
   }
+
+  public Optional<Discount> getDiscountById(Long discountId) {
+    return discountRepository.findById(discountId);
+  }
+
+  public void deleteDiscount(Long discountId) {
+    discountRepository.deleteById(discountId);
+  }
+
 
   public DiscountValidateResponse validateDiscount(
       String code,

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -102,6 +103,18 @@ public class AdminController {
   public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product) {
     Product updatedProduct = productService.updateProduct(id, product);
     return ResponseEntity.ok(updatedProduct);
+  }
+
+  @DeleteMapping("/discounts/{discountId}/delete")
+  public ResponseEntity<Void> deleteDiscount(@PathVariable Long discountId) {
+    Optional<Discount> discount = discountService.getDiscountById(discountId);
+
+    if (discount.isPresent()) {
+      discountService.deleteDiscount(discountId);
+      return ResponseEntity.noContent().build();
+    }
+    return ResponseEntity.notFound().build();
+
   }
 
   @DeleteMapping("/products/{id}")
