@@ -31,6 +31,7 @@ const AdminPage = () => {
   const [discountCode, setDiscountCode] = useState("");
   const [discountValue, setDiscountValue] = useState("");
   const [discountList, setDiscountList] = useState([]);
+  const [holdSortUntil, setHoldSortUntil] = useState({});
   const formRef = useRef(null);
   const mainFileRef = useRef(null);
   const editFileRef = useRef(null);
@@ -326,7 +327,7 @@ const AdminPage = () => {
         discountCode,
         type: "PERCENT_OFF",
         percentOff: Number(discountValue),
-        enabled: true,
+        enabled: false,
         returningCustomerOnly: false,
       };
       const response = await authedFetch(
@@ -357,7 +358,7 @@ const AdminPage = () => {
   };
 
   const handleDeleteDiscount = async (discountId) => {
-    const ok = window.confirm("Delete this discount permanently?");
+    const ok = window.confirm("Are you sure you want to delete this discount?");
     if (!ok) return;
     try {
       const res = await authedFetch(
@@ -367,7 +368,7 @@ const AdminPage = () => {
       if (!res.ok) {
         throw new Error("Could not delete discount. Please try again");
       }
-     await fetchDiscounts();
+      await fetchDiscounts();
     } catch (e) {
       logError("Delete discount failed", e);
       window.alert("Failed to delete discount.");
@@ -375,6 +376,19 @@ const AdminPage = () => {
   };
 
   const handleToggleDiscountEnabled = async (discountId) => {
+    const HOLD_MS = 2000;
+
+    setDiscountList((prev) =>
+      prev.map((d) =>
+        d.discountId === discountId ? { ...d, enabled: !d.enabled } : d,
+      ),
+    );
+
+    setHoldSortUntil((prev) => ({
+      ...prev,
+      [discountId]: Date.now() + HOLD_MS,
+    }));
+
     try {
       const response = await authedFetch(
         `${API_BASE_URL}/api/admin/discounts/${discountId}/toggle-enabled`,
@@ -392,10 +406,30 @@ const AdminPage = () => {
         window.alert("Failed to toggle discount enabled.");
         return;
       }
-      await fetchDiscounts();
+
+      setTimeout(() => {
+        fetchDiscounts();
+        setHoldSortUntil((prev) => {
+          const next = { ...prev };
+          delete next[discountId];
+          return next;
+        });
+      }, HOLD_MS);
     } catch (e) {
       logError("Toggle discount failed (exception)", e);
       window.alert("Failed to toggle discount.");
+
+      setDiscountList((prev) =>
+        prev.map((d) =>
+          d.discountId === discountId ? { ...d, enabled: !d.enabled } : d,
+        ),
+      );
+
+      setHoldSortUntil((prev) => {
+        const next = { ...prev };
+        delete next[discountId];
+        return next;
+      });
     }
   };
 
@@ -698,15 +732,28 @@ const AdminPage = () => {
     );
   }
 
-  const sortedDiscountList = [...discountList].sort((a, b) => {
-    // enabled first
-    if (a.enabled !== b.enabled) return a.enabled ? -1 : 1;
+  const sortedDiscountList = (() => {
+    const now = Date.now();
+    const indexById = new Map(discountList.map((d, i) => [d.discountId, i]));
 
-    // then alphabetical by code (nice and predictable)
-    const ac = (a.discountCode ?? "").toUpperCase();
-    const bc = (b.discountCode ?? "").toUpperCase();
-    return ac.localeCompare(bc);
-  });
+    return [...discountList].sort((a, b) => {
+      const aHeld = (holdSortUntil[a.discountId] ?? 0) > now;
+      const bHeld = (holdSortUntil[b.discountId] ?? 0) > now;
+
+      if (aHeld || bHeld) {
+        return (
+          (indexById.get(a.discountId) ?? 0) -
+          (indexById.get(b.discountId) ?? 0)
+        );
+      }
+
+      if (a.enabled !== b.enabled) return a.enabled ? -1 : 1;
+
+      const ac = (a.discountCode ?? "").toUpperCase();
+      const bc = (b.discountCode ?? "").toUpperCase();
+      return ac.localeCompare(bc);
+    });
+  })();
 
   return (
     <>
@@ -842,24 +889,30 @@ const AdminPage = () => {
                         ? `• ${d.percentOff}% off`
                         : `• ${d.type}`}
                     </span>
-                    <button
-                      className="discount-delete-button"
-                      onClick={() => handleDeleteDiscount(d.discountId)}
-                    >
-                      Delete
-                    </button>
-                    <button
-                      type="button"
-                      title={d.enabled ? "Click to disable" : "Click to enable"}
-                      className={
-                        d.enabled
-                          ? "discount-enabled-button"
-                          : "discount-toggle-button"
-                      }
-                      onClick={() => handleToggleDiscountEnabled(d.discountId)}
-                    >
-                      {d.enabled ? "Active" : "Inactive"}
-                    </button>
+                    <div className="discount-actions">
+                      <button
+                        type="button"
+                        title={
+                          d.enabled ? "Click to disable discount code" : "Click to enable discount code"
+                        }
+                        className={
+                          d.enabled
+                            ? "discount-enabled-button"
+                            : "discount-toggle-button"
+                        }
+                        onClick={() =>
+                          handleToggleDiscountEnabled(d.discountId)
+                        }
+                      >
+                        {d.enabled ? "Active" : "Inactive"}
+                      </button>
+                      <button
+                        className="discount-delete-button"
+                        onClick={() => handleDeleteDiscount(d.discountId)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ol>
