@@ -32,6 +32,8 @@ const AdminPage = () => {
   const [discountValue, setDiscountValue] = useState("");
   const [discountList, setDiscountList] = useState([]);
   const [holdSortUntil, setHoldSortUntil] = useState({});
+  const stableIndexRef = useRef({});
+  const holdTimeoutRef = useRef({});
   const formRef = useRef(null);
   const mainFileRef = useRef(null);
   const editFileRef = useRef(null);
@@ -376,7 +378,12 @@ const AdminPage = () => {
   };
 
   const handleToggleDiscountEnabled = async (discountId) => {
-    const HOLD_MS = 2000;
+    const HOLD_MS = 300;
+
+    if (holdTimeoutRef.current[discountId]) {
+      clearTimeout(holdTimeoutRef.current[discountId]);
+      delete holdTimeoutRef.current[discountId];
+    }
 
     setDiscountList((prev) =>
       prev.map((d) =>
@@ -407,13 +414,16 @@ const AdminPage = () => {
         return;
       }
 
-      setTimeout(() => {
+      holdTimeoutRef.current[discountId] = setTimeout(() => {
         fetchDiscounts();
+
         setHoldSortUntil((prev) => {
           const next = { ...prev };
           delete next[discountId];
           return next;
         });
+
+        delete holdTimeoutRef.current[discountId];
       }, HOLD_MS);
     } catch (e) {
       logError("Toggle discount failed (exception)", e);
@@ -734,17 +744,17 @@ const AdminPage = () => {
 
   const sortedDiscountList = (() => {
     const now = Date.now();
-    const indexById = new Map(discountList.map((d, i) => [d.discountId, i]));
+    const getStableIndex = (id) => {
+      const idx = stableIndexRef.current[id];
+      return Number.isFinite(idx) ? idx : Number.MAX_SAFE_INTEGER;
+    };
 
-    return [...discountList].sort((a, b) => {
+    const list = [...discountList].sort((a, b) => {
       const aHeld = (holdSortUntil[a.discountId] ?? 0) > now;
       const bHeld = (holdSortUntil[b.discountId] ?? 0) > now;
 
       if (aHeld || bHeld) {
-        return (
-          (indexById.get(a.discountId) ?? 0) -
-          (indexById.get(b.discountId) ?? 0)
-        );
+        return getStableIndex(a.discountId) - getStableIndex(b.discountId);
       }
 
       if (a.enabled !== b.enabled) return a.enabled ? -1 : 1;
@@ -753,6 +763,12 @@ const AdminPage = () => {
       const bc = (b.discountCode ?? "").toUpperCase();
       return ac.localeCompare(bc);
     });
+
+    list.forEach((d, i) => {
+      stableIndexRef.current[d.discountId] = i;
+    });
+
+    return list;
   })();
 
   return (
@@ -893,7 +909,9 @@ const AdminPage = () => {
                       <button
                         type="button"
                         title={
-                          d.enabled ? "Click to disable discount code" : "Click to enable discount code"
+                          d.enabled
+                            ? "Click to disable discount code"
+                            : "Click to enable discount code"
                         }
                         className={
                           d.enabled
