@@ -32,6 +32,7 @@ const AdminPage = () => {
   const [discountValue, setDiscountValue] = useState("");
   const [discountList, setDiscountList] = useState([]);
   const [holdSortUntil, setHoldSortUntil] = useState({});
+  const [tabLockedUntil, setTabLockedUntil] = useState(0);
   const stableIndexRef = useRef({});
   const holdTimeoutRef = useRef({});
   const formRef = useRef(null);
@@ -129,6 +130,17 @@ const AdminPage = () => {
     },
     [auth, promptForAuth],
   );
+
+  useEffect(() => {
+  if (!tabLockedUntil) return;
+
+  const ms = Math.max(0, tabLockedUntil - Date.now());
+  const t = setTimeout(() => {
+    setTabLockedUntil(0);
+  }, ms);
+
+  return () => clearTimeout(t);
+}, [tabLockedUntil]);
 
   useEffect(() => {
     if (!isDashboardOpen) return;
@@ -776,35 +788,100 @@ const AdminPage = () => {
       <div className="home-container">
         <div className="admin-tabs">
           <button
-            className={activeTab === "all" ? "active-tab" : ""}
-            onClick={() => setActiveTab("all")}
+            className={
+              activeTab === "all"
+                ? Date.now() > tabLockedUntil
+                  ? "active-tab"
+                  : "active-tab active-tab-wait"
+                : ""
+            }
+            onClick={(e) => {
+              if (activeTab === "all") {
+                e.stopPropagation();
+                return;
+              }
+              setActiveTab("all");
+              setTabLockedUntil(Date.now() + 1100);
+            }}
           >
             All Products
           </button>
 
           <button
-            className={activeTab === "low-stock" ? "active-tab" : ""}
-            onClick={() => setActiveTab("low-stock")}
+            className={
+              activeTab === "low-stock"
+                ? Date.now() > tabLockedUntil
+                  ? "active-tab"
+                  : "active-tab active-tab-wait"
+                : ""
+            }
+            onClick={(e) => {
+               if (activeTab === "low-stock") {
+                e.stopPropagation();
+                return;
+              }
+              setActiveTab("low-stock");
+              setTabLockedUntil(Date.now() + 1100);
+            }}
           >
             Low Stock
           </button>
 
           <button
-            className={activeTab === "sold-out" ? "active-tab" : ""}
-            onClick={() => setActiveTab("sold-out")}
+            className={
+              activeTab === "sold-out"
+                ? Date.now() > tabLockedUntil
+                  ? "active-tab"
+                  : "active-tab active-tab-wait"
+                : ""
+            }
+            onClick={(e) => {
+               if (activeTab === "sold-out") {
+                e.stopPropagation();
+                return;
+              }
+              setActiveTab("sold-out");
+              setTabLockedUntil(Date.now() + 1100);
+            }}
           >
             Sold Out
           </button>
 
           <button
-            className={activeTab === "archived" ? "active-tab" : ""}
-            onClick={() => setActiveTab("archived")}
+            className={
+              activeTab === "archived"
+                ? Date.now() > tabLockedUntil
+                  ? "active-tab"
+                  : "active-tab active-tab-wait"
+                : ""
+            }
+            onClick={(e) => {
+               if (activeTab === "all") {
+                e.stopPropagation();
+                return;
+              }
+              setActiveTab("archived");
+              setTabLockedUntil(Date.now() + 1100);
+            }}
           >
             Archived
           </button>
           <button
-            className={activeTab === "discount" ? "active-tab" : ""}
-            onClick={() => setActiveTab("discount")}
+            className={
+              activeTab === "discount"
+                ? Date.now() > tabLockedUntil
+                  ? "active-tab"
+                  : "active-tab active-tab-wait"
+                : ""
+            }
+            onClick={(e) => {
+               if (activeTab === "all") {
+                e.stopPropagation();
+                return;
+              }
+              setActiveTab("discount");
+              setTabLockedUntil(Date.now() + 1100);
+            }}
           >
             Discount Codes
           </button>
@@ -861,31 +938,39 @@ const AdminPage = () => {
           )}
         </div>
         {activeTab === "discount" ? (
-          <div className={"discount-modal"}>
-            <h2 className="discount-title">Discount Codes</h2>
-            <div className="discount-inputs">
-              <label className="discount-label">Code:</label>
-              <input
-                type="text"
-                className="discount-input-field"
-                value={discountCode}
-                onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
-              />
+          <div className="discount-modal">
+            <div className="discount-form">
+              <h2 className="discount-title">Create Discount Code</h2>
+              <div className="discount-inputs">
+                <label className="discount-label">Code:</label>
+                <input
+                  type="text"
+                  className="discount-input-field"
+                  value={discountCode}
+                  onChange={(e) =>
+                    setDiscountCode(e.target.value.toUpperCase())
+                  }
+                />
 
-              <label className="discount-label">Amount:</label>
-              <input
-                type="number"
-                className="discount-input-field"
-                value={discountValue}
-                onChange={(e) => {
-                  let value = e.target.value;
-                  setDiscountValue(value < 0 ? (value = 0) : value);
-                }}
-              />
-              <br />
-              <button type="button" onClick={handleCreateDiscount}>
-                Save
-              </button>
+                <label className="discount-label">Amount:</label>
+                <input
+                  type="number"
+                  className="discount-input-field"
+                  value={discountValue}
+                  onChange={(e) => {
+                    let value = e.target.value;
+                    setDiscountValue(value < 0 ? (value = 0) : value);
+                  }}
+                />
+                <br />
+                <button
+                  type="button"
+                  className="save-discount-button"
+                  onClick={handleCreateDiscount}
+                >
+                  Save
+                </button>
+              </div>
             </div>
             <div className="discount-list">
               <ol>
