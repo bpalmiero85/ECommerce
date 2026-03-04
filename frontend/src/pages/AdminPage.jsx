@@ -132,15 +132,15 @@ const AdminPage = () => {
   );
 
   useEffect(() => {
-  if (!tabLockedUntil) return;
+    if (!tabLockedUntil) return;
 
-  const ms = Math.max(0, tabLockedUntil - Date.now());
-  const t = setTimeout(() => {
-    setTabLockedUntil(0);
-  }, ms);
+    const ms = Math.max(0, tabLockedUntil - Date.now());
+    const t = setTimeout(() => {
+      setTabLockedUntil(0);
+    }, ms);
 
-  return () => clearTimeout(t);
-}, [tabLockedUntil]);
+    return () => clearTimeout(t);
+  }, [tabLockedUntil]);
 
   useEffect(() => {
     if (!isDashboardOpen) return;
@@ -335,7 +335,7 @@ const AdminPage = () => {
     }
   };
 
-  const handleCreateDiscount = async () => {
+  const handleCreateDiscount = async (e) => {
     try {
       const payload = {
         discountCode,
@@ -344,6 +344,28 @@ const AdminPage = () => {
         enabled: false,
         returningCustomerOnly: false,
       };
+      const part = discountCode.replace(/[0-9]/g, "").toUpperCase();
+      const similar = discountList.some((d) => d.discountCode.replace(/[0-9]/g, "").toUpperCase() === part);
+      const exists = discountList.some(
+        (d) =>
+          d.discountCode.toUpperCase() === discountCode.trim().toUpperCase(),
+      );
+      if (similar) {
+        const confirm = window.confirm(
+          "Discount code is very similar to an existing code. Do you want to proceed?",
+        );
+        if (!confirm) {
+          setDiscountCode("");
+          setDiscountValue("");
+          return;
+        }
+      }
+      if (exists) {
+        window.alert("Discount code already exists. Please try again.");
+        setDiscountCode("");
+        setDiscountValue("");
+        return;
+      }
       const response = await authedFetch(
         `${API_BASE_URL}/api/admin/discounts`,
         {
@@ -361,6 +383,7 @@ const AdminPage = () => {
         });
         return;
       }
+
       await fetchDiscounts();
       setDiscountCode("");
       setDiscountValue("");
@@ -816,7 +839,7 @@ const AdminPage = () => {
                 : ""
             }
             onClick={(e) => {
-               if (activeTab === "low-stock") {
+              if (activeTab === "low-stock") {
                 e.stopPropagation();
                 return;
               }
@@ -836,7 +859,7 @@ const AdminPage = () => {
                 : ""
             }
             onClick={(e) => {
-               if (activeTab === "sold-out") {
+              if (activeTab === "sold-out") {
                 e.stopPropagation();
                 return;
               }
@@ -856,7 +879,7 @@ const AdminPage = () => {
                 : ""
             }
             onClick={(e) => {
-               if (activeTab === "all") {
+              if (activeTab === "archived") {
                 e.stopPropagation();
                 return;
               }
@@ -875,7 +898,7 @@ const AdminPage = () => {
                 : ""
             }
             onClick={(e) => {
-               if (activeTab === "all") {
+              if (activeTab === "discount") {
                 e.stopPropagation();
                 return;
               }
