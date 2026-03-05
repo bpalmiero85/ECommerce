@@ -48,6 +48,10 @@ public class Discount {
   @Column(name = "percent_off", precision = 5, scale = 2)
   private BigDecimal percentOff;
 
+  @DecimalMin("0.01")
+  @Column(name = "dollar_off", precision = 10, scale = 2)
+  private BigDecimal dollarOff;
+
   @Column(name = "starts_at")
   private Instant startsAt;
 
@@ -70,8 +74,16 @@ public class Discount {
       if (percentOff == null) {
         throw new IllegalStateException("percentOff is required for PERCENT_OFF discounts.");
       }
+      dollarOff = null;
+
+    } else if (type == DiscountType.DOLLAR_OFF) {
+      if (dollarOff == null) {
+        throw new IllegalStateException("dollarOff is required for DOLLAR_OFF discounts.");
+      }
+      percentOff = null;
     } else if (type == DiscountType.FREE_SHIPPING) {
       percentOff = null;
+      dollarOff = null;
     }
     Instant now = Instant.now();
     if (createdAt == null)

@@ -624,99 +624,6 @@ export default function CheckoutPage({ onSuccess }) {
         <form onSubmit={handleSubmit}>
           {/* Display subtotal */}
           <div className="payment-form">
-            <h3>Subtotal: ${subtotal.toFixed(2)}</h3>
-            {shippingState.trim().toUpperCase() === "OH" && (
-              <h3>Ohio sales tax: ${(subtotal * 0.0725).toFixed(2)}</h3>
-            )}
-
-            {shippingError && (
-              <div className="inline-card-error" style={{ marginTop: "6px" }}>
-                {shippingError}
-              </div>
-            )}
-
-            {shippingOptions.length > 0 && (
-              <div style={{ marginTop: 10 }}>
-                <div style={{ fontWeight: 600, marginBottom: 6 }}>
-                  Choose shipping (defaults to least expensive):
-                </div>
-
-                <select
-                  className="shipping-options"
-                  value={selectedRateId || ""}
-                  onChange={(e) => {
-                    const rateId = e.target.value;
-                    setSelectedRateId(rateId);
-
-                    const chosen =
-                      shippingOptions.find((o) => o.object_id === rateId) ||
-                      null;
-
-                    if (chosen) {
-                      setShippingRate(Number(chosen.amount));
-                      setShippingCheapest(chosen);
-                    } else {
-                      setShippingRate(null);
-                      setShippingCheapest(null);
-                    }
-                  }}
-                >
-                  <option value="" disabled>
-                    -- choose shipping --
-                  </option>
-
-                  {shippingOptions.map((opt) => {
-                    const service =
-                      opt?.servicelevel?.display_name ||
-                      opt?.servicelevel?.name ||
-                      "Shipping";
-
-                    const days =
-                      opt.estimated_days != null
-                        ? ` (${opt.estimated_days}d est)`
-                        : "";
-
-                    const label = `${service} • $${Number(opt.amount).toFixed(2)}${days}`;
-
-                    return (
-                      <option key={opt.object_id} value={opt.object_id}>
-                        {label}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-            )}
-
-            {shippingRate != null && (
-              <div className="shipping-summary">
-                <div style={{ fontSize: "0.95rem", opacity: 0.95 }}>
-                  <strong>Shipping:</strong> ${shippingRate.toFixed(2)}
-                  {shippingCheapest?.servicelevel && (
-                    <>
-                      {" "}
-                      •{" "}
-                      {shippingCheapest.servicelevel.display_name ||
-                        shippingCheapest.servicelevel.name}
-                    </>
-                  )}
-                  {shippingCheapest?.estimated_days != null && (
-                    <>
-                      {" "}
-                      • about {shippingCheapest.estimated_days}d (plus 1 day for
-                      handling)
-                    </>
-                  )}
-                </div>
-
-                <div
-                  style={{ marginTop: 6, fontSize: "0.85rem", opacity: 0.85 }}
-                >
-                  {getShipScheduleNote()}
-                </div>
-              </div>
-            )}
-
             {/* ✅ Keep these inputs INSIDE payment-form */}
             <label className="payment-form-input">
               First Name:
@@ -810,6 +717,92 @@ export default function CheckoutPage({ onSuccess }) {
                 required
               />
             </label>
+
+            {shippingError && (
+              <div className="inline-card-error" style={{ marginTop: "6px" }}>
+                {shippingError}
+              </div>
+            )}
+            {shippingOptions.length > 0 && (
+              <div style={{ marginTop: 10 }}>
+                <div style={{ fontWeight: 600, marginBottom: 6 }}>
+                  Choose shipping (defaults to least expensive):
+                </div>
+
+                <select
+                  className="shipping-options"
+                  value={selectedRateId || ""}
+                  onChange={(e) => {
+                    const rateId = e.target.value;
+                    setSelectedRateId(rateId);
+
+                    const chosen =
+                      shippingOptions.find((o) => o.object_id === rateId) ||
+                      null;
+
+                    if (chosen) {
+                      setShippingRate(Number(chosen.amount));
+                      setShippingCheapest(chosen);
+                    } else {
+                      setShippingRate(null);
+                      setShippingCheapest(null);
+                    }
+                  }}
+                >
+                  <option value="" disabled>
+                    -- choose shipping --
+                  </option>
+
+                  {shippingOptions.map((opt) => {
+                    const service =
+                      opt?.servicelevel?.display_name ||
+                      opt?.servicelevel?.name ||
+                      "Shipping";
+
+                    const days =
+                      opt.estimated_days != null
+                        ? ` (${opt.estimated_days}d est)`
+                        : "";
+
+                    const label = `${service} • $${Number(opt.amount).toFixed(2)}${days}`;
+
+                    return (
+                      <option key={opt.object_id} value={opt.object_id}>
+                        {label}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            )}
+            {shippingRate != null && (
+              <div className="shipping-summary">
+                <div style={{ fontSize: "0.95rem", opacity: 0.95 }}>
+                  <strong>Shipping:</strong> ${shippingRate.toFixed(2)}
+                  {shippingCheapest?.servicelevel && (
+                    <>
+                      {" "}
+                      •{" "}
+                      {shippingCheapest.servicelevel.display_name ||
+                        shippingCheapest.servicelevel.name}
+                    </>
+                  )}
+                  {shippingCheapest?.estimated_days != null && (
+                    <>
+                      {" "}
+                      • about {shippingCheapest.estimated_days}d (plus 1 day for
+                      handling)
+                    </>
+                  )}
+                </div>
+
+                <div
+                  style={{ marginTop: 6, fontSize: "0.85rem", opacity: 0.85 }}
+                >
+                  {getShipScheduleNote()}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="discount-box">
@@ -817,7 +810,7 @@ export default function CheckoutPage({ onSuccess }) {
             <input
               value={discountCode}
               onChange={(e) => setDiscountCode(e.target.value)}
-              placeholder="e.g. CRYPT10"
+              placeholder="e.g. CODE20"
             />
 
             <button type="button" onClick={handleApplyDiscount}>
@@ -828,9 +821,16 @@ export default function CheckoutPage({ onSuccess }) {
           </div>
 
           <div style={{ marginTop: 6 }}>
+            <p>Subtotal: ${subtotal.toFixed(2)}</p>
+            {shippingState.trim().toUpperCase() === "OH" && (
+              <p>Ohio sales tax: ${(subtotal * 0.0725).toFixed(2)}</p>
+            )}
             <h3>
+            <p>
+              Shipping: ${shippingRate}
+            </p>
               <strong>
-                Estimated Total: 
+                Estimated Total: $
                 {(
                   subtotal +
                   (shippingState === "OH" ? subtotal * 0.0725 : 0) +

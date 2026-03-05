@@ -13,6 +13,7 @@ public class DiscountCreateRequestDTO {
   private String discountCode;
   private DiscountType type;
   private BigDecimal percentOff;
+  private BigDecimal dollarOff;
   private boolean enabled;
   private boolean returningCustomerOnly;
 

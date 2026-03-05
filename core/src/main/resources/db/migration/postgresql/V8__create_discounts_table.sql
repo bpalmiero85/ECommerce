@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS discounts (
   discount_code VARCHAR(50) NOT NULL UNIQUE,
   discount_type VARCHAR(30) NOT NULL,
   percent_off NUMERIC(5,2) NULL,
+  dollar_off NUMERIC(10,2) NULL,
   starts_at TIMESTAMPTZ NULL,
   ends_at TIMESTAMPTZ NULL,
   enabled BOOLEAN NOT NULL DEFAULT TRUE,
@@ -14,7 +15,9 @@ CREATE TABLE IF NOT EXISTS discounts (
 ALTER TABLE discounts
   ADD CONSTRAINT chk_discount_type_rules
   CHECK (
-    (discount_type = 'PERCENT_OFF' AND percent_off IS NOT NULL)
+    (discount_type = 'PERCENT_OFF' AND percent_off IS NOT NULL AND dollar_off IS NULL)
     OR
-    (discount_type = 'FREE_SHIPPING' AND percent_off IS NULL)
+    (discount_type = 'DOLLAR_OFF' AND dollar_off IS NOT NULL AND percent_off IS NULL)
+    OR
+    (discount_type = 'FREE_SHIPPING' AND percent_off IS NULL AND dollar_off IS NULL)
   );

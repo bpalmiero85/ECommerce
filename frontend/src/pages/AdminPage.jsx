@@ -30,6 +30,7 @@ const AdminPage = () => {
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [discountCode, setDiscountCode] = useState("");
   const [discountValue, setDiscountValue] = useState("");
+  const [discountType, setDiscountType] = useState("PERCENT_OFF");
   const [discountList, setDiscountList] = useState([]);
   const [holdSortUntil, setHoldSortUntil] = useState({});
   const [tabLockedUntil, setTabLockedUntil] = useState(0);
@@ -337,15 +338,37 @@ const AdminPage = () => {
 
   const handleCreateDiscount = async (e) => {
     try {
+      const value = Number(discountValue);
+
+      if (!discountCode.trim()) {
+        alert("Please enter a discount code.");
+        return;
+      }
+
+      if (!value || value <= 0) {
+        alert("Please enter a valid discount amount.");
+        return;
+      }
       const payload = {
         discountCode,
-        type: "PERCENT_OFF",
-        percentOff: Number(discountValue),
+        type: discountType,
         enabled: false,
         returningCustomerOnly: false,
+        percentOff: null,
+        dollarOff: null,
       };
+
+      if (discountType === "PERCENT_OFF") {
+        payload.percentOff = value;
+      }
+
+      if (discountType === "DOLLAR_OFF") {
+        payload.dollarOff = value;
+      }
       const part = discountCode.replace(/[0-9]/g, "").toUpperCase();
-      const similar = discountList.some((d) => d.discountCode.replace(/[0-9]/g, "").toUpperCase() === part);
+      const similar = discountList.some(
+        (d) => d.discountCode.replace(/[0-9]/g, "").toUpperCase() === part,
+      );
       const exists = discountList.some(
         (d) =>
           d.discountCode.toUpperCase() === discountCode.trim().toUpperCase(),
@@ -413,7 +436,7 @@ const AdminPage = () => {
   };
 
   const handleToggleDiscountEnabled = async (discountId) => {
-    const HOLD_MS = 300;
+    const HOLD_MS = 500;
 
     if (holdTimeoutRef.current[discountId]) {
       clearTimeout(holdTimeoutRef.current[discountId]);
@@ -985,6 +1008,13 @@ const AdminPage = () => {
                     setDiscountValue(value < 0 ? (value = 0) : value);
                   }}
                 />
+                <select
+                  value={discountType}
+                  onChange={(e) => setDiscountType(e.target.value)}
+                >
+                  <option value="PERCENT_OFF">% Percent off</option>
+                  <option value="DOLLAR_OFF">$ Dollar off</option>
+                </select>
                 <br />
                 <button
                   type="button"
@@ -1011,7 +1041,7 @@ const AdminPage = () => {
                     <span className="discount-details">
                       {d.type === "PERCENT_OFF"
                         ? `• ${d.percentOff}% off`
-                        : `• ${d.type}`}
+                        : `• $${d.dollarOff} off`}
                     </span>
                     <div className="discount-actions">
                       <button

@@ -33,7 +33,14 @@ public class DiscountService {
 
     d.setDiscountCode(request.getDiscountCode());
     d.setType(request.getType());
-    d.setPercentOff(request.getPercentOff());
+
+    if (request.getType() == DiscountType.PERCENT_OFF) {
+      d.setPercentOff(request.getPercentOff());
+    }
+
+    if (request.getType() == DiscountType.DOLLAR_OFF) {
+      d.setDollarOff(request.getDollarOff());
+    }
     d.setEnabled(request.isEnabled());
     d.setReturningCustomerOnly(request.isReturningCustomerOnly());
 
@@ -57,7 +64,6 @@ public class DiscountService {
   public void deleteDiscount(Long discountId) {
     discountRepository.deleteById(discountId);
   }
-
 
   public DiscountValidateResponse validateDiscount(
       String code,
@@ -101,6 +107,18 @@ public class DiscountService {
         return res;
       }
     }
+    if (discount.getType() == DiscountType.DOLLAR_OFF) {
+      BigDecimal discountTotal = discount.getDollarOff();
+
+      if (discountTotal.compareTo(safeSubtotal) > 0) {
+        discountTotal = safeSubtotal;
+      }
+
+      res.setDiscountTotal((discountTotal));
+      res.setApplied(true);
+      res.setMessage("Discount applied!");
+      return res;
+    }
 
     if (discount.getType() == DiscountType.FREE_SHIPPING) {
       res.setMessage("Free shipping applied!");
@@ -135,5 +153,4 @@ public class DiscountService {
     res.setMessage("Discount code is valid, but cannot be applied. Please contact support at " + supportEmail + ".");
     return res;
   }
-
 }
