@@ -51,6 +51,8 @@ export default function CheckoutPage({ onSuccess }) {
   const [discountTotal, setDiscountTotal] = useState(0);
   const [finalShippingTotal, setFinalShippingTotal] = useState(0);
   const [freeShippingApplied, setFreeShippingApplied] = useState(false);
+  const [discountType, setDiscountType] = useState(null);
+  const [discountPercent, setDiscountPercent] = useState(null);
 
   // Access the shopping cart context to calculate subtotal.
   const { cartItems, clearCartAfterPayment } = useContext(CartContext);
@@ -438,10 +440,13 @@ export default function CheckoutPage({ onSuccess }) {
       });
 
       const data = await resp.json().catch(() => ({}));
+      console.log("DISCOUNT RESPONSE:", data);
 
       if (!resp.ok) {
         throw new Error(data?.message || "Discount validation failed.");
       }
+      setDiscountType(data.type);
+      setDiscountPercent(data.percentOff);
       setDiscountMessage(data.message || "");
       setDiscountTotal(Number(data.discountTotal || 0));
       setFinalShippingTotal(
@@ -821,18 +826,34 @@ export default function CheckoutPage({ onSuccess }) {
           </div>
 
           <div style={{ marginTop: 6 }}>
-            <p>Subtotal: ${subtotal.toFixed(2)}</p>
-            {shippingState.trim().toUpperCase() === "OH" && (
-              <p>Ohio sales tax: ${(subtotal * 0.0725).toFixed(2)}</p>
-            )}
-            <h3>
             <p>
-              Shipping: ${shippingRate}
+              <strong>Subtotal:</strong> ${subtotal.toFixed(2)}
             </p>
+            {shippingState.trim().toUpperCase() === "OH" && (
+              <p>
+                <strong>Ohio sales tax:</strong> $
+                {(subtotal * 0.0725).toFixed(2)}
+              </p>
+            )}
+
+            {discountCode && discountTotal > 0 && (
+              <p>
+                <strong>Discount:</strong>{" "}
+                {discountType === "PERCENT_OFF"
+                  ? `-$${discountTotal.toFixed(2)} (${discountPercent}% off)`
+                  : `-$${discountTotal.toFixed(2)}`}
+              </p>
+            )}
+
+            <p>
+              <strong>Shipping:</strong> ${shippingRate}
+            </p>
+            <h3>
               <strong>
-                Estimated Total: $
+                Total: $
                 {(
-                  subtotal +
+                  subtotal -
+                  discountTotal +
                   (shippingState === "OH" ? subtotal * 0.0725 : 0) +
                   shippingRate
                 ).toFixed(2)}

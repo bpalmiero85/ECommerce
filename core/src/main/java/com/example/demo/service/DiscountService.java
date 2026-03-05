@@ -68,10 +68,11 @@ public class DiscountService {
   public DiscountValidateResponse validateDiscount(
       String code,
       String email,
+      String type,
+      BigDecimal percentOff,
       BigDecimal subtotal,
       BigDecimal shippingTotal) {
     DiscountValidateResponse res = new DiscountValidateResponse();
-    res.setApplied(false);
 
     if (code == null || code.isBlank()) {
       res.setMessage("No discount code entered.");
@@ -88,6 +89,9 @@ public class DiscountService {
     }
 
     Discount discount = discountOpt.get();
+
+    res.setType(discount.getType().name());
+    res.setPercentOff(discount.getPercentOff());
 
     BigDecimal safeShipping = (shippingTotal == null)
         ? BigDecimal.ZERO
@@ -143,6 +147,7 @@ public class DiscountService {
       if (discountTotal.compareTo(safeSubtotal) > 0) {
         discountTotal = safeSubtotal;
       }
+
       res.setDiscountTotal(discountTotal);
       res.setApplied(true);
       res.setMessage("Discount applied!");
@@ -153,4 +158,5 @@ public class DiscountService {
     res.setMessage("Discount code is valid, but cannot be applied. Please contact support at " + supportEmail + ".");
     return res;
   }
+
 }

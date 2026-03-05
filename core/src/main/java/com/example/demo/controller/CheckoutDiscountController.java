@@ -25,10 +25,14 @@ public class CheckoutDiscountController {
     DiscountValidateResponse response = discountService.validateDiscount(
         request.getCode(),
         request.getEmail(),
+        request.getType(),
+        request.getPercentOff(),
         request.getSubtotal(),
-        request.getShippingTotal()
-      );
+        request.getShippingTotal());
+
+        
 
     return ResponseEntity.ok(response);
   }
+  
 }

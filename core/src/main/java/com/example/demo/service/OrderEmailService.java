@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
@@ -66,6 +68,11 @@ public class OrderEmailService {
     }
   }
 
+    private String money(BigDecimal value) {
+      if (value == null) return "0.00";
+    return value.setScale(2, RoundingMode.HALF_UP).toPlainString();
+  }
+
   private String buildOrderConfirmationBody(Order order) {
     return ""
         + "Hi " + safe(order.getFirstName()) + ",\n"
@@ -74,7 +81,8 @@ public class OrderEmailService {
         + "Orders ship on the next business day. Business days are Monday through Friday, excluding holidays — so orders placed on Friday, over the weekend, or on holidays ship the following business day.\n\n"
         + "🧾 Order Details:\n\n"
         + "Order #: " + order.getOrderId() + "\n"
-        + "Order Total (including shipping): $" + (order.getOrderTotal() != null ? order.getOrderTotal() : "0.00") + "\n\n"
+        + (order.getDiscountTotal() != null && order.getDiscountTotal().compareTo(BigDecimal.ZERO) > 0 ? "Discount: -$" + money(order.getDiscountTotal()) + "\n" : "")
+        + "Order Total (including shipping): $" + money(order.getOrderTotal()) + "\n\n"
         + "We’ll send you another email as soon as your order ships with tracking information.\n\n"
         + "If you have any questions or need to update anything, just reply to this email — we’re happy to help!\n\n"
         + "Thanks again for supporting Goth & Glitter 💀💖\n"

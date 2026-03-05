@@ -14,6 +14,8 @@ import lombok.Setter;
 public class DiscountValidateResponse {
   private boolean applied;
   private String message;
+  private String type;
+  private BigDecimal percentOff;
   private BigDecimal discountTotal = BigDecimal.ZERO;
   private boolean freeShippingApplied;
   private BigDecimal finalShippingTotal = BigDecimal.ZERO;

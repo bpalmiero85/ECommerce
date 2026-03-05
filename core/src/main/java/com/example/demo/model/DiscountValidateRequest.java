@@ -14,6 +14,8 @@ import lombok.Setter;
 public class DiscountValidateRequest {
   private String code;
   private String email;
+  private String type;
+  private BigDecimal percentOff;
   private BigDecimal subtotal;
   private BigDecimal shippingTotal;
 }
