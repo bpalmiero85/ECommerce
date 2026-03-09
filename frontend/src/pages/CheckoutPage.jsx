@@ -625,6 +625,7 @@ export default function CheckoutPage({ onSuccess }) {
   ) : (
     <>
       <div className="checkout-header">Checkout</div>
+         <h3 className="header-subtotal">Subtotal: ${subtotal}</h3>
       <div className="checkout-form">
         <form onSubmit={handleSubmit}>
           {/* Display subtotal */}

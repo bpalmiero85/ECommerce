@@ -20,6 +20,8 @@ const ShoppingCart = ({ succeeded = false }) => {
     setItemQty(productId, next);
   };
 
+  const API_BASE_URL = "http://localhost:8080";
+
   return (
     <div className="shopping-cart-container">
       {cartItems.map((item) => {
@@ -36,13 +38,15 @@ const ShoppingCart = ({ succeeded = false }) => {
             : Infinity;
 
         const disableIncrease = qty >= maxTotal;
-
+        console.log("IMG:", `${API_BASE_URL}${item.imageUrl}`);
         return (
           <div key={item.id} className="cart-item">
+          
             <img
-              src={item.imageUrl}
+              src={`${API_BASE_URL}${item.imageUrl}`}
               alt={item.name}
               className="cart-item-image"
+              // onError={(e) => (e.target.style.display = "none")}
             />
 
             <div className="cart-item-details">

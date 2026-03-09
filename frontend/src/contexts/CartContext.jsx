@@ -120,7 +120,8 @@ export function CartProvider({ children }) {
   const clearCartAndRelease = (reason = "manual") =>
     clearCartServerAndBroadcast(reason, true);
 
-  const clearCartAfterPayment = () => clearCartServerAndBroadcast("payment", false);
+  const clearCartAfterPayment = () =>
+    clearCartServerAndBroadcast("payment", false);
 
   const setItemQty = async (id, nextQty, fallback = {}) => {
     const current = cartItemsRef.current.find((p) => p.id === id)?.qty ?? 0;
@@ -175,31 +176,29 @@ export function CartProvider({ children }) {
       credentials: "include",
       cache: "no-store",
     });
+
     if (!resp.ok) return;
+
     const serverCart = await resp.json();
 
     console.log("[refreshCart] server cart ->", serverCart);
 
-    setCartItems((prev) => {
-      const prevById = new Map(prev.map((p) => [String(p.id), p]));
-      const next = Object.entries(serverCart || {})
-        .map(([idStr, qty]) => {
-          const prevItem = prevById.get(String(idStr));
-          return migrateItem({
-            id: Number(idStr),
-            qty: Number(qty) || 0,
-            name: prevItem?.name ?? "",
-            price: prevItem?.price ?? 0,
-            imageUrl: prevItem?.imageUrl ?? "",
-            available: prevItem?.available ?? Number.POSITIVE_INFINITY,
-          });
-        })
-        .filter(Boolean);
+    const next = (serverCart || [])
+      .map((item) =>
+        migrateItem({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          qty: item.qty,
+          imageUrl: item.imageUrl && item.imageUrl.trim() ? item.imageUrl : `${API_BASE_URL}/api/product/${item.id}/picture`,
+          available: item.available ?? Number.POSITIVE_INFINITY,
+        }),
+      )
+      .filter(Boolean);
 
-      console.log("[refreshCart] cartItems set to ->", next);
-      return next;
-    });
+    setCartItems(next);
   }
+
   useEffect(() => {
     refreshCart();
   }, []);

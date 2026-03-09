@@ -219,6 +219,10 @@ body {
   color: var(--gg-text);
 }
 
+.header-subtotal {
+  color: black;
+}
+
 /* =========================
    Shipping summary block
    ========================= */

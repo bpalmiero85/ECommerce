@@ -1,10 +1,14 @@
 package com.example.demo.service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import com.example.demo.dto.CartItemsResponseDTO;
+import com.example.demo.repository.ProductRepository;
 
 /**
  * Session-scoped cart storage backed by in-memory maps.
@@ -25,6 +29,8 @@ public class CartService {
    * app-wide
    */
   private final InventoryMemory inventory;
+
+  private final ProductRepository productRepository;
 
   /** sessionId -> (productId -> qty) */
   private final Map<String, Map<Long, Integer>> carts = new ConcurrentHashMap<>();
@@ -58,8 +64,9 @@ public class CartService {
   }
 
   /** Constructs the cart service with the shared inventory bean */
-  public CartService(InventoryMemory inventory) {
+  public CartService(InventoryMemory inventory, ProductRepository productRepository) {
     this.inventory = inventory;
+    this.productRepository = productRepository;
   }
 
   /**
@@ -148,6 +155,36 @@ public class CartService {
     }
     carts.remove(sessionId);
     lastTouched.remove(sessionId);
+  }
+
+  public List<CartItemsResponseDTO> getCartItemsWithProductData(String sid) {
+    Map<Long, Integer> cart = carts.get(sid);
+
+    if (cart == null || cart.isEmpty()) {
+      return List.of();
+    }
+
+    return cart.entrySet().stream().map(entry -> {
+      Long productId = entry.getKey();
+      Integer qty = entry.getValue();
+
+      var product = productRepository.findById(productId).orElse(null);
+
+      if (product == null)
+        return null;
+
+      String imageUrl = "/api/product/" + product.getId() + "/picture";
+
+      return new CartItemsResponseDTO(
+          product.getId(),
+          product.getName(),
+          product.getPrice(),
+          imageUrl,
+          qty);
+    })
+
+        .filter(java.util.Objects::nonNull)
+        .toList();
   }
 
 }

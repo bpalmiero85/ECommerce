@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpSession;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dto.CartItemsResponseDTO;
 import com.example.demo.service.CartService;
 
 import lombok.RequiredArgsConstructor;
@@ -28,9 +30,9 @@ public class CartController {
   }
 
   @GetMapping
-  public Map<Long, Integer> getCart(HttpSession session) {
+  public List<CartItemsResponseDTO> getCart(HttpSession session) {
     String sid = session.getId();
-    return cartService.getItems(sid);
+    return cartService.getCartItemsWithProductData(sid);
   }
 
   @PostMapping("/clear")

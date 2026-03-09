@@ -2,13 +2,18 @@ package com.example.demo.controller;
 
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.example.demo.model.Product;
+import com.example.demo.repository.ProductRepository;
 import com.example.demo.service.ProductService;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,8 +29,11 @@ public class ProductController {
 
   private final ProductService productService;
 
-  public ProductController(ProductService productService) {
+  private final ProductRepository productRepository;
+
+  public ProductController(ProductService productService, ProductRepository productRepository) {
     this.productService = productService;
+    this.productRepository = productRepository;
   }
 
   @CrossOrigin(origins = "http://localhost:3000")
