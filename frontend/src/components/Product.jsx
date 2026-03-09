@@ -99,7 +99,7 @@ const Product = ({
       await setItemQty(idStr, nextQty, {
         name,
         price,
-        imageUrl,
+        imageUrl: `/api/product/${id}/picture`,
         available: quantity,
       });
       onReserved?.(id);

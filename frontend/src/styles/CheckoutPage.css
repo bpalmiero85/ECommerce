@@ -219,6 +219,13 @@ body {
   color: var(--gg-text);
 }
 
+.cart-total {
+  width: fit-content;
+  padding: 4px 8px;
+  border-radius: 10px;
+  background-color: rgba(254, 146, 236, 0.4);
+}
+
 .header-subtotal {
   color: black;
 }

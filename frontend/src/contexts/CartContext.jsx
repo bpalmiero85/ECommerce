@@ -190,7 +190,7 @@ export function CartProvider({ children }) {
           name: item.name,
           price: item.price,
           qty: item.qty,
-          imageUrl: item.imageUrl && item.imageUrl.trim() ? item.imageUrl : `${API_BASE_URL}/api/product/${item.id}/picture`,
+          imageUrl: item.imageUrl && item.imageUrl.trim() ? item.imageUrl : `/api/product/${item.id}/picture`,
           available: item.available ?? Number.POSITIVE_INFINITY,
         }),
       )

@@ -625,7 +625,7 @@ export default function CheckoutPage({ onSuccess }) {
   ) : (
     <>
       <div className="checkout-header">Checkout</div>
-         <h3 className="header-subtotal">Subtotal: ${subtotal}</h3>
+      <h3 className="header-subtotal">Subtotal: ${subtotal}</h3>
       <div className="checkout-form">
         <form onSubmit={handleSubmit}>
           {/* Display subtotal */}
@@ -846,10 +846,13 @@ export default function CheckoutPage({ onSuccess }) {
               </p>
             )}
 
-            <p>
-              <strong>Shipping:</strong> ${shippingRate}
-            </p>
-            <h3>
+            {shippingRate && (
+              <p>
+                <strong>Shipping:</strong> ${Number(shippingRate).toFixed(2)}
+              </p>
+            )}
+
+            <h2 className="cart-total">
               <strong>
                 Total: $
                 {(
@@ -859,7 +862,7 @@ export default function CheckoutPage({ onSuccess }) {
                   shippingRate
                 ).toFixed(2)}
               </strong>
-            </h3>
+            </h2>
           </div>
 
           {/* Stripe CardElement for secure card input */}
