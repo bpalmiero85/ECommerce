@@ -42,6 +42,8 @@ function migrateItem(raw) {
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
+  const cartQueue = useRef(Promise.resolve());
+
   const cartItemsRef = useRef([]);
   useEffect(() => {
     cartItemsRef.current = cartItems;
@@ -123,12 +125,16 @@ export function CartProvider({ children }) {
   const clearCartAfterPayment = () =>
     clearCartServerAndBroadcast("payment", false);
 
-  const setItemQty = async (id, nextQty, fallback = {}) => {
-    const current = cartItemsRef.current.find((p) => p.id === id)?.qty ?? 0;
-    const target = Math.max(0, Number(nextQty) || 0);
-    const delta = target - current;
+  async function performSetItemQty(id, nextQty, fallback = {}) {
+    const current = Number(
+      cartItemsRef.current.find((p) => p.id === id)?.qty ?? 0,
+    );
 
-    if (delta === 0) return;
+    const delta = Number(nextQty);
+
+    if (!delta) return;
+
+    const target = current + delta;
 
     const url =
       delta > 0
@@ -138,11 +144,24 @@ export function CartProvider({ children }) {
     const resp = await fetch(url, { method: "POST", credentials: "include" });
     if (!resp.ok) throw new Error(`cart update failed ${resp.status}`);
 
+    const changed = Number(await resp.text());
+    const actualDelta = delta > 0 ? changed : -changed;
+
+    if (!actualDelta) return;
+
     setCartItems((prev) => {
       const idx = prev.findIndex((p) => p.id === id);
 
       if (idx === -1 && target > 0) {
-        const item = migrateItem({ id, ...fallback, qty: target });
+        const startingAvailable = Number(fallback.available);
+        const item = migrateItem({
+          id,
+          ...fallback,
+          qty: target,
+          available: Number.isFinite(startingAvailable)
+            ? Math.max(0, startingAvailable - actualDelta)
+            : startingAvailable,
+        });
         return item ? [...prev, item] : prev;
       }
 
@@ -154,12 +173,29 @@ export function CartProvider({ children }) {
 
       if (idx !== -1) {
         const copy = [...prev];
-        copy[idx] = { ...copy[idx], ...fallback, qty: target };
+        const currentAvailable = Number(copy[idx].available);
+        const nextAvailable = Number.isFinite(currentAvailable)
+          ? Math.max(0, currentAvailable - actualDelta)
+          : currentAvailable;
+
+        copy[idx] = {
+          ...copy[idx],
+          ...fallback,
+          qty: target,
+          available: nextAvailable,
+        };
         return copy;
       }
 
       return prev;
     });
+  }
+
+  const setItemQty = (id, nextQty, fallback = {}) => {
+    cartQueue.current = cartQueue.current.then(() =>
+      performSetItemQty(id, nextQty, fallback),
+    );
+    return cartQueue.current;
   };
 
   const removeFromCart = (id) =>
@@ -190,7 +226,10 @@ export function CartProvider({ children }) {
           name: item.name,
           price: item.price,
           qty: item.qty,
-          imageUrl: item.imageUrl && item.imageUrl.trim() ? item.imageUrl : `/api/product/${item.id}/picture`,
+          imageUrl:
+            item.imageUrl && item.imageUrl.trim()
+              ? item.imageUrl
+              : `/api/product/${item.id}/picture`,
           available: item.available ?? Number.POSITIVE_INFINITY,
         }),
       )

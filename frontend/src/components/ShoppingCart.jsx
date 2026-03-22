@@ -5,19 +5,27 @@ import "../styles/ShoppingCart.css";
 const ShoppingCart = ({ succeeded = false }) => {
   const { cartItems, setItemQty } = useContext(CartContext);
 
-  const handleDecrement = (productId, qty) => {
+  const handleDecrement = async (productId, qty) => {
     if (qty <= 0) return;
-    setItemQty(productId, qty - 1);
+
+    await setItemQty(productId, -1);
+
     window.dispatchEvent(
       new CustomEvent("inventory:changed", { detail: [productId] }),
     );
   };
 
-  const handleIncrement = (productId, qty, maxAvailable) => {
+  const handleIncrement = async (productId, qty, maxAvailable) => {
     const max = Number(maxAvailable);
     const hasLimit = Number.isFinite(max);
-    const next = hasLimit ? Math.min(qty + 1, max) : qty + 1;
-    setItemQty(productId, next);
+
+    if (hasLimit && qty >= max) return;
+
+    await setItemQty(productId, 1);
+
+    window.dispatchEvent(
+      new CustomEvent("inventory:changed", { detail: [productId] }),
+    );
   };
 
   const API_BASE_URL = "http://localhost:8080";
@@ -38,10 +46,8 @@ const ShoppingCart = ({ succeeded = false }) => {
             : Infinity;
 
         const disableIncrease = qty >= maxTotal;
-        console.log("IMG:", `${API_BASE_URL}${item.imageUrl}`);
         return (
           <div key={item.id} className="cart-item">
-          
             <img
               src={`${API_BASE_URL}${item.imageUrl}`}
               alt={item.name}

@@ -32,51 +32,36 @@ const Product = ({
   const [isLastItemShown, setIsLastItemShown] = useState(false);
   const cardRef = useRef(null);
   const prevInCartQtyRef = useRef(inCartQty);
+  const pendingLastItemMessageRef = useRef(false);
   const [added, setAdded] = useState(false);
   const prevQtyRef = useRef(quantity);
   const depletionTakeRef = useRef(0);
   const [showCheck, setShowCheck] = useState(false);
   const prevInCartQtyForCheckRef = useRef(inCartQty);
-
   const hasPicture = Number(pictureVersion) > 0;
-
   const imageUrl = hasPicture
     ? `${API_BASE_URL}/api/product/${id}/picture?v=${pictureVersion}`
     : "";
 
   useEffect(() => {
+    const prevInCartQty = prevInCartQtyRef.current;
+
+    if (inCartQty > prevInCartQty) {
+      pendingLastItemMessageRef.current = true;
+    }
+
+    prevInCartQtyRef.current = inCartQty;
+  }, [inCartQty]);
+
+  useEffect(() => {
     if (!isLastItemShown) return;
 
-    if (quantity > 0 || inCartQty === 0) {
+    if (quantity > 0 && inCartQty === 0) {
       setIsLastItemShown(false);
       setMessage("");
       depletionTakeRef.current = 0;
     }
   }, [quantity, inCartQty, isLastItemShown]);
-
-  useEffect(() => {
-    const prevQty = prevQtyRef.current;
-    const prevInCart = prevInCartQtyRef.current;
-
-    const cartDelta = inCartQty - prevInCart;
-
-    if (cartDelta !== 0) {
-      depletionTakeRef.current = Math.max(
-        0,
-        depletionTakeRef.current + cartDelta,
-      );
-    }
-
-    if (!isLastItemShown && prevQty > 0 && quantity === 0) {
-      const taken = depletionTakeRef.current || prevQty;
-      showTempMessage(
-        taken === 1 ? "You got the last one!" : "You got the last ones!",
-      );
-      depletionTakeRef.current = 0;
-    }
-    prevQtyRef.current = quantity;
-    prevInCartQtyRef.current = inCartQty;
-  }, [inCartQty, quantity, isLastItemShown]);
 
   async function handleQtyChange(nextQty) {
     if (Number.isNaN(nextQty)) nextQty = 0;
@@ -91,12 +76,25 @@ const Product = ({
       const delta = nextQty - inCartQty;
 
       if (delta > 0) {
-        depletionTakeRef.current = 0;
-        setIsLastItemShown(false);
-        setMessage("");
+        const remainingAfter = quantity - delta;
+
+        if (remainingAfter === 0) {
+          const taken = inCartQty + delta;
+
+          pendingLastItemMessageRef.current = false;
+
+          showTempMessage(
+            taken === 1
+              ? "You got the last one!"
+              : `You got the last ${taken}!`,
+          );
+        } else {
+          setIsLastItemShown(false);
+          setMessage("");
+        }
       }
 
-      await setItemQty(idStr, nextQty, {
+      await setItemQty(idStr, delta, {
         name,
         price,
         imageUrl: `/api/product/${id}/picture`,
@@ -180,12 +178,21 @@ const Product = ({
   useEffect(() => {
     const prevQty = prevQtyRef.current;
 
+    if (pendingLastItemMessageRef.current && prevQty > 0 && quantity === 0) {
+      const taken = inCartQty;
+      showTempMessage(
+        taken === 1 ? "You got the last one!" : `You got the last ${taken}!`,
+      );
+      pendingLastItemMessageRef.current = false;
+    }
+
     if (prevQty === 0 && quantity > 0) {
       setIsLastItemShown(false);
       setMessage("");
       depletionTakeRef.current = 0;
     }
-  }, [quantity]);
+    prevQtyRef.current = quantity;
+  }, [quantity, inCartQty]);
 
   useEffect(() => {
     setAdded(inCartQty > 0);
@@ -331,7 +338,9 @@ const Product = ({
                     aria-label="Decrease quantity"
                     onMouseDownCapture={stopAll}
                     disabled={saving || inCartQty <= 0}
-                    onClick={() => handleQtyChange(inCartQty - 1)}
+                    onClick={() =>
+                      handleQtyChange(prevInCartQtyRef.current - 1)
+                    }
                   >
                     −
                   </button>
@@ -343,11 +352,15 @@ const Product = ({
                     aria-label="Increase quantity"
                     onMouseDownCapture={stopAll}
                     disabled={saving || quantity <= 0}
-                    onClick={() => handleQtyChange(inCartQty + 1)}
+                    onClick={() =>
+                      handleQtyChange(prevInCartQtyRef.current + 1)
+                    }
                   >
                     +
                   </button>
-                  <span className="qty-label">in your cart</span>
+                  {!isLastItemShown && (
+                    <span className="qty-label">in your cart</span>
+                  )}
 
                   {added && quantity !== 0 && (
                     <div className="check-mark">
