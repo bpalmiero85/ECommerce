@@ -15,6 +15,7 @@ export default function OrdersPage() {
   const [authAttempted, setAuthAttempted] = useState(false);
   const [activeOrdersCount, setActiveOrdersCount] = useState(0);
   const [shippedOrdersCount, setShippedOrdersCount] = useState(0);
+  const [followUpOrdersCount, setFollowUpOrdersCount] = useState(0);
   const [searchResults, setSearchResults] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchMeta, setSearchMeta] = useState(null);
@@ -26,8 +27,16 @@ export default function OrdersPage() {
   const displayOrders = Array.isArray(searchResults) ? searchResults : orders;
   const isRefreshingRef = useRef(false);
   const initialLoadedRef = useRef(false);
+  const orderStatusRef = useRef(orderStatus);
   const pollingRef = useRef(null);
   const notesTextareaRefs = useRef({});
+  const fetchOrdersIdRef = useRef(0);
+
+  const POLLABLE_STATUSES = new Set(["active", "shipped", "follow-up"]);
+
+  const shouldPollStatus = useCallback((status) => {
+    return POLLABLE_STATUSES.has(status);
+  }, []);
 
   const buildTrackingUrl = (carrier, trackingNumber) => {
     const c = (carrier || "").toLowerCase();
@@ -50,26 +59,27 @@ export default function OrdersPage() {
     return "";
   };
 
-  const normalizeNumberedToDash = (line) => line.replace(/^\d+\.\s*/, "- ");
-
-  const orderStatusEndpoint = useCallback(() => {
-    if (orderStatus === "active") {
+  const orderStatusEndpoint = useCallback((status) => {
+    if (status === "active") {
       return `${API_BASE_URL}/api/admin/orders/status/active`;
     }
-    if (orderStatus === "shipped") {
+    if (status === "shipped") {
       return `${API_BASE_URL}/api/admin/orders/status/shipped`;
     }
-    if (orderStatus === "completed") {
+    if (status === "completed") {
       return `${API_BASE_URL}/api/admin/orders/status/completed`;
     }
-    if (orderStatus === "cancelled") {
+    if (status === "cancelled") {
       return `${API_BASE_URL}/api/admin/orders/status/cancelled`;
     }
-    if (orderStatus === "archived") {
+    if (status === "archived") {
       return `${API_BASE_URL}/api/admin/orders/status/archived`;
     }
+    if (status === "follow-up") {
+      return `${API_BASE_URL}/api/admin/orders/follow-up`;
+    }
     return null;
-  }, [orderStatus]);
+  }, []);
 
   const applyBangShortcut = (value, cursorPos) => {
     const s = String(value ?? "").replace(/\r\n/g, "\n");
@@ -247,6 +257,7 @@ export default function OrdersPage() {
     return s.endsWith("\n") ? `${s}${next}. ` : `${s}\n${next}. `;
   };
   const handleChooseOrderStatus = (status) => {
+    setError(null);
     setOrderStatus(status);
   };
 
@@ -504,6 +515,10 @@ export default function OrdersPage() {
   }, []);
 
   useEffect(() => {
+    orderStatusRef.current = orderStatus;
+  }, [orderStatus]);
+
+  useEffect(() => {
     if (auth) return;
     if (authAttempted) return;
 
@@ -595,11 +610,14 @@ export default function OrdersPage() {
 
   const fetchCounts = useCallback(
     async ({ signal } = {}) => {
-      const [activeRes, shippedRes] = await Promise.all([
+      const [activeRes, shippedRes, followUpRes] = await Promise.all([
         authedFetch(`${API_BASE_URL}/api/admin/orders/status/active`, {
           signal,
         }),
         authedFetch(`${API_BASE_URL}/api/admin/orders/status/shipped`, {
+          signal,
+        }),
+        authedFetch(`${API_BASE_URL}/api/admin/orders/follow-up`, {
           signal,
         }),
       ]);
@@ -610,9 +628,13 @@ export default function OrdersPage() {
       const shipped = shippedRes.ok
         ? JSON.parse((await shippedRes.text()) || "[]")
         : [];
+      const followUp = followUpRes.ok
+        ? JSON.parse((await followUpRes.text()) || "[]")
+        : [];
 
       setActiveOrdersCount(Array.isArray(active) ? active.length : 0);
       setShippedOrdersCount(Array.isArray(shipped) ? shipped.length : 0);
+      setFollowUpOrdersCount(Array.isArray(followUp) ? followUp.length : 0);
     },
     [authedFetch],
   );
@@ -996,11 +1018,14 @@ export default function OrdersPage() {
   };
 
   const fetchOrders = useCallback(
-    async ({ signal } = {}) => {
+    async ({ signal, statusOverride } = {}) => {
+      const requestId = ++fetchOrdersIdRef.current;
+      const statusToLoad = statusOverride ?? orderStatus;
+
       try {
         setError(null);
 
-        const url = orderStatusEndpoint();
+        const url = orderStatusEndpoint(statusToLoad);
         const res = await authedFetch(url, { method: "GET", signal });
 
         if (res.status === 401 || res.status === 403) {
@@ -1014,8 +1039,12 @@ export default function OrdersPage() {
 
         const text = await res.text();
         const data = text ? JSON.parse(text) : [];
+
+        if (requestId !== fetchOrdersIdRef.current) return;
+
         setOrders(Array.isArray(data) ? data : []);
         setAuthVerified(true);
+        setError(null);
         setOrderNotes((prev) => ({
           ...Object.fromEntries(
             (Array.isArray(data) ? data : []).map((o) => [
@@ -1027,15 +1056,17 @@ export default function OrdersPage() {
         }));
       } catch (e) {
         if (e?.name === "AbortError") return;
+        if (requestId !== fetchOrdersIdRef.current) return;
+
         logError("OrdersPage fetchOrders failed", {
-          orderStatus,
-          urlAttempted: orderStatusEndpoint(),
+          orderStatus: statusToLoad,
+          urlAttempted: orderStatusEndpoint(statusToLoad),
           message: e?.message,
         });
         setError(e?.message || "Failed to load orders.");
       }
     },
-    [authedFetch, orderStatusEndpoint],
+    [authedFetch, orderStatusEndpoint, orderStatus],
   );
 
   const pollingAbortRef = useRef(null);
@@ -1050,12 +1081,22 @@ export default function OrdersPage() {
 
     try {
       await fetchCounts({ signal: controller.signal });
+    } catch (e) {
+      if (e?.name !== "AbortError") {
+        logError("OrdersPage fetchCounts failed", {
+          message: e?.message,
+        });
+      }
+    }
+
+    try {
       await fetchOrders({ signal: controller.signal });
     } catch (e) {
-      if (e.name !== "AbortError")
+      if (e?.name !== "AbortError") {
         logError("OrdersPage refreshOrdersAndCounts failed", {
           message: e?.message,
         });
+      }
     } finally {
       isRefreshingRef.current = false;
     }
@@ -1068,7 +1109,11 @@ export default function OrdersPage() {
 
     const startPolling = () => {
       if (pollingRef.current) return;
-      pollingRef.current = setInterval(refreshOrdersAndCounts, 6000);
+      pollingRef.current = setInterval(() => {
+        if (shouldPollStatus(orderStatusRef.current)) {
+          refreshOrdersAndCounts();
+        }
+      }, 6000);
     };
 
     const stopPolling = () => {
@@ -1079,9 +1124,16 @@ export default function OrdersPage() {
     };
 
     const handleVisibilityChange = () => {
-      if (document.hidden) stopPolling();
-      else if (initialLoadedRef.current) startPolling();
+      if (document.hidden) {
+        stopPolling();
+      } else if (
+        initialLoadedRef.current &&
+        shouldPollStatus(orderStatusRef.current)
+      ) {
+        startPolling();
+      }
     };
+
     let cancelled = false;
 
     (async () => {
@@ -1090,7 +1142,9 @@ export default function OrdersPage() {
 
       initialLoadedRef.current = true;
 
-      if (!document.hidden) startPolling();
+      if (!document.hidden && shouldPollStatus(orderStatusRef.current)) {
+        startPolling();
+      }
     })();
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -1101,13 +1155,24 @@ export default function OrdersPage() {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       stopPolling();
     };
-  }, [auth, refreshOrdersAndCounts]);
+  }, [auth, refreshOrdersAndCounts, shouldPollStatus]);
 
   useEffect(() => {
     if (!auth) return;
     if (!initialLoadedRef.current) return;
-    refreshOrdersAndCounts();
-  }, [auth, orderStatus, refreshOrdersAndCounts]);
+
+    if (shouldPollStatus(orderStatus)) {
+      refreshOrdersAndCounts();
+    } else {
+      fetchOrders();
+    }
+  }, [
+    auth,
+    orderStatus,
+    refreshOrdersAndCounts,
+    fetchOrders,
+    shouldPollStatus,
+  ]);
 
   const handleArchiveOrder = async (order) => {
     const confirm = window.confirm(
@@ -1320,6 +1385,22 @@ export default function OrdersPage() {
             onClick={() => handleChooseOrderStatus("completed")}
           >
             COMPLETED
+          </button>
+
+          <button
+            type="button"
+            className={
+              orderStatus === "follow-up"
+                ? "orders-header-button active"
+                : "orders-header-button"
+            }
+            disabled={isSearching}
+            onClick={() => handleChooseOrderStatus("follow-up")}
+          >
+            UNRESOLVED
+            {followUpOrdersCount > 0 && (
+              <span className="orders-badge">{followUpOrdersCount}</span>
+            )}
           </button>
 
           <button

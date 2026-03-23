@@ -112,8 +112,12 @@ public class OrderService {
     return saved;
   }
 
+  @Transactional(readOnly = true)
   public List<Order> getFollowUpQueue() {
-    return orderRepository.findByNeedsFollowUpTrueAndFollowUpResolvedAtIsNullOrderByCreatedAtDesc();
+    List<Order> orders = orderRepository.findByNeedsFollowUpTrueAndFollowUpResolvedAtIsNullOrderByCreatedAtDesc();
+
+    orders.forEach(order -> order.getItems().size());
+    return orders;
   }
 
   public Order markFollowUp(Long orderId) {
@@ -238,14 +242,13 @@ public class OrderService {
 
   }
 
-  private static final List<OrderStatus> RETURNING_CUSTOMER_STATUSES =
-    List.of(OrderStatus.PAID, OrderStatus.SHIPPED, OrderStatus.DELIVERED, OrderStatus.ARCHIVED);
+  private static final List<OrderStatus> RETURNING_CUSTOMER_STATUSES = List.of(OrderStatus.PAID, OrderStatus.SHIPPED,
+      OrderStatus.DELIVERED, OrderStatus.ARCHIVED);
 
   public boolean hasPreviousOrder(String email) {
     return orderRepository.existsByOrderEmailIgnoreCaseAndOrderStatusIn(
-      email,
-      RETURNING_CUSTOMER_STATUSES
-    );
+        email,
+        RETURNING_CUSTOMER_STATUSES);
   }
 
 }

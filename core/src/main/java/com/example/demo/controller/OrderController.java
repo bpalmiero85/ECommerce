@@ -209,6 +209,12 @@ public class OrderController {
     return orderService.findOrderByStatus(status);
   }
 
+
+  @GetMapping("/follow-up")
+  public List<Order> getNeedsFollowUp() {
+    return orderService.getFollowUpQueue();
+  }
+
   @GetMapping("/status/shipped")
   public List<Order> getShippedOrders() {
     return orderService.getShippedOrders();
@@ -237,10 +243,5 @@ public class OrderController {
   @GetMapping("/search/email/{email}")
   public List<Order> getOrdersWithEmail(@PathVariable String email) {
     return orderService.getOrdersWithEmail(email);
-  }
-
-  @GetMapping("/follow-up")
-  public List<Order> getOrdersNeedingFollowUp() {
-    return orderService.getFollowUpQueue();
   }
 }
