@@ -491,13 +491,7 @@ p {
   z-index: 2000;
 }
 
-.nav a {
-  color: white;
-  padding-left: 75px;
-  padding-right: 75px;
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
+
 
 .nav a:hover {
   color: var(--neon-green);
@@ -849,6 +843,7 @@ p {
   display: none;
   position: absolute;
   background-color: #111;
+  text-align: center;
   border: 1px solid var(--neon-green);
   border-radius: 6px;
   min-width: 180px;
@@ -857,11 +852,20 @@ p {
   z-index: 1;
 }
 
+.nav > a {
+  color: white;
+  padding-left: 75px;
+  padding-right: 75px;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
 .dropdown-content a {
   color: white;
-  padding: 10px 16px;
-  text-decoration: none;
   display: block;
+  padding: 10px 16px;
+  text-align: center;
+  text-decoration: none;
 }
 
 .dropdown-content a:hover {
@@ -927,19 +931,7 @@ p {
 }
 
 @media (max-width: 785px) {
-  .nav {
-    min-width: 0;
-    width: 100%;
-    margin-left: 0;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 0 10px;
-    flex-wrap: nowrap;
-    align-items: center;
-    font-size: clamp(0.9rem, 3.2vw, 1.1rem);
-  }
-
-  .nav a {
+  .nav > a {
     padding-left: 50px;
     padding-right: 10px;
     white-space: nowrap;

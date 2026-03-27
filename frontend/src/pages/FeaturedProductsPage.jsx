@@ -142,7 +142,7 @@ export default function FeaturedProductsPage() {
       {/* Footer */}
       <footer className="footer">
         <div>
-          <img className="gglogo" src="./gglogo.svg"></img>
+          <img alt="Goth and Glitter logo" className="gglogo" src="./gglogo.svg"></img>
         </div>
 
         <p className="footer-text">
@@ -150,9 +150,9 @@ export default function FeaturedProductsPage() {
           printing.
         </p>
         <div className="footer-links">
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Service</a>
-          <a href="#">Contact Us</a>
+          <a href="#privacy">Privacy Policy</a>
+          <a href="#terms">Terms of Service</a>
+          <a href="#contact">Contact Us</a>
         </div>
       </footer>
     </div>
