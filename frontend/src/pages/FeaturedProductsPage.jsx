@@ -108,19 +108,14 @@ function HeroSection() {
 
         {/* Floating promotion card */}
         <div className="promo-card gothic-card">
-          <div className="promo-title">GET UP TO 30% OFF</div>
+          <div className="promo-title">GET UP TO 20% OFF</div>
           <div className="promo-text">
-            You can get 30% off this product if you are buying now
+            You can get 20% off this product if you are buying now
           </div>
         </div>
       </div>
     </section>
   );
-}
-
-// Header Component
-function Nav() {
-  return "";
 }
 
 // Main App Component

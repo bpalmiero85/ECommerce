@@ -31,7 +31,7 @@
   --ring: #00ff88;
 
   /* Custom gothic neon variables */
-  --neon-green: #39FF14;
+  --neon-green: #39ff14;
   --neon-blue: #0088ff;
   --neon-purple: #8a2be2;
   --neon-pink: #ff00ff;
@@ -56,9 +56,9 @@
 body {
   background: rgb(57, 7, 143);
   color: #e0e0e0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   font-size: 14px;
   min-height: 100vh;
   line-height: 1.5;
@@ -91,13 +91,18 @@ p {
 
 /* Custom neon glow effects */
 .neon-glow {
-  text-shadow: 0 0 1px currentColor, 0 0 1px currentColor, 0 0 5px currentColor,
+  text-shadow:
+    0 0 1px currentColor,
+    0 0 1px currentColor,
+    0 0 5px currentColor,
     0 0 5px currentColor;
 }
 
 .neon-border {
   border: 1px solid var(--neon-green);
-  box-shadow: 0 0 5px var(--neon-green), inset 0 0 5px var(--neon-green);
+  box-shadow:
+    0 0 5px var(--neon-green),
+    inset 0 0 5px var(--neon-green);
 }
 
 .sparkle-bg {
@@ -115,7 +120,8 @@ p {
   background: rgba(20, 20, 30, 0.8);
   border: 1px solid rgba(0, 255, 136, 0.3);
   backdrop-filter: blur(10px);
-  box-shadow: 0 0 20px rgba(0, 255, 136, 0.1),
+  box-shadow:
+    0 0 20px rgba(0, 255, 136, 0.1),
     inset 0 0 20px rgba(0, 255, 136, 0.05);
 }
 
@@ -134,13 +140,12 @@ p {
   outline: none;
   /** Note: Using 'background' here causes a red highlight in VS Code.
       This is intentional - animating gradients directly isn't fully supported. */
-  transition: background 0.3s ease, color 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
 }
 
-
-
-
-.clear-cart{
+.clear-cart {
   display: flex;
   white-space: nowrap;
   border: 2px black solid;
@@ -321,7 +326,7 @@ p {
 .cart-header {
   width: 100%;
   height: auto;
-  margin-bottom: 20px; 
+  margin-bottom: 20px;
   position: relative;
 }
 
@@ -649,8 +654,7 @@ p {
 
 .promo-card {
   position: absolute;
-  bottom: 1rem;
-  right: 1rem;
+  margin-top: 270px;
   padding: 1rem;
   text-align: center;
   border-radius: 0.5rem;
@@ -659,13 +663,44 @@ p {
 .promo-title {
   color: var(--neon-green);
   font-weight: bold;
-  font-size: 0.875rem;
+  font-size: 1.1rem;
 }
 
 .promo-text {
   color: #d1d5db;
-  font-size: 0.75rem;
-  margin-top: 0.25rem;
+  top: -20px;
+  font-size: 0.95rem;
+  margin-top: 0;
+}
+
+.promo-product img {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: auto;
+  position: relative;
+  top: -20px;
+  margin: 0 auto !important;
+}
+
+.promo-product-details {
+  display: flex;
+  position: relative;
+  top: -20px;
+  color: black;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.promo-product-name {
+  position: relative;
+  margin-top: -10px !important;
+  text-align: center;
+  font-weight: bold;
+  margin: 0 auto;
+  color: black;
+  font-size: 1.2rem;
 }
 
 .products-section {
@@ -673,7 +708,6 @@ p {
   max-width: 1200px;
   margin: 0 auto;
 }
-
 
 .product-page {
   width: 100%;
@@ -798,7 +832,7 @@ p {
   display: inline-block;
 }
 
-.dropdown-button{
+.dropdown-button {
   background: none;
   border: none;
   color: white;
@@ -936,7 +970,4 @@ p {
   .hero-title {
     font-size: 3rem;
   }
-
 }
-
-

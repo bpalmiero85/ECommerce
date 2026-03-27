@@ -92,12 +92,16 @@ function HeroSection() {
           {/* Main hero illustration */}
           <div className="hero-circle">
             <div className="hero-inner-circle">
-              <div>
+              <div className="promo-product">
                 <img
-                alt="Sludgy product preview"
+                  alt="Sludgy product preview"
                   style={{ display: "flex", width: "150px" }}
-                  src="/sludgy.jpg"
+                  src="/sludgy.png"
                 ></img>
+                <div className="promo-product-details">
+                <p>Product name:</p>
+                <h2 className="promo-product-name">Sludgy</h2>
+                </div>
               </div>
             </div>
 
@@ -117,9 +121,9 @@ function HeroSection() {
 
         {/* Floating promotion card */}
         <div className="promo-card gothic-card">
-          <div className="promo-title">GET UP TO 30% OFF</div>
+          <div className="promo-title">GET 20% OFF!</div>
           <div className="promo-text">
-            You can get 30% off this product if you are buying now
+            You can get 20% off this product using promo code SLUDGE20. Limit 1 per order.
           </div>
         </div>
       </div>

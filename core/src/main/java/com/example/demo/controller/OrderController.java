@@ -137,7 +137,7 @@ public class OrderController {
         req.getShippingState(),
         req.getShippingZip(),
 
-      subtotalIgnored,
+        subtotalIgnored,
         status,
         req.getItems(),
         shippingTotal,
@@ -208,7 +208,6 @@ public class OrderController {
   public List<Order> getOrdersWithStatus(@PathVariable OrderStatus status) {
     return orderService.findOrderByStatus(status);
   }
-
 
   @GetMapping("/follow-up")
   public List<Order> getNeedsFollowUp() {
