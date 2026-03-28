@@ -1,6 +1,4 @@
-import { useState, useEffect, useRef } from "react";
 import "./ComingSoon.css";
-import AnimatedBg from "./AnimatedBg";
 
 const ComingSoon = () => {
   return (
@@ -516,7 +514,7 @@ const ComingSoon = () => {
 
           {/* "Coming Soon" ribbon */}
           <div className="coming-soon-wrapper">
-            <img src="./tape.svg" className="ribbon"></img>
+            <img alt="Ribbon" src="./tape.svg" className="ribbon"></img>
             <h3 className="coming-soon">Coming Soon!</h3>
           </div>
 
@@ -551,10 +549,11 @@ const ComingSoon = () => {
                 {/* <h3 className="monsters-title">Jewelry: </h3> */}
                 <div className="fidget-figures">
                   <img
+                    alt="Sludge Monster"
                     className="sludge-monster"
                     src="./sludge-monster-clipped.png"
                   />
-                  <img className="monstrella" src="./monstrella.png" />
+                  <img alt="Monstrella" className="monstrella" src="./monstrella.png" />
                 </div>
               </div>
             </div>
@@ -564,7 +563,7 @@ const ComingSoon = () => {
       {/* Footer */}
       <footer className="footer">
         <div>
-          <img className="gglogo" src="./gglogo.svg"></img>
+          <img alt="Goth and Glitter Logo" className="gglogo" src="./gglogo.svg"></img>
         </div>
 
         <p className="footer-text">

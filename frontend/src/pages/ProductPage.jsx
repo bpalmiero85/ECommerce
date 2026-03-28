@@ -18,7 +18,7 @@ const toSlug = (name) => {
   return slug;
 };
 
-const ProductPage = ({ products: externalProducts = [] }) => {
+const ProductPage = () => {
   const [checkoutSucceeded, setCheckoutSucceeded] = useState(false);
   const [products, setProducts] = useState([]);
   const [availableById, setAvailableById] = useState({});
@@ -64,10 +64,10 @@ const ProductPage = ({ products: externalProducts = [] }) => {
   const modalAvailableQty = selectedProduct
     ? (availableById[selectedProduct.id] ?? selectedProduct.quantity)
     : 0;
- const modalImageUrl =
-  selectedProduct && Number(selectedProduct.pictureVersion) > 0
-    ? `${API_BASE_URL}/api/product/${selectedProduct.id}/picture?v=${selectedProduct.pictureVersion}`
-    : ""; 
+  const modalImageUrl =
+    selectedProduct && Number(selectedProduct.pictureVersion) > 0
+      ? `${API_BASE_URL}/api/product/${selectedProduct.id}/picture?v=${selectedProduct.pictureVersion}`
+      : "";
 
   async function handleModalQtyChange(nextQty) {
     if (!selectedProduct) return;
