@@ -34,7 +34,7 @@ const Footer = () => {
 
   const handleSendEmail = () => {
     const confirm = window.confirm(
-      "Click 'OK' to compose an email to info.gothandglitter@gmail.com",
+      "Send an email to info.gothandglitter@gmail.com?",
     );
     if (!confirm) return;
 
