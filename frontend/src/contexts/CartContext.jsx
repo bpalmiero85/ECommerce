@@ -50,6 +50,26 @@ export function CartProvider({ children }) {
   }, [cartItems]);
 
   useEffect(() => {
+    function handleInventoryChanged() {
+      refreshCart();
+    }
+
+    function handleStorage(e) {
+      if (e.storageArea !== localStorage) return;
+      if (e.key !== "inventory:broadcast") return;
+      refreshCart();
+    }
+
+    window.addEventListener("inventory:changed", handleInventoryChanged);
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.removeEventListener("inventory:changed", handleInventoryChanged);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, []);
+
+  useEffect(() => {
     if (cartItems.length === 0) return;
 
     let hadActivity = false;

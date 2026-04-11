@@ -26,12 +26,12 @@ const Product = ({
     (sum, item) => (String(item.id) === idStr ? sum + (item.qty ?? 1) : sum),
     0,
   );
+  const isActuallySoldOut = quantity === 0 && inCartQty === 0;
   const [isOpen, setIsOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [isLastItemShown, setIsLastItemShown] = useState(false);
   const cardRef = useRef(null);
-  const prevInCartQtyRef = useRef(inCartQty);
   const pendingLastItemMessageRef = useRef(false);
   const [added, setAdded] = useState(false);
   const prevQtyRef = useRef(quantity);
@@ -42,16 +42,6 @@ const Product = ({
   const imageUrl = hasPicture
     ? `${API_BASE_URL}/api/product/${id}/picture?v=${pictureVersion}`
     : "";
-
-  useEffect(() => {
-    const prevInCartQty = prevInCartQtyRef.current;
-
-    if (inCartQty > prevInCartQty) {
-      pendingLastItemMessageRef.current = true;
-    }
-
-    prevInCartQtyRef.current = inCartQty;
-  }, [inCartQty]);
 
   useEffect(() => {
     if (!isLastItemShown) return;
@@ -78,23 +68,18 @@ const Product = ({
       if (delta > 0) {
         const remainingAfter = quantity - delta;
 
+        pendingLastItemMessageRef.current = remainingAfter === 0;
+
         if (remainingAfter === 0) {
-          const taken = inCartQty + delta;
-
-          pendingLastItemMessageRef.current = false;
-
-          showTempMessage(
-            taken === 1
-              ? "You got the last one!"
-              : `You got the last ${taken}!`,
-          );
+          depletionTakeRef.current = inCartQty + delta;
         } else {
+          depletionTakeRef.current = 0;
           setIsLastItemShown(false);
           setMessage("");
         }
       }
 
-      await setItemQty(idStr, delta, {
+      await setItemQty(id, delta, {
         name,
         price,
         imageUrl: `/api/product/${id}/picture`,
@@ -157,7 +142,6 @@ const Product = ({
     function onInventoryChanged(e) {
       const ids = Array.isArray(e?.detail) ? e.detail : [];
       if (ids.map(String).includes(String(id))) {
-        // ask parent to refresh this product's available qty
         onReserved?.(id);
       }
     }
@@ -178,12 +162,19 @@ const Product = ({
   useEffect(() => {
     const prevQty = prevQtyRef.current;
 
-    if (pendingLastItemMessageRef.current && prevQty > 0 && quantity === 0) {
-      const taken = inCartQty;
-      showTempMessage(
-        taken === 1 ? "You got the last one!" : `You got the last ${taken}!`,
-      );
-      pendingLastItemMessageRef.current = false;
+    if (prevQty > 0 && quantity === 0) {
+      if (pendingLastItemMessageRef.current) {
+        const taken = depletionTakeRef.current;
+
+        showTempMessage(
+          taken === 1 ? "You got the last one!" : `You got the last ${taken}!`,
+        );
+
+        pendingLastItemMessageRef.current = false;
+        depletionTakeRef.current = 0;
+      } else if (inCartQty > 0) {
+        showTempMessage("Sold Out");
+      }
     }
 
     if (prevQty === 0 && quantity > 0) {
@@ -191,6 +182,7 @@ const Product = ({
       setMessage("");
       depletionTakeRef.current = 0;
     }
+
     prevQtyRef.current = quantity;
   }, [quantity, inCartQty]);
 
@@ -204,26 +196,22 @@ const Product = ({
   return (
     <>
       <div
-        className={
-          quantity === 0
-            ? "product-card-sold-out"
-            : `product-card ${quantity === 0 ? "-sold-out" : ""}`
-        }
+        className={quantity === 0 ? "product-card-sold-out" : "product-card"}
       >
         {quantity === 0 && <div className="sold-out-badge">Sold Out</div>}
         <a
-          className={`product-anchor ${quantity === 0 ? "is-disabled" : ""}`}
-          tabIndex={quantity === 0 ? -1 : 0}
-          href={quantity === 0 ? undefined : `/product/${name}`}
-          aria-disabled={quantity === 0}
+          className={`product-anchor ${isActuallySoldOut ? "is-disabled" : ""}`}
+          tabIndex={isActuallySoldOut ? -1 : 0}
+          href={`/product/${name}`}
+          aria-disabled={isActuallySoldOut}
           onClick={(e) => {
-            if (quantity === 0) {
-              e.preventDefault();
-              e.stopPropagation();
-              return;
-            }
             e.preventDefault();
             e.stopPropagation();
+
+            if (isActuallySoldOut) {
+              return;
+            }
+
             onOpenModal?.({
               id,
               name,
@@ -237,7 +225,7 @@ const Product = ({
             });
           }}
           onKeyDown={
-            quantity === 0
+            isActuallySoldOut
               ? (e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
@@ -310,18 +298,18 @@ const Product = ({
               <button
                 type="button"
                 className={
-                  quantity === 0 ? "sold-out-added-to-cart" : "add-to-cart"
+                  isActuallySoldOut ? "sold-out-added-to-cart" : "add-to-cart"
                 }
                 onMouseDownCapture={stopProp}
-                disabled={isOpen || quantity === 0 || saving}
+                disabled={isOpen || isActuallySoldOut || saving}
                 onClick={async (e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  if (quantity === 0 || saving) return;
+                  if (isActuallySoldOut || saving) return;
                   handleQtyChange(1);
                 }}
               >
-                {quantity === 0
+                {isActuallySoldOut
                   ? added
                     ? `${inCartQty} in your cart`
                     : "Sold Out"
@@ -338,9 +326,7 @@ const Product = ({
                     aria-label="Decrease quantity"
                     onMouseDownCapture={stopAll}
                     disabled={saving || inCartQty <= 0}
-                    onClick={() =>
-                      handleQtyChange(prevInCartQtyRef.current - 1)
-                    }
+                    onClick={() => handleQtyChange(inCartQty - 1)}
                   >
                     −
                   </button>
@@ -352,20 +338,15 @@ const Product = ({
                     aria-label="Increase quantity"
                     onMouseDownCapture={stopAll}
                     disabled={saving || quantity <= 0}
-                    onClick={() =>
-                      handleQtyChange(prevInCartQtyRef.current + 1)
-                    }
+                    onClick={() => handleQtyChange(inCartQty + 1)}
                   >
                     +
                   </button>
-                  {!isLastItemShown && (
-                    <span className="qty-label">in your cart</span>
-                  )}
 
-                  {added && quantity !== 0 && (
-                    <div className="check-mark">
-                      <h3>✅</h3>
-                    </div>
+                  <span className="qty-label">in your cart</span>
+
+                  {added && !isActuallySoldOut && (
+                    <span className="check-mark">✅</span>
                   )}
                 </span>
               </div>

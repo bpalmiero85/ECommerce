@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { API_BASE_URL } from "../config/api";
 import { error as logError } from "../utils/logger";
 import ProductPage from "./ProductPage.jsx";

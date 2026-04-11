@@ -47,11 +47,21 @@ const ProductPage = () => {
     }, 900);
   }, []);
 
-  const subtotal = cartItems.reduce(
-    (sum, i) =>
-      sum + (Number(i.price) || 0) * (Number(i.qty ?? i.quantity ?? 1) || 0),
-    0,
-  );
+  useEffect(() => {
+    if (!products.length) return;
+
+    const pollInventory = () => {
+      products.forEach((product) => {
+        fetchAvailable(product.id);
+      });
+    };
+
+    pollInventory();
+
+    const interval = setInterval(pollInventory, 2000);
+
+    return () => clearInterval(interval);
+  }, [products]);
 
   const modalInCartQty = selectedProduct
     ? cartItems.reduce(

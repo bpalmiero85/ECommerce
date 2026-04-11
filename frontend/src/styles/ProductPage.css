@@ -440,6 +440,7 @@ body {
 .in-cart-wrap {
   white-space: nowrap;
 }
+
 .product-card img {
   transition: opacity 0.2s ease;
 }
