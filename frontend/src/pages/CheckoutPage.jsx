@@ -229,6 +229,35 @@ export default function CheckoutPage({ onSuccess }) {
 
   const submitLockRef = useRef(false);
 
+  const hasFiredCheckoutRef = useRef(false);
+
+  useEffect(() => {
+    if (!cartItems.length) return;
+    if (hasFiredCheckoutRef.current) return;
+
+    const items = cartItems.map((item) => ({
+      item_id: String(item.id),
+      item_name: item.name,
+      item_category: item.category,
+      item_brand: "Goth & Glitter",
+      price: Number(item.price),
+      quantity: item.qty ?? 1,
+    }));
+
+    const totalValue = items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0,
+    );
+
+    window.gtag?.("event", "begin_checkout", {
+      currency: "USD",
+      value: totalValue,
+      items,
+    });
+
+    hasFiredCheckoutRef.current = true;
+  }, [cartItems]);
+
   /**
    * Handles the form submission to process the payment.
    * 1. Calls the backend to create a PaymentIntent and retrieve clientSecret.
@@ -391,19 +420,22 @@ export default function CheckoutPage({ onSuccess }) {
 
         setSavedOrder(normalizedOrder);
 
-        try {
-          await fetch(
-            `${API_BASE_URL}/api/orders/${normalizedOrder.orderId}/send-confirmation`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              credentials: "include",
-            },
-          );
-        } catch (emailErr) {
-          logError("EmailJS failed:", emailErr);
-          logError("EmailJS details:", emailErr?.status, emailErr?.text);
-        }
+        const purchaseItems = payload.items.map((item) => ({
+          item_id: String(item.productId),
+          item_name: item.productName,
+          item_brand: "Goth & Glitter",
+          price: Number(item.unitPrice),
+          quantity: Number(item.quantity),
+        }));
+
+        window.gtag?.("event", "purchase", {
+          transaction_id: String(normalizedOrder.orderId),
+          value: Number(payload.total),
+          currency: "USD",
+          tax: Number(payload.taxTotal || 0),
+          shipping: Number(payload.shippingTotal || 0),
+          items: purchaseItems,
+        });
 
         setSucceeded(true);
         clearCartAfterPayment();
@@ -930,19 +962,6 @@ export default function CheckoutPage({ onSuccess }) {
                     };
 
                     setSavedOrder(normalizedOrder);
-
-                    try {
-                      await fetch(
-                        `${API_BASE_URL}/api/orders/${normalizedOrder.orderId}/send-confirmation`,
-                        {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          credentials: "include",
-                        },
-                      );
-                    } catch (emailErr) {
-                      logError("Confirmation email failed:", emailErr);
-                    }
 
                     setSucceeded(true);
                     clearCartAfterPayment();

@@ -85,6 +85,30 @@ const Product = ({
         imageUrl: `/api/product/${id}/picture`,
         available: quantity,
       });
+     if (delta > 0) {
+  const unitPrice = Number(price);
+  const quantityAdded = delta;
+
+  window.gtag?.("event", "add_to_cart", {
+    currency: "USD",
+    value: unitPrice * quantityAdded,
+    items: [
+      {
+        item_id: String(id),
+        item_name: name,
+        item_category: category,
+        item_brand: "Goth & Glitter",
+        item_variant: featured
+          ? "featured"
+          : newArrival
+          ? "new-arrival"
+          : "standard",
+        price: unitPrice,
+        quantity: quantityAdded,
+      },
+    ],
+  });
+}
       onReserved?.(id);
     } catch (err) {
       console.error(err);
@@ -93,6 +117,7 @@ const Product = ({
       setSaving(false);
     }
   }
+
   const showTempMessage = (text) => {
     setMessage(text);
     setIsLastItemShown(true);
