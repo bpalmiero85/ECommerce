@@ -429,15 +429,15 @@ export default function CheckoutPage({ onSuccess }) {
         }));
 
         window.gtag?.("event", "purchase", {
-          transaction_id: String(normalizedOrder.orderId),
-          value: Number(payload.total),
+          transaction_id: String(normalizedOrder.orderId) || Date.now(),
+          value: Number(payload.total) || 0,
           currency: "USD",
           tax: Number(payload.taxTotal || 0),
           shipping: Number(payload.shippingTotal || 0),
           items: purchaseItems,
         });
 
-        setSucceeded(true);
+        setSucceeded(true); 
         clearCartAfterPayment();
         if (onSuccess) onSuccess();
       } catch (err) {
@@ -472,7 +472,6 @@ export default function CheckoutPage({ onSuccess }) {
       });
 
       const data = await resp.json().catch(() => ({}));
-      console.log("DISCOUNT RESPONSE:", data);
 
       if (!resp.ok) {
         throw new Error(data?.message || "Discount validation failed.");

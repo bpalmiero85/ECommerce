@@ -237,8 +237,6 @@ export function CartProvider({ children }) {
 
     const serverCart = await resp.json();
 
-    console.log("[refreshCart] server cart ->", serverCart);
-
     const next = (serverCart || [])
       .map((item) =>
         migrateItem({
