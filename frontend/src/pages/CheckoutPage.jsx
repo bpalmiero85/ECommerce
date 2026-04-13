@@ -655,6 +655,9 @@ export default function CheckoutPage({ onSuccess }) {
     </div>
   ) : (
     <>
+      <div className="shipping-disclaimer-black">
+        🇺🇸 Ships within the United States only
+        </div>
       <div className="checkout-header">Checkout</div>
       <h3 className="header-subtotal">Subtotal: ${subtotal}</h3>
       <div className="checkout-form">

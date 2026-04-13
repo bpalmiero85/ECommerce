@@ -53,6 +53,9 @@ const Shop = () => {
         <p className="section-subtitle">
           All the spooky, all the sparkly—every creation in one place.
         </p>
+          <div className="shipping-disclaimer">
+        🇺🇸 Ships within the United States only
+        </div>
       </div>
 
       <div className="products-grid-container">

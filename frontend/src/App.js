@@ -3,9 +3,7 @@ import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import AdminPage from "./pages/AdminPage.jsx";
 import HomePage from "./pages/ShopPage.jsx";
-import ProductPage from "./pages/ProductPage.jsx";
 import CheckoutPage from "./pages/CheckoutPage.jsx";
-import FeaturedProductsPage from "./pages/FeaturedProductsPage.jsx";
 import CategoryPage from "./pages/CategoryPage.jsx";
 import OrdersPage from "./pages/OrdersPage.jsx";
 
@@ -19,9 +17,6 @@ function App() {
       <Routes>
         {!isProd && <Route path="/admin" element={<AdminPage />} />}
         <Route path="/all" element={<HomePage />} />
-        <Route path="/products" element={<ProductPage />} />
-        <Route path="/cart" element={<CheckoutPage />} />
-        <Route path="/featured" element={<FeaturedProductsPage />} />
         <Route path="/category/:slug" element={<CategoryPage />} />
         {!isProd && <Route path="/admin-orders" element={<OrdersPage />} />}
       </Routes>

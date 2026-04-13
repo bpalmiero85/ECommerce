@@ -363,6 +363,25 @@ body {
   margin: 0 auto;
 }
 
+.shipping-disclaimer {
+  display: flex;
+  position: relative;
+  text-align: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  white-space: nowrap;
+  color: white;
+  margin: 20px auto;
+}
+
+.shipping-disclaimer-black {
+  display: flex;
+  font-size: 1.1rem;
+  white-space: nowrap;
+  margin: 20px auto;
+  color: black;
+}
+
 .products-container {
   position: static;
   width: 100vw;

@@ -50,6 +50,7 @@ function Category() {
     "garbage ghouls":
       "Our original creatures of chaos. Born of slime and shadows, the Garbage Ghouls crawl from the crypt to be collected. Strange, silly, and a little grotesque — they’re impossible not to love.",
   };
+
   const categoryDescription =
     categoryObject[normalizedCategory] ??
     "Discover our enchanting collection of 3D printed cute but spooky items. From adorable ghosts to mystical creatures, bring magic to your world.";
@@ -178,6 +179,9 @@ function Category() {
           )}
         </h2>
       </div>
+        <div className="shipping-disclaimer">
+            🇺🇸 Ships within the United States only
+          </div>
 
       <div className="products-grid-container">
         {loading ? (
@@ -213,23 +217,6 @@ function Nav() {
 // Main App Component
 export default function CategoryPage() {
   const [isPrivacyPolicyOpen, setIsPrivacyPolicyOpen] = useState(false);
-  const [privacyModalPosition, setPrivacyModalPosition] = useState({
-    top: 0,
-    left: 0,
-  });
-  const footerLinksRef = useRef(null);
-
-  const handlePrivacyPolicy = () => {
-    const rect = footerLinksRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    setPrivacyModalPosition({
-      top: rect.top - 12,
-      left: rect.left + rect.width / 2,
-    });
-
-    setIsPrivacyPolicyOpen(true);
-  };
 
   const closePrivacyModal = (e) => {
     setIsPrivacyPolicyOpen(false);

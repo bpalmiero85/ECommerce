@@ -351,6 +351,12 @@ p {
   z-index: 10;
 }
 
+@media (max-width: 500px) {
+  .hero-section {
+    margin-top: 70px;
+  }
+}
+
 /* Responsive */
 @media (min-width: 768px) {
   .md\:flex {
@@ -698,7 +704,8 @@ p {
 }
 
 .products-section {
-  padding: 3rem 1.5rem;
+  padding: 2rem 1.5rem;
+  position: relative;
   max-width: 1200px;
   margin: 0 auto;
 }
