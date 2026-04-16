@@ -11,14 +11,13 @@ import { CartProvider } from "./contexts/CartContext.jsx";
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 function App() {
-  const isProd = process.env.NODE_ENV === "production";
   return (
     <Elements stripe={stripePromise}>
       <Routes>
-        {!isProd && <Route path="/admin" element={<AdminPage />} />}
+        <Route path={`/${process.env.REACT_APP_ADMIN_PATH}`} element={<AdminPage />} />
+        <Route path={`/${process.env.REACT_APP_ADMIN_ORDERS_PATH}`} element={<OrdersPage />} />
         <Route path="/all" element={<HomePage />} />
         <Route path="/category/:slug" element={<CategoryPage />} />
-        {!isProd && <Route path="/admin-orders" element={<OrdersPage />} />}
       </Routes>
     </Elements>
   );
