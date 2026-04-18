@@ -36,7 +36,7 @@ public class SecurityConfig {
   @PostConstruct
   public void debugEnv() {
     System.out.println("Admin user: " + adminUsername);
-    System.out.println("Admin pass loaded: " + (adminPassword != null));
+    System.out.println("Admin pass loaded: " + (adminPassword != null));                                                                                                                                                                  
   }
 
   @Bean
@@ -58,7 +58,9 @@ public class SecurityConfig {
         .antMatchers("/api/orders/**").permitAll()
 
         // ✅ Protect admin
-        .antMatchers("/api/admin/**").hasRole("ADMIN")
+        .antMatchers(HttpMethod.POST, "/api/admin/**").hasRole("ADMIN")
+        .antMatchers(HttpMethod.PUT, "/api/admin/**").hasRole("ADMIN")
+        .antMatchers(HttpMethod.DELETE, "/api/admin/**").hasRole("ADMIN")
 
         // ✅ Everything else public
         .anyRequest().permitAll()

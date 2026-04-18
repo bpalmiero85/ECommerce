@@ -42,6 +42,11 @@ public class Product {
   @Column(name = "material_cost", nullable = false, precision = 10, scale = 2)
   private BigDecimal materialCost = BigDecimal.ZERO;
 
+  private Double weightOunces;
+  private Double lengthInches;
+  private Double widthInches;
+  private Double heightInches;
+
   @Column(nullable = false)
   private String name;
 
