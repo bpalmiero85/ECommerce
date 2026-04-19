@@ -66,7 +66,7 @@ const ProductPage = () => {
   const modalInCartQty = selectedProduct
     ? cartItems.reduce(
         (sum, item) =>
-          item.id === selectedProduct.id ? sum + (item.qty ?? 1) : sum,
+          item.id === selectedProduct.id ? sum + (item.qty ?? 0) : sum,
         0,
       )
     : 0;
@@ -80,52 +80,22 @@ const ProductPage = () => {
       : "";
 
   async function handleModalQtyChange(nextQty) {
-    if (!selectedProduct) return;
-
-    if (Number.isNaN(nextQty)) nextQty = 0;
-    nextQty = Math.max(0, nextQty);
-
-    const max = modalAvailableQty + modalInCartQty;
-    if (nextQty > max) nextQty = max;
-
-    if (nextQty === modalInCartQty) return;
+    if (!selectedProduct || modalSaving) return;
 
     setModalSaving(true);
     try {
-      const delta = nextQty - modalInCartQty;
+      const delta = nextQty;
 
-      if (delta > 0) {
-        const take = Math.min(delta, modalAvailableQty);
-        for (let i = 0; i < take; i++) {
-          const r = await fetch(
-            `${API_BASE_URL}/api/cart/${selectedProduct.id}/add?qty=1`,
-            { method: "POST", credentials: "include" },
-          );
-          if (!r.ok) throw new Error(`reserve failed ${r.status}`);
-        }
-        flashModalCheck();
-      } else {
-        for (let i = 0; i < -delta; i++) {
-          const r = await fetch(
-            `${API_BASE_URL}/api/cart/${selectedProduct.id}/remove?qty=1`,
-            { method: "POST", credentials: "include" },
-          );
-          if (!r.ok) throw new Error(`unreserve failed ${r.status}`);
-        }
-
-        window.dispatchEvent(
-          new CustomEvent("inventory:changed", {
-            detail: [selectedProduct.id],
-          }),
-        );
-      }
-
-      setItemQty(selectedProduct.id, nextQty, {
+      await setItemQty(selectedProduct.id, delta, {
         name: selectedProduct.name,
         price: selectedProduct.price,
         imageUrl: modalImageUrl,
         available: modalAvailableQty,
       });
+
+      if (delta > 0) {
+        flashModalCheck();
+      }
 
       const newAvail = await fetchAvailable(selectedProduct.id);
       if (delta > 0 && newAvail === 0) {
@@ -923,7 +893,7 @@ const ProductPage = () => {
                         className="qty-btn"
                         aria-label="Decrease quantity"
                         disabled={modalSaving || modalInCartQty <= 0}
-                        onClick={() => handleModalQtyChange(modalInCartQty - 1)}
+                        onClick={() => handleModalQtyChange(-1)}
                       >
                         −
                       </button>
@@ -935,7 +905,7 @@ const ProductPage = () => {
                         className="qty-btn"
                         aria-label="Increase quantity"
                         disabled={modalSaving || modalAvailableQty <= 0}
-                        onClick={() => handleModalQtyChange(modalInCartQty + 1)}
+                        onClick={() => handleModalQtyChange(1)}
                       >
                         +
                       </button>

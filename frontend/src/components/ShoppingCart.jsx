@@ -5,27 +5,14 @@ import "../styles/ShoppingCart.css";
 const ShoppingCart = ({ succeeded = false }) => {
   const { cartItems, setItemQty } = useContext(CartContext);
 
-  const handleDecrement = async (productId, qty) => {
-    if (qty <= 0) return;
+  const handleDecrement = async (productId) => {
 
     await setItemQty(productId, -1);
-
-    window.dispatchEvent(
-      new CustomEvent("inventory:changed", { detail: [productId] }),
-    );
   };
 
-  const handleIncrement = async (productId, qty, maxAvailable) => {
-    const max = Number(maxAvailable);
-    const hasLimit = Number.isFinite(max);
-
-    if (hasLimit && qty >= max) return;
+  const handleIncrement = async (productId) => {
 
     await setItemQty(productId, 1);
-
-    window.dispatchEvent(
-      new CustomEvent("inventory:changed", { detail: [productId] }),
-    );
   };
 
   const API_BASE_URL = "http://localhost:8080";
@@ -65,7 +52,7 @@ const ShoppingCart = ({ succeeded = false }) => {
                     className="cart-qty-btn"
                     disabled={qty <= 0}
                     aria-label={`Decrease ${item.name}`}
-                    onClick={() => handleDecrement(item.id, qty)}
+                    onClick={() => handleDecrement(item.id)}
                   >
                     −
                   </button>
@@ -77,7 +64,7 @@ const ShoppingCart = ({ succeeded = false }) => {
                     className="cart-qty-btn"
                     disabled={disableIncrease}
                     aria-label={`Increase ${item.name}`}
-                    onClick={() => handleIncrement(item.id, qty, maxTotal)}
+                    onClick={() => handleIncrement(item.id)}
                   >
                     +
                   </button>

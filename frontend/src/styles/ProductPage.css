@@ -445,9 +445,13 @@ body {
 .qty-inline {
   display: inline-flex;
   align-items: center;
+  position: relative;
   gap: 8px;
   color: white;
   position: relative;
+  width: 100%;
+  max-width: 260px;
+  margin: 0 auto;
 }
 
 .in-your-cart {
@@ -475,6 +479,7 @@ body {
 
 .qty-label {
   font-size: 1.2rem;
+  white-space: nowrap;
 }
 
 .quantity-inline {
@@ -1132,8 +1137,6 @@ body {
 
 .product-name {
   font-family: "fantasy";
-  text-decoration: underline;
-  text-underline-offset: 10px;
   font-size: 2rem;
   color: #e1bee7;
 }
@@ -1555,7 +1558,7 @@ body {
     max-height: 35vh;
   }
   .product-modal-price {
-    margin-top: 60px !important;
+    margin-top: 8px;
   }
 }
 
@@ -1575,12 +1578,13 @@ body {
   .product-modal-footer {
     width: 90%;
     height: 65px;
+    min-height: auto;
     padding: 2px;
   }
 
   .product-modal-price {
     font-size: 0.9rem;
-    margin-top: 60px;
+    margin-top: 8px;
     line-height: 1.1;
   }
   .product-modal-qty {
@@ -1602,7 +1606,7 @@ body {
   .sold-out-added-to-cart {
     height: auto;
     padding: 2px 4px;
-    margin-bottom: 40px;
+    margin-bottom: 8px;
     font-size: 0.95rem;
     text-align: center;
   }
@@ -1611,7 +1615,7 @@ body {
     width: 18px;
     height: 18px;
     font-size: 0.75rem;
-    margin-bottom: 52px;
+    margin-bottom: 0;
   }
 
   .product-modal-buttons {
