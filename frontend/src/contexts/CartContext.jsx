@@ -37,11 +37,10 @@ function migrateItem(raw) {
         raw.quantity ??
         Number.POSITIVE_INFINITY,
     ),
-
-    weightOunces: raw.weightOunces ?? null,
-    lengthInches: raw.lengthInches ?? null,
-    widthInches: raw.widthInches ?? null,
-    heightInches: raw.heightInches ?? null,
+    weightOunces: Number(raw.weightOunces ?? 0),
+    lengthInches: Number(raw.lengthInches ?? 0),
+    widthInches: Number(raw.widthInches ?? 0),
+    heightInches: Number(raw.heightInches ?? 0),
   };
 }
 

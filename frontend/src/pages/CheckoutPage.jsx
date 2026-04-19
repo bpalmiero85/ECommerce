@@ -69,12 +69,13 @@ export default function CheckoutPage({ onSuccess }) {
     0,
   );
 
-  const totalWeightOunces = cartItems.reduce((sum, item) => {
-    const qty = Number(item.qty ?? item.quantity ?? 1);
-    const weight = Number(item.weightOunces ?? 0);
+  const totalWeightOunces = cartItems.reduce(
+  (sum, item) =>
+    sum + ((item.weightOunces || 0) * (item.qty ?? 1)),
+  0
+);
+console.log("TOTAL WEIGHT:", totalWeightOunces);
 
-    return sum + weight * qty;
-  }, 0);
 
   // Shippo Shipping
   const [shippingCheapest, setShippingCheapest] = useState(null);
