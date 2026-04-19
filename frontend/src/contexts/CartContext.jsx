@@ -37,6 +37,11 @@ function migrateItem(raw) {
         raw.quantity ??
         Number.POSITIVE_INFINITY,
     ),
+
+    weightOunces: raw.weightOunces ?? null,
+    lengthInches: raw.lengthInches ?? null,
+    widthInches: raw.widthInches ?? null,
+    heightInches: raw.heightInches ?? null,
   };
 }
 
@@ -182,6 +187,7 @@ export function CartProvider({ children }) {
             ? Math.max(0, startingAvailable - actualDelta)
             : startingAvailable,
         });
+
         return item ? [...prev, item] : prev;
       }
 
@@ -249,6 +255,11 @@ export function CartProvider({ children }) {
               ? item.imageUrl
               : `/api/product/${item.id}/picture`,
           available: item.available ?? Number.POSITIVE_INFINITY,
+
+          weightOunces: item.weightOunces,
+          lengthInches: item.lengthInches,
+          widthInches: item.widthInches,
+          heightInches: item.heightInches,
         }),
       )
       .filter(Boolean);

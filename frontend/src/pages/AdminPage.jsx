@@ -12,6 +12,11 @@ const AdminPage = () => {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [materialCost, setMaterialCost] = useState("");
+  const [weightOunces, setWeightOunces] = useState("");
+  const [lengthInches, setLengthInches] = useState("");
+  const [widthInches, setWidthInches] = useState("");
+  const [heightInches, setHeightInches] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedFilesByProductId, setSelectedFilesByProductId] = useState({});
   const [isEditingId, setIsEditingId] = useState(null);
@@ -297,6 +302,12 @@ const AdminPage = () => {
           category,
           featured: isFeatured,
           newArrival: isNewArrival,
+
+          materialCost: parseFloat(materialCost) || 0,
+          weightOunces: parseFloat(weightOunces) || null,
+          lengthInches: parseFloat(lengthInches) || null,
+          widthInches: parseFloat(widthInches) || null,
+          heightInches: parseFloat(heightInches) || null,
         }),
       });
 
@@ -316,6 +327,13 @@ const AdminPage = () => {
       setIsFeatured(false);
       setIsNewArrival(false);
       setSelectedFile(null);
+
+      setMaterialCost("");
+      setWeightOunces("");
+      setLengthInches("");
+      setWidthInches("");
+      setHeightInches("");
+
       if (mainFileRef.current) mainFileRef.current.value = "";
 
       if (fileToUpload) {
@@ -643,6 +661,12 @@ const AdminPage = () => {
       category,
       featured: isFeatured,
       newArrival: isNewArrival,
+
+      materialCost: parseFloat(materialCost) || 0,
+      weightOunces: parseFloat(weightOunces) || null,
+      lengthInches: parseFloat(lengthInches) || null,
+      widthInches: parseFloat(widthInches) || null,
+      heightInches: parseFloat(heightInches) || null,
     };
 
     try {
@@ -1123,6 +1147,52 @@ const AdminPage = () => {
                     onChange={(e) => setQuantity(e.target.value)}
                     required
                   />
+
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="Material Cost ($)"
+                    className="product-input-field"
+                    value={materialCost}
+                    onChange={(e) => setMaterialCost(e.target.value)}
+                  />
+
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="Weight (oz)"
+                    className="product-input-field"
+                    value={weightOunces}
+                    onChange={(e) => setWeightOunces(e.target.value)}
+                  />
+
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="Length (in)"
+                    className="product-input-field"
+                    value={lengthInches}
+                    onChange={(e) => setLengthInches(e.target.value)}
+                  />
+
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="Width (in)"
+                    className="product-input-field"
+                    value={widthInches}
+                    onChange={(e) => setWidthInches(e.target.value)}
+                  />
+
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="Height (in)"
+                    className="product-input-field"
+                    value={heightInches}
+                    onChange={(e) => setHeightInches(e.target.value)}
+                  />
+
                   <div className="category-select">
                     <label className="input-label">
                       <strong>Category:</strong>
@@ -1232,6 +1302,11 @@ const AdminPage = () => {
                               setCategory(product.category);
                               setIsFeatured(!!product.featured);
                               setIsNewArrival(!!product.newArrival);
+                              setMaterialCost(product.materialCost || "");
+                              setWeightOunces(product.weightOunces || "");
+                              setLengthInches(product.lengthInches || "");
+                              setWidthInches(product.widthInches || "");
+                              setHeightInches(product.heightInches || "");
 
                               document
                                 .getElementById(`${product.id}`)
@@ -1326,6 +1401,64 @@ const AdminPage = () => {
                                 value={quantity}
                                 onChange={(e) => setQuantity(e.target.value)}
                                 required
+                              />
+                            </label>
+
+                            <label>
+                              Material Cost:
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={materialCost}
+                                onChange={(e) =>
+                                  setMaterialCost(e.target.value)
+                                }
+                              />
+                            </label>
+
+                            <label>
+                              Weight (oz):
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={weightOunces}
+                                onChange={(e) =>
+                                  setWeightOunces(e.target.value)
+                                }
+                              />
+                            </label>
+
+                            <label>
+                              Length (in):
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={lengthInches}
+                                onChange={(e) =>
+                                  setLengthInches(e.target.value)
+                                }
+                              />
+                            </label>
+
+                            <label>
+                              Width (in):
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={widthInches}
+                                onChange={(e) => setWidthInches(e.target.value)}
+                              />
+                            </label>
+
+                            <label>
+                              Height (in):
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={heightInches}
+                                onChange={(e) =>
+                                  setHeightInches(e.target.value)
+                                }
                               />
                             </label>
 

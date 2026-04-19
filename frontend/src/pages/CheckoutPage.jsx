@@ -56,6 +56,12 @@ export default function CheckoutPage({ onSuccess }) {
 
   // Access the shopping cart context to calculate subtotal.
   const { cartItems, clearCartAfterPayment } = useContext(CartContext);
+
+  useEffect(() => {
+  console.log("🛒 cartItems DEBUG:", cartItems);
+}, [cartItems]);
+
+
   const subtotal = cartItems.reduce(
     (sum, item) =>
       sum +
@@ -63,12 +69,12 @@ export default function CheckoutPage({ onSuccess }) {
     0,
   );
 
-  // TODO: replace this with real product weights later.
+  const totalWeightOunces = cartItems.reduce((sum, item) => {
+    const qty = Number(item.qty ?? item.quantity ?? 1);
+    const weight = Number(item.weightOunces ?? 0);
 
-  const totalWeightOunces = cartItems.reduce(
-    (sum, item) => sum + 8 * (Number(item.qty ?? item.quantity ?? 1) || 0),
-    0,
-  );
+    return sum + weight * qty;
+  }, 0);
 
   // Shippo Shipping
   const [shippingCheapest, setShippingCheapest] = useState(null);
@@ -437,7 +443,7 @@ export default function CheckoutPage({ onSuccess }) {
           items: purchaseItems,
         });
 
-        setSucceeded(true); 
+        setSucceeded(true);
         clearCartAfterPayment();
         if (onSuccess) onSuccess();
       } catch (err) {
@@ -657,7 +663,7 @@ export default function CheckoutPage({ onSuccess }) {
     <>
       <div className="shipping-disclaimer-black">
         🇺🇸 Ships within the United States only
-        </div>
+      </div>
       <div className="checkout-header">Checkout</div>
       <h3 className="header-subtotal">Subtotal: ${subtotal}</h3>
       <div className="checkout-form">

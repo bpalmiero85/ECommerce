@@ -180,7 +180,13 @@ public class CartService {
           product.getName(),
           product.getPrice(),
           imageUrl,
-          qty);
+          qty,
+          product.getWeightOunces(),
+  product.getLengthInches(),
+  product.getWidthInches(),
+  product.getHeightInches()
+          
+        );
     })
 
         .filter(java.util.Objects::nonNull)
