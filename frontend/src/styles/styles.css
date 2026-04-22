@@ -226,11 +226,6 @@ p {
   border: 1px solid transparent;
 }
 
-.badge-purple {
-  background: var(--neon-purple);
-  color: white;
-}
-
 /* Layout utilities */
 .container {
   width: 100%;

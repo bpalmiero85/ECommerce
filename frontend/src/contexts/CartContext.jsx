@@ -46,6 +46,7 @@ function migrateItem(raw) {
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState([]);
+  const isUpdatingRef = useRef(false);
   const cartQueue = useRef(Promise.resolve());
 
   const cartItemsRef = useRef([]);
@@ -150,6 +151,10 @@ export function CartProvider({ children }) {
     clearCartServerAndBroadcast("payment", false);
 
   async function performSetItemQty(id, nextQty, fallback = {}) {
+    isUpdatingRef.current = true;
+
+    try {
+
     const current = Number(
       cartItemsRef.current.find((p) => p.id === id)?.qty ?? 0,
     );
@@ -214,6 +219,9 @@ export function CartProvider({ children }) {
 
       return prev;
     });
+  } finally {
+    isUpdatingRef.current = false
+}
   }
 
   const setItemQty = (id, nextQty, fallback = {}) => {
@@ -233,6 +241,7 @@ export function CartProvider({ children }) {
   const idleTimer = useRef(null);
 
   async function refreshCart() {
+    if (isUpdatingRef.current) return;
     const resp = await fetch(`${API_BASE_URL}/api/cart`, {
       credentials: "include",
       cache: "no-store",

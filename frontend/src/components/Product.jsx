@@ -32,9 +32,7 @@ const Product = ({
   const [message, setMessage] = useState("");
   const [isLastItemShown, setIsLastItemShown] = useState(false);
   const cardRef = useRef(null);
-  const pendingLastItemMessageRef = useRef(false);
   const [added, setAdded] = useState(false);
-  const prevQtyRef = useRef(quantity);
   const depletionTakeRef = useRef(0);
   const [showCheck, setShowCheck] = useState(false);
   const prevInCartQtyForCheckRef = useRef(inCartQty);
@@ -42,6 +40,7 @@ const Product = ({
   const imageUrl = hasPicture
     ? `${API_BASE_URL}/api/product/${id}/picture?v=${pictureVersion}`
     : "";
+    
 
   useEffect(() => {
     if (!isLastItemShown) return;
@@ -65,17 +64,27 @@ const Product = ({
     try {
       const delta = nextQty - inCartQty;
 
+      if (delta < 0) {
+        setIsLastItemShown(false);
+        setMessage("");
+      }
+
       if (delta > 0) {
         const remainingAfter = quantity - delta;
 
-        pendingLastItemMessageRef.current = remainingAfter === 0;
-
         if (remainingAfter === 0) {
-          depletionTakeRef.current = inCartQty + delta;
+          const taken = inCartQty + delta;
+
+          showTempMessage(
+            taken === 1
+              ? "You got the last one!"
+              : `You got the last ${taken}!`,
+          );
         } else {
-          depletionTakeRef.current = 0;
-          setIsLastItemShown(false);
-          setMessage("");
+          setTimeout(() => {
+            setIsLastItemShown(false);
+            setMessage("");
+          }, 5000);
         }
       }
 
@@ -85,31 +94,33 @@ const Product = ({
         imageUrl: `/api/product/${id}/picture`,
         available: quantity,
       });
-     if (delta > 0) {
-  const unitPrice = Number(price);
-  const quantityAdded = delta;
+      if (delta > 0) {
+        const unitPrice = Number(price);
+        const quantityAdded = delta;
 
-  window.gtag?.("event", "add_to_cart", {
-    currency: "USD",
-    value: unitPrice * quantityAdded,
-    items: [
-      {
-        item_id: String(id),
-        item_name: name,
-        item_category: category,
-        item_brand: "Goth & Glitter",
-        item_variant: featured
-          ? "featured"
-          : newArrival
-          ? "new-arrival"
-          : "standard",
-        price: unitPrice,
-        quantity: quantityAdded,
-      },
-    ],
-  });
-}
-      onReserved?.(id);
+        window.gtag?.("event", "add_to_cart", {
+          currency: "USD",
+          value: unitPrice * quantityAdded,
+          items: [
+            {
+              item_id: String(id),
+              item_name: name,
+              item_category: category,
+              item_brand: "Goth & Glitter",
+              item_variant: featured
+                ? "featured"
+                : newArrival
+                  ? "new-arrival"
+                  : "standard",
+              price: unitPrice,
+              quantity: quantityAdded,
+            },
+          ],
+        });
+      }
+      window.dispatchEvent(
+        new CustomEvent("inventory:changed", { detail: [id] })
+      );
     } catch (err) {
       console.error(err);
       alert("Could not update quantity. Please try again.");
@@ -143,31 +154,10 @@ const Product = ({
   }, [inCartQty]);
 
   useEffect(() => {
-    function onStorage(e) {
-      if (e.storageArea !== localStorage) return;
-      if (e.key !== "inventory:broadcast") return;
-
-      let payload = null;
-      try {
-        payload = JSON.parse(e.newValue || "null");
-      } catch {
-        /* ignore */
-      }
-
-      const ids = Array.isArray(payload?.ids) ? payload.ids : [];
-      const hit = ids.map(String).includes(String(id));
-      if (hit) onReserved?.(id);
-    }
-
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, [id, onReserved]);
-
-  useEffect(() => {
     function onInventoryChanged(e) {
       const ids = Array.isArray(e?.detail) ? e.detail : [];
       if (ids.map(String).includes(String(id))) {
-        onReserved?.(id);
+      
       }
     }
     window.addEventListener("inventory:changed", onInventoryChanged);
@@ -183,33 +173,6 @@ const Product = ({
       };
     }
   }, [isOpen]);
-
-  useEffect(() => {
-    const prevQty = prevQtyRef.current;
-
-    if (prevQty > 0 && quantity === 0) {
-      if (pendingLastItemMessageRef.current) {
-        const taken = depletionTakeRef.current;
-
-        showTempMessage(
-          taken === 1 ? "You got the last one!" : `You got the last ${taken}!`,
-        );
-
-        pendingLastItemMessageRef.current = false;
-        depletionTakeRef.current = 0;
-      } else if (inCartQty > 0) {
-        showTempMessage("Sold Out");
-      }
-    }
-
-    if (prevQty === 0 && quantity > 0) {
-      setIsLastItemShown(false);
-      setMessage("");
-      depletionTakeRef.current = 0;
-    }
-
-    prevQtyRef.current = quantity;
-  }, [quantity, inCartQty]);
 
   useEffect(() => {
     setAdded(inCartQty > 0);
@@ -262,7 +225,7 @@ const Product = ({
         >
           <div className="product-design">
             <div className="animated-item-container">
-              {featured && <span className="badge-purple">Featured</span>}
+              {featured && <span className="badge-purple">Featured!</span>}
               {newArrival && <span className="badge-purple">New Arrival!</span>}
               <div
                 className={
@@ -350,7 +313,7 @@ const Product = ({
                     className="qty-btn"
                     aria-label="Decrease quantity"
                     onMouseDownCapture={stopAll}
-                    disabled={saving || inCartQty <= 0}
+                    disabled={inCartQty <= 0}
                     onClick={() => handleQtyChange(inCartQty - 1)}
                   >
                     −
@@ -362,7 +325,7 @@ const Product = ({
                     className="qty-btn"
                     aria-label="Increase quantity"
                     onMouseDownCapture={stopAll}
-                    disabled={saving || quantity <= 0}
+                    disabled={quantity <= 0}
                     onClick={() => handleQtyChange(inCartQty + 1)}
                   >
                     +
