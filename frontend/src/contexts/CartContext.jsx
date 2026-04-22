@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useRef } from "react";
+import { createContext, useContext, useEffect, useState, useRef, act } from "react";
 
 import { API_BASE_URL } from "../config/api";
 
@@ -56,13 +56,11 @@ export function CartProvider({ children }) {
 
   useEffect(() => {
     function handleInventoryChanged() {
-      refreshCart();
     }
 
     function handleStorage(e) {
       if (e.storageArea !== localStorage) return;
       if (e.key !== "inventory:broadcast") return;
-      refreshCart();
     }
 
     window.addEventListener("inventory:changed", handleInventoryChanged);
@@ -163,7 +161,7 @@ export function CartProvider({ children }) {
 
     if (!delta) return;
 
-    const target = current + delta;
+    
 
     const url =
       delta > 0
@@ -176,6 +174,8 @@ export function CartProvider({ children }) {
     const changed = Number(await resp.text());
     const actualDelta = delta > 0 ? changed : -changed;
 
+    const target = current + actualDelta;
+
     if (!actualDelta) return;
 
     setCartItems((prev) => {
@@ -186,7 +186,7 @@ export function CartProvider({ children }) {
         const item = migrateItem({
           id,
           ...fallback,
-          qty: target,
+          qty: current + actualDelta,
           available: Number.isFinite(startingAvailable)
             ? Math.max(0, startingAvailable - actualDelta)
             : startingAvailable,
@@ -211,7 +211,7 @@ export function CartProvider({ children }) {
         copy[idx] = {
           ...copy[idx],
           ...fallback,
-          qty: target,
+          qty: current + actualDelta,
           available: nextAvailable,
         };
         return copy;

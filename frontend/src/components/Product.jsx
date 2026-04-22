@@ -40,7 +40,6 @@ const Product = ({
   const imageUrl = hasPicture
     ? `${API_BASE_URL}/api/product/${id}/picture?v=${pictureVersion}`
     : "";
-    
 
   useEffect(() => {
     if (!isLastItemShown) return;
@@ -69,12 +68,18 @@ const Product = ({
         setMessage("");
       }
 
+      await setItemQty(id, delta, {
+        name,
+        price,
+        imageUrl: `/api/product/${id}/picture`,
+        available: quantity,
+      });
+
       if (delta > 0) {
         const remainingAfter = quantity - delta;
 
         if (remainingAfter === 0) {
           const taken = inCartQty + delta;
-
           showTempMessage(
             taken === 1
               ? "You got the last one!"
@@ -87,13 +92,6 @@ const Product = ({
           }, 5000);
         }
       }
-
-      await setItemQty(id, delta, {
-        name,
-        price,
-        imageUrl: `/api/product/${id}/picture`,
-        available: quantity,
-      });
       if (delta > 0) {
         const unitPrice = Number(price);
         const quantityAdded = delta;
@@ -119,12 +117,16 @@ const Product = ({
         });
       }
       window.dispatchEvent(
-        new CustomEvent("inventory:changed", { detail: [id] })
+        new CustomEvent("inventory:changed", { detail: [id] }),
       );
     } catch (err) {
       console.error(err);
       alert("Could not update quantity. Please try again.");
     } finally {
+      setTimeout(() => {
+        setIsLastItemShown(false);
+        setMessage("");
+      }, 5000);
       setSaving(false);
     }
   }
@@ -157,7 +159,6 @@ const Product = ({
     function onInventoryChanged(e) {
       const ids = Array.isArray(e?.detail) ? e.detail : [];
       if (ids.map(String).includes(String(id))) {
-      
       }
     }
     window.addEventListener("inventory:changed", onInventoryChanged);
