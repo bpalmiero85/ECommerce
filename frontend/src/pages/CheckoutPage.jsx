@@ -58,9 +58,8 @@ export default function CheckoutPage({ onSuccess }) {
   const { cartItems, clearCartAfterPayment } = useContext(CartContext);
 
   useEffect(() => {
-  console.log("🛒 cartItems DEBUG:", cartItems);
-}, [cartItems]);
-
+    console.log("🛒 cartItems DEBUG:", cartItems);
+  }, [cartItems]);
 
   const subtotal = cartItems.reduce(
     (sum, item) =>
@@ -70,12 +69,10 @@ export default function CheckoutPage({ onSuccess }) {
   );
 
   const totalWeightOunces = cartItems.reduce(
-  (sum, item) =>
-    sum + ((item.weightOunces || 0) * (item.qty ?? 1)),
-  0
-);
-console.log("TOTAL WEIGHT:", totalWeightOunces);
-
+    (sum, item) => sum + (item.weightOunces || 0) * (item.qty ?? 1),
+    0,
+  );
+  console.log("TOTAL WEIGHT:", totalWeightOunces);
 
   // Shippo Shipping
   const [shippingCheapest, setShippingCheapest] = useState(null);
@@ -569,8 +566,25 @@ console.log("TOTAL WEIGHT:", totalWeightOunces);
       if (!amount || Number.isNaN(amount)) {
         throw new Error("No valid shipping rate returned.");
       }
-      const cheapest = data?.cheapest || null;
-      setShippingOptions(data?.options || []);
+
+      // delete uspsOptions when switching back to UPS mailbox
+      const uspsOptions = (data?.options || []).filter(
+        (opt) => opt?.provider?.toLowerCase() === "usps",
+      );
+
+      // uncomment below line when switching back to UPS mailbox
+      // const cheapest = data?.cheapest || null;
+
+      // delete this version of const cheapest when switching back to UPS mailbox
+      const cheapest =
+        uspsOptions.sort((a, b) => Number(a.amount) - Number(b.amount))[0] ||
+        null;
+
+      // uncomment setShippingOptions line below when switching back to UPS mailbox
+      // setShippingOptions(data?.options || []);
+
+      // delete setShippingOptions line below when switching back to UPS mailbox
+      setShippingOptions(uspsOptions);
       setShippingCheapest(cheapest);
       setSelectedRateId(cheapest?.object_id || null);
       setShippingRate(cheapest ? Number(cheapest.amount) : null);
@@ -773,7 +787,7 @@ console.log("TOTAL WEIGHT:", totalWeightOunces);
             {shippingOptions.length > 0 && (
               <div style={{ marginTop: 10 }}>
                 <div style={{ fontWeight: 600, marginBottom: 6 }}>
-                  Choose shipping (defaults to least expensive):
+                  Choose USPS shipping (defaults to least expensive):
                 </div>
 
                 <select
@@ -797,7 +811,7 @@ console.log("TOTAL WEIGHT:", totalWeightOunces);
                   }}
                 >
                   <option value="" disabled>
-                    -- choose shipping --
+                    -- choose USPS shipping --
                   </option>
 
                   {shippingOptions.map((opt) => {
