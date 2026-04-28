@@ -42,6 +42,8 @@ export default function CheckoutPage({ onSuccess }) {
     },
   };
 
+    const HANDLING_FEE = 1.25;
+
   const shippingDebounceRef = useRef(null);
 
   // Discount code/free shipping state
@@ -511,6 +513,7 @@ export default function CheckoutPage({ onSuccess }) {
   };
 
   const handleCalculateShipping = async () => {
+
     setShippingError(null);
 
     const zip = destinationZip.trim();
@@ -580,15 +583,17 @@ export default function CheckoutPage({ onSuccess }) {
         uspsOptions.sort((a, b) => Number(a.amount) - Number(b.amount))[0] ||
         null;
 
-        // May need edited when switching back to UPS mailbox
-        const filteredOptions = uspsOptions.filter((opt) => {
-          if (!cheapest) return false;
-          
-          const sameDays = opt.estimated_days != null && opt.estimated_days === cheapest.estimated_days;
-          const moreExpensive = Number(opt.amount) > Number(cheapest.amount);
+      // May need edited when switching back to UPS mailbox
+      const filteredOptions = uspsOptions.filter((opt) => {
+        if (!cheapest) return false;
 
-          return !(sameDays && moreExpensive);
-    });
+        const sameDays =
+          opt.estimated_days != null &&
+          opt.estimated_days === cheapest.estimated_days;
+        const moreExpensive = Number(opt.amount) > Number(cheapest.amount);
+
+        return !(sameDays && moreExpensive);
+      });
 
       // uncomment setShippingOptions line below when switching back to UPS mailbox
       // setShippingOptions(data?.options || []);
@@ -597,9 +602,9 @@ export default function CheckoutPage({ onSuccess }) {
       setShippingOptions(filteredOptions);
       setShippingCheapest(cheapest);
       setSelectedRateId(cheapest?.object_id || null);
-      setShippingRate(cheapest ? Number(cheapest.amount) : null);
-      const quote = cheapest ? Number(cheapest.amount) : 0;
-      setFinalShippingTotal(Number(quote.toFixed(2)));
+      const baseShipping = cheapest ? Number(cheapest.amount) : 0;
+      setShippingRate(Number(baseShipping.toFixed(2)));
+      setFinalShippingTotal(Number(baseShipping + HANDLING_FEE).toFixed(2));
       setDiscountTotal(0);
       setFreeShippingApplied(false);
       setDiscountMessage("");
@@ -847,32 +852,34 @@ export default function CheckoutPage({ onSuccess }) {
               </div>
             )}
             {shippingRate != null && (
-              <div className="shipping-summary">
-                <div style={{ fontSize: "0.95rem", opacity: 0.95 }}>
-                  <strong>Shipping:</strong> ${shippingRate.toFixed(2)}
-                  {shippingCheapest?.servicelevel && (
-                    <>
-                      {" "}
-                      •{" "}
-                      {shippingCheapest.servicelevel.display_name ||
-                        shippingCheapest.servicelevel.name}
-                    </>
-                  )}
-                  {shippingCheapest?.estimated_days != null && (
-                    <>
-                      {" "}
-                      • about {shippingCheapest.estimated_days}d (plus 1 day for
-                      handling)
-                    </>
-                  )}
-                </div>
-
-                <div
+              <><div className="shipping-summary">
+                  <div style={{ fontSize: "0.95rem", opacity: 0.95 }}>
+                    <strong>Shipping:</strong> ${shippingRate.toFixed(2)}
+                    {shippingCheapest?.servicelevel && (
+                      <>
+                        {" "}
+                        •{" "}
+                        {shippingCheapest.servicelevel.display_name ||
+                          shippingCheapest.servicelevel.name}
+                      </>
+                    )}
+                    {shippingCheapest?.estimated_days != null && (
+                      <>
+                        {" "}
+                        • about {shippingCheapest.estimated_days}d (plus 1 day for
+                        handling)
+                      </>
+                    )}
+                    <br />
+                    <div style={{ marginTop: 10 }} />
+                    <strong>Handling:</strong> ${HANDLING_FEE.toFixed(2)}
+                  </div>
+                </div><div
                   style={{ marginTop: 6, fontSize: "0.85rem", opacity: 0.85 }}
                 >
-                  {getShipScheduleNote()}
-                </div>
-              </div>
+                    {getShipScheduleNote()}
+                  </div>
+                  </>
             )}
           </div>
 
@@ -913,7 +920,7 @@ export default function CheckoutPage({ onSuccess }) {
 
             {shippingRate && (
               <p>
-                <strong>Shipping:</strong> ${Number(shippingRate).toFixed(2)}
+                <strong>Shipping & Handling:</strong> ${Number(finalShippingTotal).toFixed(2)}
               </p>
             )}
 
@@ -924,7 +931,7 @@ export default function CheckoutPage({ onSuccess }) {
                   subtotal -
                   discountTotal +
                   (shippingState === "OH" ? subtotal * 0.0725 : 0) +
-                  shippingRate
+                  Number(finalShippingTotal)
                 ).toFixed(2)}
               </strong>
             </h2>

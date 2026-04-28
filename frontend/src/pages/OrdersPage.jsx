@@ -147,17 +147,44 @@ export default function OrdersPage() {
 
   const openPackSlip = (order) => {
     const itemsHtml = (order?.items ?? [])
-      .map(
-        (it) => `
-        <tr>
-          <td>${escapeHtml(it?.productName ?? "")}</td>
-          <td style="text-align:right;">${Number(it?.quantity ?? 0)}</td>
-        </tr>
-      `,
-      )
-      .join("");
+      .map((it) => {
+        const imageSrc = `${API_BASE_URL}/api/product/${it?.productId}/picture`;
 
-    const notes = String(order?.followUpNotes ?? "").trim();
+        return `
+        <tr>
+  <td colspan="2">
+  <div style="display:flex; align-items:center; gap:10px; width:100%;">
+    
+    <input type="checkbox" style="width:18px; height:18px;" />
+
+    <img 
+      src="${imageSrc}" 
+      style="width:50px; height:50px; object-fit:cover; border-radius:6px;" 
+    />
+
+    <span style="white-space:nowrap;">
+      ${escapeHtml(it?.productName ?? "")}
+    </span>
+
+    <span style="
+      flex:1;
+      border-bottom:1px solid #ccc;
+      margin: 0 8px;
+    "></span>
+
+    <span style="
+      font-weight:500;
+      flex-shrink:0;
+    ">
+      ${Number(it?.quantity ?? 0)}
+    </span>
+
+  </div>
+</td>
+</tr>
+      `;
+      })
+      .join("");
 
     const html = `<!doctype html>
 <html>
@@ -179,7 +206,7 @@ export default function OrdersPage() {
   </head>
   <body>
     <h1>Goth & Glitter Pack Slip</h1>
-    <div class="muted">Order #${escapeHtml(order?.orderId ?? "")}</div>
+    <div class="muted"><strong>Order #${escapeHtml(order?.orderId ?? "")}</strong></div>
 
     <div class="two-col">
       <div class="box col">
@@ -209,7 +236,6 @@ export default function OrdersPage() {
         </tbody>
       </table>
     </div>
-
     <div style="margin-top:14px;">
       <button type="button" onclick="window.print()">Print</button>
     </div>
