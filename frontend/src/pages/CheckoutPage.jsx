@@ -580,11 +580,21 @@ export default function CheckoutPage({ onSuccess }) {
         uspsOptions.sort((a, b) => Number(a.amount) - Number(b.amount))[0] ||
         null;
 
+        // May need edited when switching back to UPS mailbox
+        const filteredOptions = uspsOptions.filter((opt) => {
+          if (!cheapest) return false;
+          
+          const sameDays = opt.estimated_days != null && opt.estimated_days === cheapest.estimated_days;
+          const moreExpensive = Number(opt.amount) > Number(cheapest.amount);
+
+          return !(sameDays && moreExpensive);
+    });
+
       // uncomment setShippingOptions line below when switching back to UPS mailbox
       // setShippingOptions(data?.options || []);
 
       // delete setShippingOptions line below when switching back to UPS mailbox
-      setShippingOptions(uspsOptions);
+      setShippingOptions(filteredOptions);
       setShippingCheapest(cheapest);
       setSelectedRateId(cheapest?.object_id || null);
       setShippingRate(cheapest ? Number(cheapest.amount) : null);
@@ -784,7 +794,7 @@ export default function CheckoutPage({ onSuccess }) {
                 {shippingError}
               </div>
             )}
-            {shippingOptions.length > 0 && (
+            {shippingOptions.length > 1 && (
               <div style={{ marginTop: 10 }}>
                 <div style={{ fontWeight: 600, marginBottom: 6 }}>
                   Choose USPS shipping (defaults to least expensive):
