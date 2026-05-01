@@ -333,7 +333,7 @@ body {
   position: relative;
   font-size: 1rem;
   width: 100%;
-  width: 320px;
+  max-width: 320px;
   min-width: 200px; 
   top: 0;
   background: rgb(208, 0, 255);
@@ -524,7 +524,7 @@ body {
   border-radius: 6px;
   background-color: rgb(249, 249, 95);
   color: red;
-  font-size: 1rem;
+  font-size: 0.90rem;
   font-weight: 600;
 }
 
