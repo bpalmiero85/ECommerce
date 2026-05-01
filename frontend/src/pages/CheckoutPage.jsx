@@ -817,11 +817,16 @@ export default function CheckoutPage({ onSuccess }) {
                       null;
 
                     if (chosen) {
-                      setShippingRate(Number(chosen.amount));
+                      const newRate = Number(chosen.amount);
+
+                      setShippingRate(newRate);
                       setShippingCheapest(chosen);
+
+                      setFinalShippingTotal(Number(newRate + HANDLING_FEE).toFixed(2));
                     } else {
                       setShippingRate(null);
                       setShippingCheapest(null);
+                      setFinalShippingTotal(null);
                     }
                   }}
                 >
