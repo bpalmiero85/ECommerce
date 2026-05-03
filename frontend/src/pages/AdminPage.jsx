@@ -580,6 +580,7 @@ const AdminPage = () => {
 
   const handleToggleArchiveProduct = async (product) => {
     const isCurrentlyArchived = product.productArchived;
+
     const ok = window.confirm(
       isCurrentlyArchived
         ? "Unarchive this product and make it available for sale?"
@@ -602,13 +603,36 @@ const AdminPage = () => {
         );
         throw new Error(`Archive toggle failed (${response.status})`);
       }
-      await fetchProducts();
+
       notifyProductsChanged({
         type: "archive-toggle",
         id: product.id,
         category: product.category,
         productArchived: !isCurrentlyArchived,
       });
+
+      if (isCurrentlyArchived) {
+        setActiveTab("all");
+
+        const refreshed = await fetch(
+          `${API_BASE_URL}/api/products?_=${Date.now()}`,
+          {
+            method: "GET",
+            cache: "no-store",
+            credentials: "include",
+          },
+        );
+
+        if (!refreshed.ok) {
+          throw new Error(`Refresh products failed (${refreshed.status})`);
+        }
+
+        const data = await refreshed.json();
+        setProducts(data);
+        return;
+      }
+
+      setProducts((prev) => prev.filter((p) => p.id !== product.id));
     } catch (e) {
       logError("Archive toggle failed", e);
     }
