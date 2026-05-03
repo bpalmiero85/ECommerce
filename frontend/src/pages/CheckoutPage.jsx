@@ -59,9 +59,6 @@ export default function CheckoutPage({ onSuccess }) {
   // Access the shopping cart context to calculate subtotal.
   const { cartItems, clearCartAfterPayment } = useContext(CartContext);
 
-  useEffect(() => {
-    console.log("🛒 cartItems DEBUG:", cartItems);
-  }, [cartItems]);
 
   const subtotal = cartItems.reduce(
     (sum, item) =>
@@ -74,7 +71,7 @@ export default function CheckoutPage({ onSuccess }) {
     (sum, item) => sum + (item.weightOunces || 0) * (item.qty ?? 1),
     0,
   );
-  console.log("TOTAL WEIGHT:", totalWeightOunces);
+ 
 
   // Shippo Shipping
   const [shippingCheapest, setShippingCheapest] = useState(null);

@@ -19,7 +19,15 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
   List<Product> findBySoldOutTrueAndProductArchivedFalseOrderByNameAsc();
 
-  List<Product> findByQuantityAndSoldOutIsFalseAndProductArchivedFalseOrderByNameAsc(Integer quantity);
+  @Query("""
+  SELECT p FROM Product p
+  WHERE LOWER(TRIM(p.category)) = LOWER(TRIM(:category))
+  AND p.productArchived = false
+  ORDER BY p.name ASC
+""")
+List<Product> findActiveByCategory(@org.springframework.data.repository.query.Param("category") String category);
+
+List<Product> findByQuantityAndSoldOutFalseAndProductArchivedFalseOrderByNameAsc(Integer quantity);
 
   List<Product> findByCategoryIgnoreCaseAndNewArrivalTrueAndProductArchivedFalseOrderByNameAsc(String category);
 

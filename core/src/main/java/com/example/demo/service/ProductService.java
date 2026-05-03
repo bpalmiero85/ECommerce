@@ -1,10 +1,10 @@
 package com.example.demo.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -59,11 +59,11 @@ public class ProductService {
     return productRepository.findByProductArchivedTrueOrderByIdDesc();
   }
 
-  public Optional<Product> getProductById(Long id) {
+  public Optional<Product> getProductById(@NonNull Long id) {
     return productRepository.findById(id);
   }
 
-  public Product saveProductPicture(Long id, byte[] productPictureData, String pictureType) {
+  public Product saveProductPicture(@NonNull Long id, byte[] productPictureData, String pictureType) {
 
     Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
     product.setProductPictureFile(productPictureData);
@@ -72,13 +72,19 @@ public class ProductService {
     return productRepository.save(product);
   }
 
-  public List<Product> getProductCategory(String category) {
-    List<Product> list = productRepository.findByCategoryIgnoreCaseAndProductArchivedFalseOrderByNameAsc(category);
-    list.forEach(p -> inventory.seedIfAbsent(p.getId(), p.getQuantity()));
-    return list;
-  }
+ public List<Product> getProductCategory(String category) {
+  System.out.println("🔥 SERVICE HIT with category: " + category);
 
-  public Product updateProduct(Long id, Product updatedProduct) {
+  List<Product> list = productRepository.findActiveByCategory(category);
+
+  list.forEach(p -> {
+    System.out.println("MATCHED: " + p.getCategory());
+  });
+
+  return list;
+}
+
+  public Product updateProduct(@NonNull Long id, Product updatedProduct) {
     Optional<Product> existingProduct = productRepository.findById(id);
     if (existingProduct.isPresent()) {
       Product product = existingProduct.get();
@@ -108,7 +114,7 @@ public class ProductService {
   }
 
   public List<Product> getLowStockProducts() {
-    return productRepository.findByQuantityAndSoldOutIsFalseAndProductArchivedFalseOrderByNameAsc(1);
+    return productRepository.findByQuantityAndSoldOutFalseAndProductArchivedFalseOrderByNameAsc(1);
   }
 
   public List<Product> getFeaturedProductsByCategory(String category) {
@@ -135,7 +141,7 @@ public class ProductService {
     return productRepository.findBySoldOutTrueAndProductArchivedFalseOrderByNameAsc();
   }
 
-  public void archiveProduct(Long id) {
+  public void archiveProduct(@NonNull Long id) {
     Product product = productRepository.findById(id).orElseThrow();
 
     product.setProductArchived(true);
@@ -143,7 +149,7 @@ public class ProductService {
     productRepository.save(product);
   }
 
-  public Product toggleArchive(Long id) {
+  public Product toggleArchive(@NonNull Long id) {
     Product product = productRepository.findById(id).orElseThrow();
 
     product.setProductArchived(!product.isProductArchived());
@@ -151,7 +157,7 @@ public class ProductService {
     return productRepository.save(product);
   }
 
-  public void deleteProduct(Long id) {
+  public void deleteProduct(@NonNull Long id) {
     if (productRepository.existsById(id)) {
       productRepository.deleteById(id);
     } else {

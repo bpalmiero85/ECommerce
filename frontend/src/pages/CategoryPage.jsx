@@ -15,7 +15,7 @@ const SLUG_TO_CATEGORY = {
   jewelry: "Jewelry",
   figurines: "Figurines",
   accessories: "Accessories",
-  "new-arrivals": "New Arrivals", // sentinel for the special route
+  "new-arrivals": "New Arrivals",
 };
 
 function Category() {
@@ -101,6 +101,7 @@ function Category() {
       setProducts([]);
       return;
     }
+
     const fetchProducts = async (showLoader = false) => {
       if (inFlight.current) return;
       inFlight.current = true;
@@ -117,6 +118,7 @@ function Category() {
           : `${API_BASE_URL}/api/products?category=${encodeURIComponent(
               mappedCategory,
             )}`;
+
       try {
         const response = await fetch(url);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -130,8 +132,8 @@ function Category() {
           .join("|");
         if (sig !== prevSig.current) {
           prevSig.current = sig;
-          setProducts(sorted);
         }
+        setProducts(sorted);
       } catch (error) {
         setError("Could not load products");
         logError("CategoryPage fetchProducts failed", {
@@ -179,9 +181,9 @@ function Category() {
           )}
         </h2>
       </div>
-        <div className="shipping-disclaimer">
-            🇺🇸 Ships within the United States only
-          </div>
+      <div className="shipping-disclaimer">
+        🇺🇸 Ships within the United States only
+      </div>
 
       <div className="products-grid-container">
         {loading ? (

@@ -18,9 +18,10 @@ const toSlug = (name) => {
   return slug;
 };
 
-const ProductPage = () => {
+const ProductPage = ({ products: productsFromProps }) => {
   const [checkoutSucceeded, setCheckoutSucceeded] = useState(false);
   const [products, setProducts] = useState([]);
+  const displayProducts = productsFromProps ?? products;
   const [availableById, setAvailableById] = useState({});
   const [isCartShown, setIsCartShown] = useState(false);
   const { cartItems: rawCart, setItemQty } = useContext(CartContext);
@@ -48,10 +49,10 @@ const ProductPage = () => {
   }, []);
 
   useEffect(() => {
-    if (!products.length) return;
+    if (!displayProducts.length) return;
 
     const pollInventory = () => {
-      products.forEach((product) => {
+      displayProducts.forEach((product) => {
         fetchAvailable(product.id);
       });
     };
@@ -61,7 +62,7 @@ const ProductPage = () => {
     const interval = setInterval(pollInventory, 2000);
 
     return () => clearInterval(interval);
-  }, [products]);
+  }, [displayProducts]);
 
   const modalInCartQty = selectedProduct
     ? cartItems.reduce(
@@ -141,58 +142,63 @@ const ProductPage = () => {
   }, [isProductModalOpen]);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const response = await fetch(
-          `${API_BASE_URL}/api/products?_=${Date.now()}`,
-          {
-            cache: "no-store",
-            credentials: "include",
-          },
-        );
+  const load = async () => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/products?_=${Date.now()}`,
+        {
+          cache: "no-store",
+          credentials: "include",
+        },
+      );
 
-        if (!response.ok) {
-          throw new Error("error fetching products");
-        }
-        const product = await response.json();
-        const visibleProducts = product.filter((p) => !p?.productArchived);
-        visibleProducts.forEach((p) => fetchAvailable(p.id));
-        setProducts(visibleProducts);
-
-        const hasNew = product.some((p) => p?.newArrival === true);
-        const categoriesSet = new Set(
-          visibleProducts.map((p) => String(p.category).trim()).filter(Boolean),
-        );
-        const categoriesArray = [...categoriesSet];
-        const sorted = categoriesArray.sort((a, b) =>
-          a.localeCompare(b, undefined, { sensitivity: "base" }),
-        );
-
-        // put "New Arrivals" at the front only if any exist
-        const finalCategories = hasNew ? ["New Arrivals", ...sorted] : sorted;
-        setActiveCategories(finalCategories);
-      } catch (e) {
-        logError("ProductPage failed to load products: ", e);
+      if (!response.ok) {
+        throw new Error("error fetching products");
       }
-    };
+
+      const product = await response.json();
+      const visibleProducts = product.filter((p) => !p?.productArchived);
+
+      visibleProducts.forEach((p) => fetchAvailable(p.id));
+
+      if (!productsFromProps) {
+        setProducts(visibleProducts);
+      }
+
+      const hasNew = product.some((p) => p?.newArrival === true);
+      const categoriesSet = new Set(
+        visibleProducts.map((p) => String(p.category).trim()).filter(Boolean),
+      );
+      const categoriesArray = [...categoriesSet];
+      const sorted = categoriesArray.sort((a, b) =>
+        a.localeCompare(b, undefined, { sensitivity: "base" }),
+      );
+
+      const finalCategories = hasNew ? ["New Arrivals", ...sorted] : sorted;
+      setActiveCategories(finalCategories);
+    } catch (e) {
+      logError("ProductPage failed to load products: ", e);
+    }
+  };
+
+  load();
+
+  const onProductsChanged = () => {
     load();
+  };
+  window.addEventListener("products:changed", onProductsChanged);
 
-    const onProductsChanged = (e) => {
-      load();
-    };
-    window.addEventListener("products:changed", onProductsChanged);
+  const onStorage = (e) => {
+    if (e.key !== "products:changed") return;
+    load();
+  };
+  window.addEventListener("storage", onStorage);
 
-    const onStorage = (e) => {
-      if (e.key !== "products:changed") return;
-      load();
-    };
-    window.addEventListener("storage", onStorage);
-
-    return () => {
-      window.removeEventListener("products:changed", onProductsChanged);
-      window.removeEventListener("storage", onStorage);
-    };
-  }, []);
+  return () => {
+    window.removeEventListener("products:changed", onProductsChanged);
+    window.removeEventListener("storage", onStorage);
+  };
+}, [productsFromProps]);
 
   useEffect(() => {
     function onInventoryChanged(e) {
@@ -217,15 +223,15 @@ const ProductPage = () => {
   }, [setCheckoutSucceeded, setIsCartShown]);
 
   useEffect(() => {
-    if (!products.length) return;
-  }, [products]);
+    if (!displayProducts.length) return;
+  }, [displayProducts]);
 
   useEffect(() => {
-    if (products.length > 0) {
+    if (displayProducts.length > 0) {
       addLogoEffects();
     }
     return () => {};
-  }, [products]);
+  }, [displayProducts]);
 
   useEffect(() => {
     if (!isCartShown) {
@@ -739,8 +745,8 @@ const ProductPage = () => {
         <div className="product-main-container">
           <div className="products-container">
             <div className="product-grid">
-              {products.length > 0 ? (
-                products.map((product) => (
+              {displayProducts.length > 0 ? (
+                displayProducts.map((product) => (
                   <div
                     className="product-item-container"
                     key={product.id}
