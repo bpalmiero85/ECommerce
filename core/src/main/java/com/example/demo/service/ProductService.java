@@ -73,13 +73,8 @@ public class ProductService {
   }
 
  public List<Product> getProductCategory(String category) {
-  System.out.println("🔥 SERVICE HIT with category: " + category);
 
   List<Product> list = productRepository.findActiveByCategory(category);
-
-  list.forEach(p -> {
-    System.out.println("MATCHED: " + p.getCategory());
-  });
 
   return list;
 }
