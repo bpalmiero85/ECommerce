@@ -42,7 +42,7 @@ export default function CheckoutPage({ onSuccess }) {
     },
   };
 
-    const HANDLING_FEE = 1.25;
+  const HANDLING_FEE = 1.25;
 
   const shippingDebounceRef = useRef(null);
 
@@ -59,7 +59,6 @@ export default function CheckoutPage({ onSuccess }) {
   // Access the shopping cart context to calculate subtotal.
   const { cartItems, clearCartAfterPayment } = useContext(CartContext);
 
-
   const subtotal = cartItems.reduce(
     (sum, item) =>
       sum +
@@ -71,7 +70,6 @@ export default function CheckoutPage({ onSuccess }) {
     (sum, item) => sum + (item.weightOunces || 0) * (item.qty ?? 1),
     0,
   );
- 
 
   // Shippo Shipping
   const [shippingCheapest, setShippingCheapest] = useState(null);
@@ -460,17 +458,35 @@ export default function CheckoutPage({ onSuccess }) {
   };
 
   const handleApplyDiscount = async () => {
+    const cleanCode = discountCode.trim();
+
+    const normalShippingTotal =
+      shippingRate != null
+        ? Number((Number(shippingRate) + HANDLING_FEE).toFixed(2))
+        : 0;
+
+    // If user clears the discount input and clicks Apply,
+    // reset discount state and restore normal shipping + handling.
+    if (!cleanCode) {
+      setDiscountCode("");
+      setDiscountType(null);
+      setDiscountPercent(null);
+      setDiscountMessage("");
+      setDiscountTotal(0);
+      setFreeShippingApplied(false);
+      setFinalShippingTotal(normalShippingTotal);
+      return;
+    }
+
     try {
-      const shippingTotal =
-        shippingRate != null ? Number(Number(shippingRate).toFixed(2)) : 0;
       const resp = await fetch(`${API_BASE_URL}/api/discounts/validate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          code: discountCode,
+          code: cleanCode,
           email: discountEmail,
           subtotal: Number(subtotal.toFixed(2)),
-          shippingTotal,
+          shippingTotal: normalShippingTotal,
         }),
       });
 
@@ -479,24 +495,24 @@ export default function CheckoutPage({ onSuccess }) {
       if (!resp.ok) {
         throw new Error(data?.message || "Discount validation failed.");
       }
+
       setDiscountType(data.type);
       setDiscountPercent(data.percentOff);
       setDiscountMessage(data.message || "");
       setDiscountTotal(Number(data.discountTotal || 0));
       setFinalShippingTotal(
-        Number(
-          data.finalShippingTotal != null
-            ? data.finalShippingTotal
-            : shippingTotal,
-        ) || 0,
+        data.finalShippingTotal != null
+          ? Number(Number(data.finalShippingTotal).toFixed(2))
+          : normalShippingTotal,
       );
       setFreeShippingApplied(Boolean(data.freeShippingApplied));
     } catch (e) {
       setDiscountMessage(e.message || "Could not apply discount.");
+      setDiscountType(null);
+      setDiscountPercent(null);
       setDiscountTotal(0);
-      setFinalShippingTotal(
-        shippingRate != null ? Number(Number(shippingRate).toFixed(2)) : 0,
-      );
+      setFreeShippingApplied(false);
+      setFinalShippingTotal(normalShippingTotal);
     }
   };
 
@@ -510,7 +526,6 @@ export default function CheckoutPage({ onSuccess }) {
   };
 
   const handleCalculateShipping = async () => {
-
     setShippingError(null);
 
     const zip = destinationZip.trim();
@@ -819,7 +834,9 @@ export default function CheckoutPage({ onSuccess }) {
                       setShippingRate(newRate);
                       setShippingCheapest(chosen);
 
-                      setFinalShippingTotal(Number(newRate + HANDLING_FEE).toFixed(2));
+                      setFinalShippingTotal(
+                        Number(newRate + HANDLING_FEE).toFixed(2),
+                      );
                     } else {
                       setShippingRate(null);
                       setShippingCheapest(null);
@@ -854,7 +871,8 @@ export default function CheckoutPage({ onSuccess }) {
               </div>
             )}
             {shippingRate != null && (
-              <><div className="shipping-summary">
+              <>
+                <div className="shipping-summary">
                   <div style={{ fontSize: "0.95rem", opacity: 0.95 }}>
                     <strong>Shipping:</strong> ${shippingRate.toFixed(2)}
                     {shippingCheapest?.servicelevel && (
@@ -868,20 +886,21 @@ export default function CheckoutPage({ onSuccess }) {
                     {shippingCheapest?.estimated_days != null && (
                       <>
                         {" "}
-                        • about {shippingCheapest.estimated_days}d (plus 1 day for
-                        handling)
+                        • about {shippingCheapest.estimated_days}d (plus 1 day
+                        for handling)
                       </>
                     )}
                     <br />
                     <div style={{ marginTop: 10 }} />
                     <strong>Handling:</strong> ${HANDLING_FEE.toFixed(2)}
                   </div>
-                </div><div
+                </div>
+                <div
                   style={{ marginTop: 6, fontSize: "0.85rem", opacity: 0.85 }}
                 >
-                    {getShipScheduleNote()}
-                  </div>
-                  </>
+                  {getShipScheduleNote()}
+                </div>
+              </>
             )}
           </div>
 
@@ -889,7 +908,25 @@ export default function CheckoutPage({ onSuccess }) {
             <label>Discount code</label>
             <input
               value={discountCode}
-              onChange={(e) => setDiscountCode(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setDiscountCode(value);
+
+
+                if (!value.trim() || value.trim() !== discountCode.length) {
+                  const normalShippingTotal =
+                    shippingRate != null
+                      ? Number((Number(shippingRate) + HANDLING_FEE).toFixed(2))
+                      : 0;
+
+                  setDiscountType(null);
+                  setDiscountPercent(null);
+                  setDiscountMessage("");
+                  setDiscountTotal(0);
+                  setFreeShippingApplied(false);
+                  setFinalShippingTotal(normalShippingTotal);
+                }
+              }}
               placeholder="e.g. CODE20"
             />
 
@@ -922,7 +959,8 @@ export default function CheckoutPage({ onSuccess }) {
 
             {shippingRate && (
               <p>
-                <strong>Shipping & Handling:</strong> ${Number(finalShippingTotal).toFixed(2)}
+                <strong>Shipping & Handling:</strong> $
+                {Number(finalShippingTotal).toFixed(2)}
               </p>
             )}
 

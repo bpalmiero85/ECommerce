@@ -739,25 +739,12 @@ export default function OrdersPage() {
     }
   };
 
-  const handleUnmarkFollowUp = async (order) => {
+  const handleCancelFollowUp = async (order) => {
     const orderId = order?.orderId ?? order?.id;
+
     if (!orderId) {
       alert("Missing order id");
       return;
-    }
-
-    if ((order?.followUpNotes ?? "").length > 0) {
-      const notes = String(
-        order?.followUpNotes ?? orderNotes[orderId] ?? "",
-      ).trim();
-
-      const confirm = window.confirm(
-        notes.length > 0
-          ? "Unmark follow up? WARNING: This will delete all order notes permanently."
-          : "Unmark follow up?",
-      );
-
-      if (!confirm) return;
     }
 
     try {
@@ -769,12 +756,73 @@ export default function OrdersPage() {
           body: JSON.stringify({ needsFollowUp: false }),
         },
       );
+
+      if (!resp.ok) {
+        setError(`Failed to cancel follow-up for order #${orderId}`);
+        return;
+      }
+
+      setOrderNotes((prev) => ({
+        ...prev,
+        [orderId]: "",
+      }));
+
+      setEditingNotesByOrderId((prev) => ({
+        ...prev,
+        [orderId]: false,
+      }));
+
+      await fetchOrders();
+    } catch (e) {
+      logError("OrdersPage cancel follow up failed", {
+        orderId,
+        message: e?.message,
+      });
+      setError(`Could not cancel follow-up for order #${orderId}`);
+    }
+  };
+
+  const handleUnmarkFollowUp = async (order) => {
+    const orderId = order?.orderId ?? order?.id;
+    if (!orderId) {
+      alert("Missing order id");
+      return;
+    }
+
+    const notes = String(
+      order?.followUpNotes ?? orderNotes[orderId] ?? "",
+    ).trim();
+
+    const { totalItems, allChecked } = getChecklistStats(notes);
+
+    if (totalItems > 0 && !allChecked) {
+      window.alert(
+        "You cannot unmark follow up until all order note items are resolved (checked).",
+      );
+      return;
+    }
+    if (totalItems > 0 && allChecked) {
+      await handleMarkResolved(order);
+      return;
+    }
+
+    try {
+      const resp = await authedFetch(
+        `${API_BASE_URL}/api/admin/orders/unmark-follow-up/${orderId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ needsFollowUp: false }),
+        },
+      );
+
       if (!resp.ok) {
         setError(`Failed to unmark follow-up for order #${orderId}`);
         return;
       }
-      setOrderNotes((prev) => ({ ...prev, [orderId]: "" }));
+
       setEditingNotesByOrderId((prev) => ({ ...prev, [orderId]: false }));
+
       await fetchOrders();
     } catch (e) {
       logError("OrdersPage unmark follow up failed", {
@@ -837,9 +885,7 @@ export default function OrdersPage() {
     const { totalItems, allChecked } = getChecklistStats(rawNotes);
 
     if (totalItems <= 0) {
-      const confirm = window.confirm(
-        "No line items to resolve. Would you like to unmark follow up?",
-      );
+      const confirm = window.confirm("Would you like to unmark follow up?");
       if (!confirm) return;
       await handleUnmarkFollowUp(order);
       return;
@@ -1071,15 +1117,24 @@ export default function OrdersPage() {
         setOrders(Array.isArray(data) ? data : []);
         setAuthVerified(true);
         setError(null);
-        setOrderNotes((prev) => ({
-          ...Object.fromEntries(
+        setOrderNotes((prev) => {
+          const freshNotes = Object.fromEntries(
             (Array.isArray(data) ? data : []).map((o) => [
               o.orderId,
               o.followUpNotes ?? "",
             ]),
-          ),
-          ...prev,
-        }));
+          );
+
+          for (const o of Array.isArray(data) ? data : []) {
+            const orderId = o.orderId;
+
+            if (editingNotesByOrderId[orderId]) {
+              freshNotes[orderId] = prev[orderId] ?? freshNotes[orderId] ?? "";
+            }
+          }
+
+          return freshNotes;
+        });
       } catch (e) {
         if (e?.name === "AbortError") return;
         if (requestId !== fetchOrdersIdRef.current) return;
@@ -1092,10 +1147,25 @@ export default function OrdersPage() {
         setError(e?.message || "Failed to load orders.");
       }
     },
-    [authedFetch, orderStatusEndpoint, orderStatus],
+    [authedFetch, orderStatusEndpoint, orderStatus, editingNotesByOrderId],
   );
 
   const pollingAbortRef = useRef(null);
+
+  const formatOrderDateTime = (value) => {
+    if (!value) return "Date unavailable";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return "Date unavailable";
+    }
+
+    return date.toLocaleString("en-US", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  };
 
   const refreshOrdersAndCounts = useCallback(async () => {
     if (isRefreshingRef.current) return;
@@ -1478,11 +1548,38 @@ export default function OrdersPage() {
         <div className="orders-list">
           {displayOrders.map((o) => {
             const labelCreated = o.labelCreated;
+            const savedFollowUpNotes = String(o.followUpNotes ?? "").trim();
+            const hasSavedOrderNotes = savedFollowUpNotes.length > 0;
+            const savedChecklistStats = getChecklistStats(savedFollowUpNotes);
+            const savedNotesAreResolved =
+              hasSavedOrderNotes &&
+              savedChecklistStats.totalItems > 0 &&
+              savedChecklistStats.allChecked;
+
             return (
               <div key={o.orderId} className="orders-card">
                 <div className="orders-card-header">
-                  <div className="orders-card-title">Order #{o.orderId}</div>
-                  <div className="orders-card-status">{o.orderStatus}</div>
+                  <div>
+                    <div className="orders-card-title">Order #{o.orderId}</div>
+
+                    <div className="orders-card-date">
+                      Placed: {formatOrderDateTime(o.createdAt)}
+                    </div>
+
+                    {o.paymentIntentId && (
+                      <div className="orders-card-payment-id">
+                        Stripe ID: {o.paymentIntentId}
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <div className="orders-card-status">{o.orderStatus}</div>
+
+                    <div className="orders-card-total">
+                      ${Number(o.orderTotal ?? 0).toFixed(2)}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="orders-card-body">
@@ -1491,11 +1588,6 @@ export default function OrdersPage() {
                       o.followUpResolvedAt ? "follow-up-resolved" : "follow-up"
                     }
                   >
-                    {!o.needsFollowUp && (
-                      <button onClick={() => handleMarkFollowUp(o)}>
-                        Needs follow up
-                      </button>
-                    )}
                     {o.followUpResolvedAt && (
                       <div className="resolved-alert">
                         <h3>Order notes resolved</h3>
@@ -1513,15 +1605,17 @@ export default function OrdersPage() {
                             </h3>
                           </div>
                           <div className="follow-up-alert-buttons">
-                            <div className="mark-resolved-container">
-                              <button
-                                type="button"
-                                className="unmark-follow-up-button"
-                                onClick={() => handleUnmarkFollowUp(o)}
-                              >
-                                Unmark follow up
-                              </button>
-                            </div>
+                            {!hasSavedOrderNotes && (
+                              <div className="mark-resolved-container">
+                                <button
+                                  type="button"
+                                  className="unmark-follow-up-button"
+                                  onClick={() => handleCancelFollowUp(o)}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            )}
                             <button
                               className="resolved-button"
                               onClick={() => {
@@ -1534,7 +1628,15 @@ export default function OrdersPage() {
                         </div>
                       </>
                     )}
+                    {!o.needsFollowUp && (
+                      <div className="follow-up-button">
+                        <button onClick={() => handleMarkFollowUp(o)}>
+                          Needs follow up
+                        </button>
+                      </div>
+                    )}
                   </div>
+
                   <div className="orders-field">
                     <span className="orders-field-label">Name</span>
                     <span className="orders-field-value">{o.orderName}</span>
@@ -1870,13 +1972,8 @@ export default function OrdersPage() {
                                   <div
                                     key={index}
                                     className={`order-note-item ${isChecked ? "checked" : ""}`}
-                                    onClick={() => toggleNoteLine(o, index)}
                                     role="button"
                                     tabIndex={0}
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter" || e.key === " ")
-                                        toggleNoteLine(o, index);
-                                    }}
                                   >
                                     <span className="checkbox">
                                       {isChecked ? "✅" : "☐"}
@@ -1896,9 +1993,9 @@ export default function OrdersPage() {
                             onClick={() => {
                               const orderId = o.orderId;
 
-                              const nextText = ensureTrailingNumberedLine(
-                                orderNotes[orderId] ?? o.followUpNotes ?? "",
-                              );
+                              const savedNotes = o.followUpNotes ?? "";
+                              const nextText =
+                                ensureTrailingNumberedLine(savedNotes);
 
                               setOrderNotes((prev) => ({
                                 ...prev,

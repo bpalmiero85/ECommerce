@@ -83,6 +83,9 @@ input[type="checkbox"] {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
+  position: relative;
+  width: 100%;
+  height: auto;
   gap: 8px;
 }
 
@@ -98,8 +101,10 @@ input[type="checkbox"] {
 }
 
 .follow-up button {
+  display: flex;
   background-color: rgb(247, 205, 252);
   color: rgb(0, 0, 0);
+  width: 100%;
   font-size: 0.95rem;
   width: fit-content;
   border-radius: 10px;
@@ -107,7 +112,7 @@ input[type="checkbox"] {
   border: 0.5px solid black;
   padding: 4px 12px;
   cursor: pointer;
-  margin: 0;
+
 }
 
 .follow-up-resolved button {
@@ -493,16 +498,30 @@ input[type="checkbox"] {
   z-index: 1000;
 }
 
+.orders-card-date {
+  margin-top: 4px;
+  font-size: 0.9rem;
+  color: rgb(121, 2, 206);
+  opacity: 0.85;
+}
+
+.orders-card-payment-id {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  opacity: 0.8;
+  color: rgb(121, 2, 206);
+  word-break: break-all;
+}
+
 .resolved-alert {
   display: flex;
   position: relative;
   order: 1;
   width: fit-content;
   align-self: flex-start;
-  justify-content: right;
   right: 0;
   padding: 2px 13px;
-  align-self: flex-start;
+  margin-left: auto;
   margin-top: 0 !important;
   border-radius: 8px;
   background-color: rgb(69, 255, 1);
@@ -542,6 +561,10 @@ input[type="checkbox"] {
   background: rgba(189, 109, 250, 0.18);
   padding: 10px 12px;
   border-bottom: 1px solid rgba(121, 2, 206, 0.18);
+}
+
+.orders-card-total {
+  color: rgb(121, 2, 206);
 }
 
 .orders-card-title {
