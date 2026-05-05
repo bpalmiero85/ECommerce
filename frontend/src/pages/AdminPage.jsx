@@ -58,13 +58,57 @@ const AdminPage = () => {
   ];
 
   const LABELS = {
-    todayOrders: "Today's Orders",
-    last7DaysOrders: "Last 7 Days Orders",
-    todayGrossRevenue: "Today's Gross Revenue",
-    todayNetRevenueMinusShipTax: "Today's Net Revenue (Minus Shipping & Tax)",
-    todayMaterialCost: "Today's Material Cost",
-    todayProfitAfterMaterial: "Today's Profit After Material",
-  };
+  todayOrders: "Today's Orders",
+  last7DaysOrders: "Last 7 Days Orders",
+  todayGrossRevenue: "Today's Gross Revenue",
+  todayNetRevenueMinusShipTax: "Today's Net Revenue (Minus Shipping & Tax)",
+  todayMaterialCost: "Today's Material Cost",
+  todayProfitAfterMaterial: "Today's Profit After Material",
+  todayDiscountTotal: "Today's Discounts Given",
+
+  lowStockCount: "Low Stock Items",
+  soldOutCount: "Sold Out Items",
+  unresolvedFollowUpCount: "Unresolved Follow-Ups",
+  openPaidOrdersCount: "Paid Orders Needing Shipment",
+
+  last7DaysGrossRevenue: "Last 7 Days Gross Revenue",
+  last7DaysNetRevenue: "Last 7 Days Net Revenue",
+  last7DaysProfitAfterMaterial: "Last 7 Days Profit After Material",
+  averageOrderValue: "Average Order Value",
+  last7DaysDiscountTotal: "Last 7 Days Discounts Given",
+
+  todayCustomerPaidShipping: "Today's Customer-Paid Shipping",
+  todayActualLabelCost: "Today's Actual Label Cost",
+  todayShippingVariance: "Today's Shipping Over/Under",
+  last7DaysShippingVariance: "Last 7 Days Shipping Over/Under",
+};
+
+  const METRIC_ORDER = [
+    "todayOrders",
+    "last7DaysOrders",
+
+    "todayGrossRevenue",
+    "todayNetRevenueMinusShipTax",
+    "todayMaterialCost",
+    "todayProfitAfterMaterial",
+    "todayDiscountTotal",
+
+    "last7DaysGrossRevenue",
+    "last7DaysNetRevenue",
+    "last7DaysProfitAfterMaterial",
+    "last7DaysDiscountTotal",
+    "averageOrderValue",
+
+    "openPaidOrdersCount",
+    "unresolvedFollowUpCount",
+    "lowStockCount",
+    "soldOutCount",
+
+    "todayCustomerPaidShipping",
+    "todayActualLabelCost",
+    "todayShippingVariance",
+    "last7DaysShippingVariance",
+  ];
 
   const [auth, setAuth] = useState(null);
 
@@ -791,15 +835,28 @@ const AdminPage = () => {
     );
   }
 
+  const MONEY_METRICS = new Set([
+    "todayGrossRevenue",
+    "todayNetRevenueMinusShipTax",
+    "todayMaterialCost",
+    "todayProfitAfterMaterial",
+    "last7DaysGrossRevenue",
+    "last7DaysNetRevenue",
+    "last7DaysProfitAfterMaterial",
+    "averageOrderValue",
+    "todayDiscountTotal",
+    "last7DaysDiscountTotal",
+    "todayCustomerPaidShipping",
+    "todayActualLabelCost",
+    "todayShippingVariance",
+    "last7DaysShippingVariance",
+  ]);
+
   const formatMetricValue = (key, value) => {
-    if (
-      key.includes("Revenue") ||
-      key.includes("Profit") ||
-      key.includes("Cost")
-    ) {
-      return `$${Number(value).toFixed(2)}`;
+    if (MONEY_METRICS.has(key)) {
+      return `$${Number(value ?? 0).toFixed(2)}`;
     }
-    return value;
+    return Number(value ?? 0);
   };
 
   if (!authVerified) {
@@ -1013,18 +1070,24 @@ const AdminPage = () => {
                   <div>Failed to load metrics. Please try again.</div>
                 )}
                 {metricsLoading && metrics === null && (
-                  <div>Loading metrics...</div>
+                  <div className="loading-metrics">Loading metrics...</div>
                 )}
                 {metrics && !metricsLoading && (
                   <div className="metrics-grid">
-                    {Object.entries(metrics).map(([key, value]) => (
-                      <div key={key} className="metric-card">
-                        <div className="metric-label">{LABELS[key] ?? key}</div>
-                        <div className="metric-value">
-                          <strong>{formatMetricValue(key, value)}</strong>
+                    {METRIC_ORDER.filter((key) => key in metrics).map((key) => {
+                      const value = metrics[key];
+
+                      return (
+                        <div key={key} className="metric-card">
+                          <div className="metric-label">
+                            {LABELS[key] ?? key}
+                          </div>
+                          <div className="metric-value">
+                            <strong>{formatMetricValue(key, value)}</strong>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
